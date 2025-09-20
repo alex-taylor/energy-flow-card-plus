@@ -18,6 +18,7 @@
     "@mdi/js": "^7.2.96",
     "custom-card-helpers": "^1.9.0",
     "date-fns": "^3.6.0",
+    "decimal.js": "^10.6.0",
     "home-assistant-js-websocket": "^8.0.1",
     "lit": "^2.2.2",
     "lit-element": "^2.4.0",

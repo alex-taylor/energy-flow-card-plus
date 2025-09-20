@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, svg, PropertyValues } from 'lit';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { customElement, property, query, state } from 'lit/decorators';
+import { customElement, property, query, state } from 'lit/decorators.js';
 import type { Config, EntityType, baseEntity } from './types';
 import localize from './localize/localize';
 import { coerceNumber, coerceStringArray, isNumberValue, renderError } from './utils';
@@ -17,6 +17,7 @@ import { styles } from './style';
 import { defaultValues, getDefaultConfig } from './utils/get-default-config';
 import getElementWidth from './utils/get-element-width';
 import { EntitiesConfig, EnergyFlowCardPlusConfig } from './energy-flow-card-plus-config';
+import {Decimal} from 'decimal.js';
 
 registerCustomCard({
   type: 'energy-flow-card-plus',
@@ -260,18 +261,18 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   ): string => {
     if (value === null) return '0';
     if (Number.isNaN(+value)) return value.toString();
-    const valueInNumber = Number(value);
-    const isMwh = unit === undefined && valueInNumber * 1000 >= this._config!.kwh_mwh_threshold!;
-    const isKWh = unit === undefined && valueInNumber >= this._config!.wh_kwh_threshold!;
+    const valueInNumber = new Decimal(value);
+    const isMWh = unit === undefined && valueInNumber.dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config!.kwh_mwh_threshold!));
+    const isKWh = unit === undefined && valueInNumber.greaterThanOrEqualTo(new Decimal(this._config!.wh_kwh_threshold!));
     const v = formatNumber(
-      isMwh
-        ? round(valueInNumber / 1000000, this._config!.mwh_decimals)
+      isMWh
+        ? valueInNumber.dividedBy(1000000).toDecimalPlaces(this._config!.mwh_decimals).toString()
         : isKWh
-        ? round(valueInNumber / 1000, this._config!.kwh_decimals)
-        : round(valueInNumber, decimals ?? this._config!.wh_decimals),
+        ? valueInNumber.dividedBy(1000).toDecimalPlaces(this._config!.kwh_decimals).toString()
+        : valueInNumber.toDecimalPlaces(decimals ?? this._config!.wh_decimals).toString(),
       this.hass.locale,
     );
-    return `${v}${unitWhiteSpace === false ? '' : ' '}${unit || (isMwh ? 'MWh' : isKWh ? 'kWh' : 'Wh')}`;
+    return `${v}${unitWhiteSpace === false ? '' : ' '}${unit || (isMWh ? 'MWh' : isKWh ? 'kWh' : 'Wh')}`;
   };
 
   private openDetails(event: { stopPropagation: any; key?: string }, entityId?: string | undefined): void {
@@ -1235,7 +1236,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                     </div>`}
                 ${solar.has
                   ? html`<div class="circle-container solar">
-                      <span class="label">${solarName}</span>
+                      <span class="label">${solarName}_foo</span>
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
