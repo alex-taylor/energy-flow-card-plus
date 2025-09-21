@@ -262,8 +262,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     if (value === null) return "0";
     if (Number.isNaN(+value)) return value.toString();
     const valueInNumber = new Decimal(value);
-    const isMWh = unit === undefined && valueInNumber.dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config!.kwh_mwh_threshold!));
-    const isKWh = unit === undefined && valueInNumber.greaterThanOrEqualTo(new Decimal(this._config!.wh_kwh_threshold!));
+    const isMWh = unit === undefined && valueInNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config!.kwh_mwh_threshold!));
+    const isKWh = unit === undefined && valueInNumber.abs().greaterThanOrEqualTo(new Decimal(this._config!.wh_kwh_threshold!));
     const v = formatNumber(
       isMWh
         ? valueInNumber.dividedBy(1000000).toDecimalPlaces(this._config!.mwh_decimals).toString()
