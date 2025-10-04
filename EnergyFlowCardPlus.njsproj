@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{787f3ad3-f21e-41bc-8cb7-c10ec1d388f4}</ProjectGuid>
+    <ProjectHome>.</ProjectHome>
+    <ProjectView>ShowAllFiles</ProjectView>
+    <StartupFile>.eslintrc.ts</StartupFile>
+    <WorkingDirectory>.</WorkingDirectory>
+    <OutputPath>.</OutputPath>
+    <ProjectTypeGuids>{3AF33F2E-1136-4D97-BBB7-1795711AC8B8};{349c5851-65df-11da-9384-00065b846f21};{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}</ProjectTypeGuids>
+    <EnableTypeScript>true</EnableTypeScript>
+    <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">16.0</VisualStudioVersion>
+    <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)' == 'Debug'" />
+  <PropertyGroup Condition="'$(Configuration)' == 'Release'" />
+  <ItemGroup>
+    <Content Include="hacs.json" />
+    <Content Include="package.json" />
+    <None Include="tsconfig.json" />
+    <Content Include="CHANGELOG.md" />
+    <Content Include="CODE_OF_CONDUCT.md" />
+    <Content Include="README.md" />
+    <None Include=".eslintrc.ts" />
+    <None Include="jest.config.ts" />
+    <None Include="src\const.ts" />
+    <None Include="src\energy-flow-card-plus-config.ts" />
+    <None Include="src\energy-flow-card-plus.ts" />
+    <None Include="src\handle-actions.ts" />
+    <None Include="src\hass.ts" />
+    <None Include="src\logging.ts" />
+    <None Include="src\style.ts" />
+    <None Include="src\types.ts" />
+    <None Include="__tests__\i18n.test.ts" />
+    <None Include="src\energy\index.ts" />
+    <None Include="src\energy\subscribe-mixin.ts" />
+    <None Include="src\localize\localize.ts" />
+    <None Include="src\ui-editor\ui-editor.ts" />
+    <None Include="src\utils\get-default-config.ts" />
+    <None Include="src\utils\get-element-width.ts" />
+    <None Include="src\utils\index.ts" />
+    <None Include="src\utils\register-custom-card.ts" />
+    <Content Include="src\localize\languages\cs.json" />
+    <Content Include="src\localize\languages\de.json" />
+    <Content Include="src\localize\languages\dk.json" />
+    <Content Include="src\localize\languages\en.json" />
+    <Content Include="src\localize\languages\es.json" />
+    <Content Include="src\localize\languages\fi.json" />
+    <Content Include="src\localize\languages\fr.json" />
+    <Content Include="src\localize\languages\it.json" />
+    <Content Include="src\localize\languages\nl.json" />
+    <Content Include="src\localize\languages\pl.json" />
+    <Content Include="src\localize\languages\pt-BR.json" />
+    <Content Include="src\localize\languages\pt-PT.json" />
+    <Content Include="src\localize\languages\ru.json" />
+    <Content Include="src\localize\languages\sk.json" />
+    <Content Include="src\localize\languages\sv.json" />
+    <None Include="src\ui-editor\schema\battery.ts" />
+    <None Include="src\ui-editor\schema\fossil_fuel_percentage.ts" />
+    <None Include="src\ui-editor\schema\grid.ts" />
+    <None Include="src\ui-editor\schema\home.ts" />
+    <None Include="src\ui-editor\schema\individual.ts" />
+    <None Include="src\ui-editor\schema\solar.ts" />
+    <None Include="src\ui-editor\schema\_schema-all.ts" />
+    <None Include="src\ui-editor\schema\_schema-base.ts" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="__tests__" />
+    <Folder Include="dist" />
+    <Folder Include="src" />
+    <Folder Include="src\energy" />
+    <Folder Include="src\localize" />
+    <Folder Include="src\localize\languages" />
+    <Folder Include="src\ui-editor" />
+    <Folder Include="src\ui-editor\schema" />
+    <Folder Include="src\utils" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}">
+        <WebProjectProperties>
+          <UseIIS>False</UseIIS>
+          <AutoAssignPort>True</AutoAssignPort>
+          <DevelopmentServerPort>0</DevelopmentServerPort>
+          <DevelopmentServerVPath>/</DevelopmentServerVPath>
+          <IISUrl>http://localhost:48022/</IISUrl>
+          <NTLMAuthentication>False</NTLMAuthentication>
+          <UseCustomServer>True</UseCustomServer>
+          <CustomServerUrl>http://localhost:1337</CustomServerUrl>
+          <SaveServerSettingsInUserFile>False</SaveServerSettingsInUserFile>
+        </WebProjectProperties>
+      </FlavorProperties>
+      <FlavorProperties GUID="{349c5851-65df-11da-9384-00065b846f21}" User="">
+        <WebProjectProperties>
+          <StartPageUrl>
+          </StartPageUrl>
+          <StartAction>CurrentPage</StartAction>
+          <AspNetDebugging>True</AspNetDebugging>
+          <SilverlightDebugging>False</SilverlightDebugging>
+          <NativeDebugging>False</NativeDebugging>
+          <SQLDebugging>False</SQLDebugging>
+          <ExternalProgram>
+          </ExternalProgram>
+          <StartExternalURL>
+          </StartExternalURL>
+          <StartCmdLineArguments>
+          </StartCmdLineArguments>
+          <StartWorkingDirectory>
+          </StartWorkingDirectory>
+          <EnableENC>False</EnableENC>
+          <AlwaysStartWebServerOnDebug>False</AlwaysStartWebServerOnDebug>
+        </WebProjectProperties>
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

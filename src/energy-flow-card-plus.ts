@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LitElement, html, TemplateResult, svg, PropertyValues } from "lit";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { customElement, property, query, state } from "lit/decorators.js";
-import type { ComboEntity, Config, EntityType, baseEntity } from "./types";
+import { customElement, property, state } from "lit/decorators.js";
+import type { EntityType, baseEntity } from "./types";
 import localize from "./localize/localize";
-import { coerceNumber, coerceStringArray, isNumberValue, renderError } from "./utils";
+import { coerceNumber, isNumberValue } from "./utils";
 import { SubscribeMixin } from "./energy/subscribe-mixin";
 import { HassEntities, HassEntity } from "home-assistant-js-websocket";
 import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics } from "./energy/index";
@@ -15,8 +15,7 @@ import { registerCustomCard } from "./utils/register-custom-card";
 import { logError } from "./logging";
 import { styles } from "./style";
 import { defaultValues, getDefaultConfig } from "./utils/get-default-config";
-import getElementWidth from "./utils/get-element-width";
-import { EntitiesConfig, EnergyFlowCardPlusConfig } from "./energy-flow-card-plus-config";
+import { EnergyFlowCardPlusConfig } from "./energy-flow-card-plus-config";
 import { Decimal } from "decimal.js";
 
 registerCustomCard({
@@ -220,16 +219,20 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   private getEntityStateWatthours = (entity: baseEntity | undefined, instantaneousValue?: boolean): number => {
     let entityArr: string[] = [];
+
     if (typeof entity === "string") {
       entityArr.push(entity);
     } else if (Array.isArray(entity)) {
       entityArr = entity;
     }
+
     const valuesArr: number[] = entityArr.map((entity) => {
       if (!entity || !this.entityAvailable(entity)) {
         this.unavailableOrMisconfiguredError(entity);
       }
+
       let stateObj: HassEntity | undefined;
+
       if (instantaneousValue === undefined) {
         stateObj = this._config.energy_date_selection !== false ? this.states[entity] : this.hass?.states[entity];
       } else if (instantaneousValue) {
@@ -237,13 +240,21 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       } else {
         stateObj = this.states[entity];
       }
+
       const value = coerceNumber(stateObj?.state);
-      if (stateObj?.attributes.unit_of_measurement?.toUpperCase().startsWith("KWH")) return value * 1000; // case insensitive check `KWH`
-      else if (stateObj?.attributes.unit_of_measurement?.toUpperCase().startsWith("MWH")) return value * 1000000; // case insensitive check `MWH`
+
+      if (stateObj?.attributes.unit_of_measurement?.toUpperCase().startsWith("KWH")) {
+        return round(value * 1000, 0);
+      }
+
+      if (stateObj?.attributes.unit_of_measurement?.toUpperCase().startsWith("MWH")) {
+        return round(value * 1000000, 0);
+      }
+
       return value;
     });
-    const sum = valuesArr.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-    return sum;
+
+    return valuesArr.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
   };
 
   /**
@@ -797,8 +808,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         (battery.state.toBattery ?? 0),
       0
     );
-    // const totalHomeConsumption = Math.max((grid.state.toHome ?? 0) + (solar.state.toHome ?? 0) + (battery.state.toHome ?? 0), 0);
-    // const totalHomeConsumption = Math.max(grid.state.fromGrid - (grid.state.toBattery ?? 0) + (solar.state.toHome ?? 0) + (battery.state.toHome ?? 0), 0);
 
     // Calculate Circumference of Semi-Circles
     let homeBatteryCircumference = 0;

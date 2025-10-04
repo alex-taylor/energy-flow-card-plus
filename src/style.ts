@@ -132,9 +132,6 @@ export const styles = css`
   .circle-container .circle {
     cursor: var(--clickable-cursor);
   }
-  #battery-grid {
-    stroke: var(--energy-grid-return-color);
-  }
   ha-icon {
     padding-bottom: 2px;
   }
