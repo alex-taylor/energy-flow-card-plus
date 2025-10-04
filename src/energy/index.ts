@@ -136,7 +136,7 @@ const calculateStatisticSumGrowth = (values: StatisticValue[]): number | null =>
   return values.reduce((sum, current) => sum + (current.change ? current.change : 0), 0);
 };
 
-export async function getStatistics(hass: HomeAssistant, energyData: EnergyData, devices: string[]): Promise<Record<string, number>> {
+export async function getStatistics(hass: HomeAssistant, energyData: EnergyData, devices: string[]): Promise<Statistics> {
   const dayDifference = differenceInDays(energyData.end || new Date(), energyData.start);
   const period = dayDifference > 35 ? 'month' : dayDifference > 2 ? 'day' : 'hour';
 
@@ -149,13 +149,15 @@ export async function getStatistics(hass: HomeAssistant, energyData: EnergyData,
     // units
   );
 
-  return devices.reduce(
-    (states, id) => ({
-      ...states,
-      [id]: calculateStatisticSumGrowth(data[id]),
-    }),
-    {},
-  );
+  return data;
+
+//  return devices.reduce(
+//    (states, id) => ({
+//      ...states,
+//      [id]: calculateStatisticSumGrowth(data[id]),
+//    }),
+//    {},
+//  );
 }
 
 export function getEnergySourceColor(type: string) {
