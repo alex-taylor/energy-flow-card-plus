@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HomeAssistant } from 'custom-card-helpers';
 import { Collection } from 'home-assistant-js-websocket';
-import { addHours, differenceInDays } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 
 interface StatisticsMetaData {
   statistics_unit_of_measurement: string | null;
@@ -128,14 +128,6 @@ const fetchStatistics = (
     // units,
   });
 
-const calculateStatisticSumGrowth = (values: StatisticValue[]): number | null => {
-  if (!values) {
-    return null;
-  }
-
-  return values.reduce((sum, current) => sum + (current.change ? current.change : 0), 0);
-};
-
 export async function getStatistics(hass: HomeAssistant, energyData: EnergyData, devices: string[]): Promise<Statistics> {
   const dayDifference = differenceInDays(energyData.end || new Date(), energyData.start);
   const period = dayDifference > 35 ? 'month' : dayDifference > 2 ? 'day' : 'hour';
@@ -150,14 +142,6 @@ export async function getStatistics(hass: HomeAssistant, energyData: EnergyData,
   );
 
   return data;
-
-//  return devices.reduce(
-//    (states, id) => ({
-//      ...states,
-//      [id]: calculateStatisticSumGrowth(data[id]),
-//    }),
-//    {},
-//  );
 }
 
 export function getEnergySourceColor(type: string) {

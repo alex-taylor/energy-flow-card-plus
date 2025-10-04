@@ -238,3 +238,39 @@ export type EntityType =
   | 'nonFossilSecondary';
 
 export type baseEntity = string | string[];
+
+export interface Flows {
+  solarToHome: number;
+  solarToGrid: number;
+  solarToBattery: number;
+  gridToHome: number;
+  gridToBattery: number;
+  batteryToHome: number;
+  batteryToGrid: number;
+};
+
+export interface SolarEntity {
+  entity: string;
+  mainEntity: string | undefined;
+  has: boolean;
+  display_zero_tolerance: number | undefined;
+  state: {
+    total: number | null;
+    toHome: number | null;
+    toGrid: number | null;
+    toBattery: number | null;
+  };
+  icon: string;
+  name: string;
+  secondary: {
+    entity: string | undefined;
+    template: string | undefined;
+    has: boolean | undefined;
+    state: number | string | null;
+    icon: string | undefined;
+    unit: string | undefined;
+    decimals: number | undefined;
+    unit_white_space: boolean | undefined;
+    energyDateSelection: boolean | undefined;
+  };
+};
