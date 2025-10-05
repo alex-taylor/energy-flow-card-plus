@@ -13,7 +13,10 @@ import { HomeAssistantReal } from "./hass";
 import localize from "./localize/localize";
 import { logError } from "./logging";
 import { styles } from "./style";
-import type { baseEntity, EntityType, Flows, SolarEntity } from "./types";
+import type { baseEntity, EntityType, Flows, SecondaryInfoEntity } from "./types";
+import { BatteryEntity } from "./battery-entity";
+import { GridEntity } from "./grid-entity";
+import { SolarEntity } from "./solar-entity";
 import { coerceNumber, isNumberValue } from "./utils";
 import { defaultValues, getDefaultConfig } from "./utils/get-default-config";
 import { registerCustomCard } from "./utils/register-custom-card";
@@ -55,9 +58,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   @state() private _width = 0;
   @state() private _statistics?: Statistics;
 
-  private _grid = {};
-  private _solar: SolarEntity | undefined;
-  private _battery = {};
+  private _grid!: GridEntity;
+  private _solar!: SolarEntity;
+  private _battery!: BatteryEntity;
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import("./ui-editor/ui-editor");
@@ -65,6 +68,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   }
 
   public hassSubscribe() {
+    this.initEntities(this._config);
+
     if (this._config?.energy_date_selection === false) {
       return [];
     }
@@ -116,7 +121,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             });
             this.states = states;
             this._statistics = statistics;
-            this.calculateFlowValues(this._solar!, this._battery, this._grid);
+            this.calculateFlowValues(this._solar!, this._battery!, this._grid!);
           }
         });
       }),
@@ -144,7 +149,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     this.populateEntitiesArr();
     this.resetSubscriptions();
-    this.initEntities(config);
   }
 
   private initEntities(config: EnergyFlowCardPlusConfig): void {
@@ -152,107 +156,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     const initialSecondaryState = null as null | string | number;
     const entities = config.entities;
 
-    this._grid = {
-      entity: entities.grid?.entity,
-      has: entities?.grid?.entity !== undefined,
-      hasReturnToGrid: !!entities.grid?.entity?.production,
-      state: {
-        fromGrid: 0, // consumption
-        toGrid: initialNumericState, // production
-        toBattery: initialNumericState, // production to battery only
-        toHome: initialNumericState, // production to home only
-      },
-      powerOutage: {
-        has: this.hasField(entities.grid?.power_outage, true),
-        isOutage: (entities.grid && entities.grid.power_outage?.entity && this.hass.states[entities.grid.power_outage.entity]?.state) === (entities.grid?.power_outage?.state_alert ?? "on"),
-        icon: entities.grid?.power_outage?.icon_alert || "mdi:transmission-tower-off",
-        name: entities.grid?.power_outage?.label_alert ?? html`Power<br />Outage`,
-      },
-      icon: this.computeFieldIcon(entities.grid, "mdi:transmission-tower"),
-      name: this.computeFieldName(entities.grid, "Grid"/*this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.grid")*/) as | string | TemplateResult<1>,
-      mainEntity: Array.isArray(entities?.grid?.entity?.consumption)
-        ? entities?.grid?.entity?.consumption[0]
-        : typeof entities?.grid?.entity?.consumption === "string"
-          ? entities?.grid?.entity?.consumption
-          : Array.isArray(entities?.grid?.entity?.production)
-            ? entities?.grid?.entity?.production[0]
-            : typeof entities?.grid?.entity?.production === "string"
-              ? entities?.grid?.entity?.production
-              : undefined,
-      color: {
-        fromGrid: entities.grid?.color?.consumption,
-        toGrid: entities.grid?.color?.production,
-        icon_type: entities.grid?.color_icon,
-        circle_type: entities.grid?.color_circle,
-      },
-      secondary: {
-        entity: entities.grid?.secondary_info?.entity,
-        template: entities.grid?.secondary_info?.template,
-        has: this.hasField(entities.grid?.secondary_info, true),
-        state: initialSecondaryState,
-        icon: entities.grid?.secondary_info?.icon,
-        unit: entities.grid?.secondary_info?.unit_of_measurement,
-        unit_white_space: entities.grid?.secondary_info?.unit_white_space,
-        decimals: entities.grid?.secondary_info?.decimals,
-        energyDateSelection: entities.grid?.secondary_info?.energy_date_selection || false,
-        color: {
-          type: entities.grid?.secondary_info?.color_value,
-        },
-      },
-    };
-
-    this._solar = {
-      entity: entities.solar?.entity as string,
-      mainEntity: Array.isArray(entities.solar?.entity) ? entities.solar?.entity[0] : entities.solar?.entity,
-      has: entities.solar?.entity !== undefined,
-      display_zero_tolerance: this._config.entities.solar?.display_zero_tolerance,
-      state: {
-        total: initialNumericState,
-        toHome: initialNumericState, // aka solar consumption
-        toGrid: initialNumericState,
-        toBattery: initialNumericState,
-      },
-      icon: this.computeFieldIcon(entities.solar, "mdi:solar-power"),
-      name: this.computeFieldName(entities.solar, "Solar"/*this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.solar")*/),
-      secondary: {
-        entity: entities.solar?.secondary_info?.entity,
-        template: entities.solar?.secondary_info?.template,
-        has: this.hasField(entities.solar?.secondary_info, true),
-        state: initialSecondaryState,
-        icon: entities.solar?.secondary_info?.icon,
-        unit: entities.solar?.secondary_info?.unit_of_measurement,
-        decimals: entities.solar?.secondary_info?.decimals,
-        unit_white_space: entities.solar?.secondary_info?.unit_white_space,
-        energyDateSelection: entities.solar?.secondary_info?.energy_date_selection || false,
-      },
-    };
-
-    this._battery = {
-      entity: entities.battery?.entity,
-      has: entities?.battery?.entity !== undefined,
-      mainEntity: typeof entities.battery?.entity === "object" ? entities.battery.entity.consumption : entities.battery?.entity,
-      name: this.computeFieldName(entities.battery, "Battery"/*this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.battery")*/),
-      icon: this.computeFieldIcon(entities.battery, "mdi:battery-high"),
-      state_of_charge: {
-        state: entities.battery?.state_of_charge?.length ? this.getEntityState(entities.battery?.state_of_charge) : null,
-        unit: entities?.battery?.state_of_charge_unit || "%",
-        unit_white_space: entities?.battery?.state_of_charge_unit_white_space || true,
-        decimals: entities?.battery?.state_of_charge_decimals || 0,
-      },
-      state: {
-        toBattery: 0, // Production, battery in
-        fromBattery: 0, // Consumption, battery out
-        toGrid: 0, // Production only to Grid, battery out to Grid
-        toHome: 0, // Consumption, battery out to Home aka battery consumption
-      },
-      color: {
-        fromBattery: entities.battery?.color?.consumption,
-        toBattery: entities.battery?.color?.production,
-        icon_type: undefined as string | boolean | undefined,
-        circle_type: entities.battery?.color_circle,
-        state_of_charge_type: entities.battery?.color_state_of_charge_value,
-      },
-    };
+    this._grid = new GridEntity(this.hass, entities);
+    this._solar = new SolarEntity(this.hass, entities);
+    this._battery = new BatteryEntity(this.hass, entities);
   }
 
   private populateEntitiesArr(): void {
@@ -495,13 +401,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     return (
-      (field !== undefined && field?.display_zero === true) ||
-      (this.getEntityStateWatthours(field?.entity) > (field?.display_zero_tolerance ?? 0) && Array.isArray(field?.entity)
+      field?.display_zero === true || (this.getEntityStateWatthours(field?.entity) > (field?.display_zero_tolerance ?? 0) && Array.isArray(field?.entity)
         ? this.entityAvailable(field?.mainEntity)
-        : this.entityAvailable(field?.entity)) ||
-      acceptStringState
-        ? typeof this.hass.states[field?.entity]?.state === "string"
-        : false
+        : this.entityAvailable(field?.entity)) || acceptStringState
+          ? typeof this.hass.states[field?.entity]?.state === "string"
+          : false
     ) as boolean;
   }
 
@@ -551,22 +455,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     return "#".concat(colorList.map((x) => x.toString(16).padStart(2, "0")).join(""));
   }
 
-  private getSecondaryState = (
-    field: {
-      entity: any;
-      template?: string | undefined;
-      has: any;
-      state?: string | number | null;
-      icon?: string | undefined;
-      unit?: string | undefined;
-      unit_white_space?: boolean | undefined;
-      displayZero?: boolean | undefined;
-      displayZeroTolerance?: number | undefined;
-      energyDateSelection?: boolean;
-    },
-    name: EntityType
-  ): string | number | null => {
-    if (field.has) {
+  private getSecondaryState = (field: SecondaryInfoEntity, name: EntityType): string | number | null => {
+    if (field.isPresent) {
       const secondaryEntity = field?.entity;
       const wantsInstantaneousValue = field?.energyDateSelection !== true;
       const secondaryState = secondaryEntity && this.getEntityStateWatthours(secondaryEntity, wantsInstantaneousValue);
@@ -601,9 +491,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     const initialSecondaryState = null as null | string | number;
 
     // Create initial objects for each field
-    const grid = this._grid;
-    const solar = this._solar;
-    const battery = this._battery;
+    const grid = this._grid!;
+    const solar = this._solar!;
+    const battery = this._battery!;
 
     const home = {
       entity: entities.home?.entity,
@@ -618,13 +508,14 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       secondary: {
         entity: entities.home?.secondary_info?.entity,
         template: entities.home?.secondary_info?.template,
-        has: this.hasField(entities.home?.secondary_info, true),
+        isPresent: this.hasField(entities.home?.secondary_info, true),
         state: null as number | string | null,
         unit: entities.home?.secondary_info?.unit_of_measurement,
         unit_white_space: entities.home?.secondary_info?.unit_white_space,
         icon: entities.home?.secondary_info?.icon,
         decimals: entities.home?.secondary_info?.decimals,
         energyDateSelection: entities.home?.secondary_info?.energy_date_selection || false,
+        color_type: entities.home?.secondary_info?.color_value
       },
     };
 
@@ -646,7 +537,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       secondary: {
         entity: entities[field]?.secondary_info?.entity,
         template: entities[field]?.secondary_info?.template,
-        has: this.hasField(entities[field]?.secondary_info, true),
+        isPresent: this.hasField(entities[field]?.secondary_info, true),
         state: initialSecondaryState,
         icon: entities[field]?.secondary_info?.icon,
         unit: entities[field]?.secondary_info?.unit_of_measurement,
@@ -655,6 +546,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         decimals: entities[field]?.secondary_info?.decimals,
         displayZeroTolerance: entities[field]?.secondary_info?.display_zero_tolerance,
         energyDateSelection: entities[field]?.secondary_info?.energy_date_selection || false,
+        color_type: entities[field]?.secondary_info?.color_value
       },
     });
 
@@ -687,7 +579,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       secondary: {
         entity: entities.fossil_fuel_percentage?.secondary_info?.entity,
         template: entities.fossil_fuel_percentage?.secondary_info?.template,
-        has: this.hasField(entities.fossil_fuel_percentage?.secondary_info, true),
+        isPresent: this.hasField(entities.fossil_fuel_percentage?.secondary_info, true),
         state: initialSecondaryState,
         icon: entities.fossil_fuel_percentage?.secondary_info?.icon,
         unit: entities.fossil_fuel_percentage?.secondary_info?.unit_of_measurement,
@@ -698,7 +590,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     };
 
     // Override in case of Power Outage
-    if (grid.powerOutage.isOutage) {
+    if (grid.powerOutage.isOutage && grid.powerOutage.icon) {
       grid.icon = grid.powerOutage.icon;
     }
 
@@ -740,11 +632,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Grid Name
     this.style.setProperty(
       "--secondary-text-grid-color",
-      grid.secondary.color.type === "consumption"
+      grid.secondary.color_type === "consumption"
         ? "var(--energy-grid-consumption-color)"
-        : grid.secondary.color.type === "production"
+        : grid.secondary.color_type === "production"
         ? "var(--energy-grid-return-color)"
-        : grid.secondary.color.type === true
+        : grid.secondary.color_type === true
         ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
           ? "var(--energy-grid-consumption-color)"
           : "var(--energy-grid-return-color)"
@@ -880,7 +772,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     if (battery.state.toHome) homeBatteryCircumference = circleCircumference * (battery.state.toHome / totalHomeConsumption);
 
     let homeSolarCircumference = 0;
-    if (solar.has) {
+    if (solar.isPresent) {
       homeSolarCircumference = circleCircumference * (solar.state.toHome! / totalHomeConsumption);
     }
     let homeGridCircumference: number | undefined;
@@ -1108,8 +1000,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Adjust Curved Lines
 
     const isCardWideEnough = this._width > 420;
-    if (solar.has) {
-      if (battery.has) {
+    if (solar.isPresent) {
+      if (battery.isPresent) {
         // has solar, battery and grid
         this.style.setProperty("--lines-svg-not-flat-line-height", isCardWideEnough ? "106%" : "102%");
         this.style.setProperty("--lines-svg-not-flat-line-top", isCardWideEnough ? "-3%" : "-1%");
@@ -1167,7 +1059,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     };
 
     const individualSecondarySpan = (individual: Individual, key: string) => {
-      const value = individual.secondary.has
+      const value = individual.secondary.isPresent
         ? this.displayValue(individual.secondary.state, individual.secondary.unit, individual.secondary.unit_white_space)
         : undefined;
       const passesDisplayZeroCheck =
@@ -1175,7 +1067,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         (isNumberValue(individual.secondary.state)
           ? (Number(individual.secondary.state) ?? 0) > (individual.secondary.displayZeroTolerance ?? 0)
           : true);
-      return html` ${individual.secondary.has && passesDisplayZeroCheck
+      return html` ${individual.secondary.isPresent && passesDisplayZeroCheck
         ? html`${baseSecondarySpan({
             className: key,
             entityId: individual.secondary.entity,
@@ -1188,7 +1080,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     return html`
       <ha-card .header=${this._config.title}>
         <div class="card-content" id="energy-flow-card-plus">
-          ${solar.has || individual2.has || individual1.has || hasFossilFuelPercentage
+          ${solar.isPresent || individual2.has || individual1.has || hasFossilFuelPercentage
             ? html`<div class="row">
                 ${!hasFossilFuelPercentage || (!hasNonFossilFuelUsage && entities.fossil_fuel_percentage?.display_zero === false)
                   ? html`<div class="spacer"></div>`
@@ -1209,7 +1101,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         <ha-icon
                           .icon=${nonFossilIcon}
                           class="low-carbon"
-                          style="${nonFossil.secondary.has ? "padding-top: 2px;" : "padding-top: 0px;"}
+                          style="${nonFossil.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${entities.fossil_fuel_percentage?.display_zero_state !== false ||
                           (nonFossilFuelenergy || 0) > (entities.fossil_fuel_percentage?.display_zero_tolerance || 0)
                             ? "padding-bottom: 2px;"
@@ -1251,7 +1143,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           `
                         : ""}
                     </div>`}
-                ${solar.has
+                ${solar.isPresent
                   ? html`<div class="circle-container solar">
                       <span class="label">${solarName}</span>
                       <div
@@ -1269,7 +1161,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         <ha-icon
                           id="solar-icon"
                           .icon=${solarIcon}
-                          style="${solar.secondary.has ? "padding-top: 2px;" : "padding-top: 0px;"}
+                          style="${solar.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${entities.solar?.display_zero_state !== false || (solar.state.total || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
@@ -1300,7 +1192,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         <ha-icon
                           id="individual2-icon"
                           .icon=${individual2.icon}
-                          style="${individual2.secondary.has ? "padding-top: 2px;" : "padding-top: 0px;"}
+                          style="${individual2.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${entities.individual2?.display_zero_state !== false || (individual2.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
@@ -1353,7 +1245,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         <ha-icon
                           id="individual1-icon"
                           .icon=${individual1.icon}
-                          style="${individual1.secondary.has ? "padding-top: 2px;" : "padding-top: 0px;"}
+                          style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${entities.individual1?.display_zero_state !== false || (individual1.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
@@ -1392,7 +1284,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
               </div>`
             : html``}
           <div class="row">
-            ${grid.has
+            ${grid.isPresent
               ? html` <div class="circle-container grid">
                   <div
                     class="circle"
@@ -1522,10 +1414,10 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
               ${this.showLine(individual1.state || 0) && individual2.has ? "" : html` <span class="label">${homeName}</span>`}
             </div>
           </div>
-          ${battery.has || (individual1.has && individual2.has)
+          ${battery.isPresent || (individual1.has && individual2.has)
             ? html`<div class="row">
                 <div class="spacer"></div>
-                ${battery.has
+                ${battery.isPresent
                   ? html` <div class="circle-container battery">
                       <div
                         class="circle"
@@ -1685,7 +1577,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         <ha-icon
                           id="individual1-icon"
                           .icon=${individual1.icon}
-                          style="${individual1.secondary.has ? "padding-top: 2px;" : "padding-top: 0px;"}
+                          style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${entities.individual1?.display_zero_state !== false || (individual1.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
@@ -1699,18 +1591,18 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                   : html`<div class="spacer"></div>`}
               </div>`
             : html`<div class="spacer"></div>`}
-          ${solar.has && this.showLine(solar.state.toHome || 0)
+          ${solar.isPresent && this.showLine(solar.state.toHome || 0)
             ? html`<div
                 class="lines ${classMap({
-                  high: battery.has,
-                  "individual1-individual2": !battery.has && individual2.has && individual1.has,
+                  high: battery.isPresent,
+                  "individual1-individual2": !battery.isPresent && individual2.has && individual1.has,
                 })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="solar-home-flow">
                   <path
                     id="solar"
                     class="solar"
-                    d="M${battery.has ? 55 : 53},0 v${grid.has ? 15 : 17} c0,${battery.has ? "30 10,30 30,30" : "35 10,35 30,35"} h25"
+                    d="M${battery.isPresent ? 55 : 53},0 v${grid.isPresent ? 15 : 17} c0,${battery.isPresent ? "30 10,30 30,30" : "35 10,35 30,35"} h25"
                     vector-effect="non-scaling-stroke"
                   ></path>
                   ${solar.state.toHome
@@ -1731,21 +1623,21 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 </svg>
               </div>`
             : ""}
-          ${grid.hasReturnToGrid && solar.has && this.showLine(solar.state.toGrid ?? 0)
+          ${grid.hasReturnToGrid && solar.isPresent && this.showLine(solar.state.toGrid ?? 0)
             ? html`<div
                 class="lines ${classMap({
-                  high: battery.has,
-                  "individual1-individual2": !battery.has && individual2.has && individual1.has,
+                  high: battery.isPresent,
+                  "individual1-individual2": !battery.isPresent && individual2.has && individual1.has,
                 })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="solar-grid-flow">
                   <path
                     id="return"
                     class="return"
-                    d="M${battery.has ? 45 : 47},0 v15 c0,${battery.has ? "30 -10,30 -30,30" : "35 -10,35 -30,35"} h-20"
+                    d="M${battery.isPresent ? 45 : 47},0 v15 c0,${battery.isPresent ? "30 -10,30 -30,30" : "35 -10,35 -30,35"} h-20"
                     vector-effect="non-scaling-stroke"
                   ></path>
-                  ${solar.state.toGrid && solar.has
+                  ${solar.state.toGrid && solar.isPresent
                     ? svg`<circle
                         r="1"
                         class="return"
@@ -1763,11 +1655,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 </svg>
               </div>`
             : ""}
-          ${battery.has && solar.has && this.showLine(solar.state.toBattery || 0)
+          ${battery.isPresent && solar.isPresent && this.showLine(solar.state.toBattery || 0)
             ? html`<div
                 class="lines ${classMap({
-                  high: battery.has,
-                  "individual1-individual2": !battery.has && individual2.has && individual1.has,
+                  high: battery.isPresent,
+                  "individual1-individual2": !battery.isPresent && individual2.has && individual1.has,
                 })}"
               >
                 <svg
@@ -1796,11 +1688,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 </svg>
               </div>`
             : ""}
-          ${grid.has && this.showLine(grid.state.fromGrid)
+          ${grid.isPresent && this.showLine(grid.state.fromGrid)
             ? html`<div
                 class="lines ${classMap({
-                  high: battery.has,
-                  "individual1-individual2": !battery.has && individual2.has && individual1.has,
+                  high: battery.isPresent,
+                  "individual1-individual2": !battery.isPresent && individual2.has && individual1.has,
                 })}"
               >
                 <svg
@@ -1810,7 +1702,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                   id="grid-home-flow"
                   class="flat-line"
                 >
-                  <path class="grid" id="grid" d="M0,${battery.has ? 50 : solar.has ? 56 : 53} H100" vector-effect="non-scaling-stroke"></path>
+                  <path class="grid" id="grid" d="M0,${battery.isPresent ? 50 : solar.isPresent ? 56 : 53} H100" vector-effect="non-scaling-stroke"></path>
                   ${grid.state.fromGrid
                     ? svg`<circle
                     r="1"
@@ -1829,18 +1721,18 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 </svg>
               </div>`
             : null}
-          ${battery.has && this.showLine(battery.state.toHome)
+          ${battery.isPresent && this.showLine(battery.state.toHome)
             ? html`<div
                 class="lines ${classMap({
-                  high: battery.has,
-                  "individual1-individual2": !battery.has && individual2.has && individual1.has,
+                  high: battery.isPresent,
+                  "individual1-individual2": !battery.isPresent && individual2.has && individual1.has,
                 })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="battery-home-flow">
                   <path
                     id="battery-home"
                     class="battery-home"
-                    d="M55,100 v-${grid.has ? 15 : 17} c0,-30 10,-30 30,-30 h20"
+                    d="M55,100 v-${grid.isPresent ? 15 : 17} c0,-30 10,-30 30,-30 h20"
                     vector-effect="non-scaling-stroke"
                   ></path>
                   ${battery.state.toHome
@@ -1861,11 +1753,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 </svg>
               </div>`
             : ""}
-          ${grid.has && battery.has && this.showLine(Math.max(grid.state.toBattery || 0, battery.state.toGrid || 0))
+          ${grid.isPresent && battery.isPresent && this.showLine(Math.max(grid.state.toBattery || 0, battery.state.toGrid || 0))
             ? html`<div
                 class="lines ${classMap({
-                  high: battery.has,
-                  "individual1-individual2": !battery.has && individual2.has && individual1.has,
+                  high: battery.isPresent,
+                  "individual1-individual2": !battery.isPresent && individual2.has && individual1.has,
                 })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="battery-grid-flow">
@@ -1929,17 +1821,17 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     `;
   }
 
-  private calculateFlowValues(solar: SolarEntity, battery, grid): void {
+  private calculateFlowValues(solar: SolarEntity, battery: BatteryEntity, grid: GridEntity): void {
     // Update State Values of Grid
-    if (grid.has) {
+    if (grid.isPresent) {
       if (grid.powerOutage.isOutage) {
         grid.state.fromGrid = 0;
         grid.state.toGrid = 0;
       } else {
-        grid.state.fromGrid = this.getEntityStateWatthours(grid.entity.consumption);
+        grid.state.fromGrid = this.getEntityStateWatthours(grid.entity!.consumption);
 
         if (grid.hasReturnToGrid) {
-          grid.state.toGrid = this.getEntityStateWatthours(grid.entity.production);
+          grid.state.toGrid = this.getEntityStateWatthours(grid.entity!.production);
         } else {
           grid.state.toGrid = 0;
         }
@@ -1957,9 +1849,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     // Update State Values of Battery
-    if (battery.has) {
-      battery.state.toBattery = this.getEntityStateWatthours(battery.entity.production);
-      battery.state.fromBattery = this.getEntityStateWatthours(battery.entity.consumption);
+    if (battery.isPresent) {
+      battery.state.toBattery = this.getEntityStateWatthours(battery.entity!.production);
+      battery.state.fromBattery = this.getEntityStateWatthours(battery.entity!.consumption);
 
       if (battery.display_zero_tolerance !== undefined) {
         if (battery.display_zero_tolerance >= battery.state.toBattery) {
@@ -1973,7 +1865,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     // Update State Values of Solar
-    if (solar.has) {
+    if (solar.isPresent) {
       if (this.entityInverted("solar")) {
         solar.state.total = Math.abs(Math.min(this.getEntityStateWatthours(solar.entity), 0));
       } else {
@@ -1988,20 +1880,20 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     if (this._statistics !== undefined) {
       const combinedStats: Map<string, Map<string, number>> = new Map();
 
-      if (grid.has) {
-        this.addFlowStats(combinedStats, grid.entity.consumption);
+      if (grid.isPresent) {
+        this.addFlowStats(combinedStats, grid.entity!.consumption);
 
         if (grid.hasReturnToGrid) {
-          this.addFlowStats(combinedStats, grid.entity.production);
+          this.addFlowStats(combinedStats, grid.entity!.production);
         }
       }
 
-      if (battery.has) {
-        this.addFlowStats(combinedStats, battery.entity.consumption);
-        this.addFlowStats(combinedStats, battery.entity.production);
+      if (battery.isPresent) {
+        this.addFlowStats(combinedStats, battery.entity!.consumption);
+        this.addFlowStats(combinedStats, battery.entity!.production);
       }
 
-      if (solar.has) {
+      if (solar.isPresent) {
         this.addFlowStats(combinedStats, solar.entity);
       }
 
@@ -2014,7 +1906,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       let solarToGrid: number = 0;
 
       combinedStats.forEach((entry, timestamp) => {
-        const results: Flows = this.calculateFlowValues2(solar.has, battery.has, entry.get(solar.entity) ?? 0, entry.get(battery.entity.consumption) ?? 0, entry.get(battery.entity.production) ?? 0, entry.get(grid.entity.consumption) ?? 0, entry.get(grid.entity.production) ?? 0);
+        const results: Flows = this.calculateFlowValues2(solar.isPresent, battery.isPresent, entry.get(solar.entity) ?? 0, entry.get(battery.entity.consumption) ?? 0, entry.get(battery.entity.production) ?? 0, entry.get(grid.entity.consumption) ?? 0, entry.get(grid.entity.production) ?? 0);
         solarToHome += results.solarToHome;
         gridToHome += results.gridToHome;
         gridToBattery += results.gridToBattery;
@@ -2032,7 +1924,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       solar.state.toBattery = solarToBattery;
       solar.state.toGrid = solarToGrid;
     } else {
-      const results: Flows = this.calculateFlowValues2(solar.has, battery.has, solar.state.total ?? 0, battery.state.fromBattery, battery.state.toBattery, grid.state.fromGrid, grid.state.toGrid);
+      const results: Flows = this.calculateFlowValues2(solar.isPresent, battery.isPresent, solar.state.total ?? 0, battery.state.fromBattery, battery.state.toBattery, grid.state.fromGrid, grid.state.toGrid);
       solar.state.toHome = results.solarToHome;
       grid.state.toHome = results.gridToHome;
       grid.state.toBattery = results.gridToBattery;
