@@ -67,6 +67,7 @@
     <None Include="src\ui-editor\schema\_schema-base.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="src\entities\" />
     <Folder Include="__tests__" />
     <Folder Include="dist" />
     <Folder Include="src" />
@@ -78,13 +79,13 @@
     <Folder Include="src\utils" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="src\battery-entity.ts">
+    <TypeScriptCompile Include="src\entities\battery-entity.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\solar-entity.ts">
+    <TypeScriptCompile Include="src\entities\solar-entity.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\grid-entity.ts">
+    <TypeScriptCompile Include="src\entities\grid-entity.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>

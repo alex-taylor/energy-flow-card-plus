@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { EntitiesConfig } from "./energy-flow-card-plus-config";
-import { SecondaryInfoEntity } from "./types";
+import { EntitiesConfig } from "../energy-flow-card-plus-config";
+import { SecondaryInfoEntity } from "../types";
 
 export class SolarEntity {
   isPresent: boolean;

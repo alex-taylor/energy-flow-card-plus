@@ -40,7 +40,7 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
     }
     const data = {
       ...this._config,
-      energy_date_selection: this._config.energy_date_selection ?? true,
+      display_mode: this._config.display_mode ?? "live"
     };
 
     return html`

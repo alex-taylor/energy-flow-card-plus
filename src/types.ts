@@ -90,6 +90,7 @@ export interface EnergyFlowCardPlusConfig extends LovelaceCardConfig {
   show_states?: boolean;
   show_units?: boolean;
   energy_date_selection?: boolean;
+  display_mode?: string;
   min_box_height?: number;
   min_box_distance?: number;
   throttle?: number;

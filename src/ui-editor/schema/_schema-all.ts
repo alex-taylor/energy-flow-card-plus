@@ -17,6 +17,7 @@ export const cardConfigStruct = assign(
   object({
     title: optional(string()),
     theme: optional(string()),
+    display_mode: optional(string()),
     dashboard_link: optional(string()),
     dashboard_link_label: optional(string()),
     wh_decimals: optional(integer()),
@@ -114,6 +115,20 @@ export const advancedOptionsSchema = memoizeOne(localize => [
         column_min_width: '200px',
         schema: [
           {
+            name: 'display_mode',
+            label: 'Display Mode',
+            selector: {
+              select: {
+                options: [
+                  { value: 'live', label: 'Live' },
+                  { value: 'history', label: 'History' },
+                  { value: 'hybrid', label: 'Hybrid' },
+                ],
+                custom_value: true,
+              },
+            }
+          },
+          {
             name: 'dashboard_link',
             label: 'Dashboard Link',
             selector: { navigation: {} },
@@ -176,11 +191,6 @@ export const advancedOptionsSchema = memoizeOne(localize => [
           {
             name: 'clickable_entities',
             label: 'Clickable Entities',
-            selector: { boolean: {} },
-          },
-          {
-            name: 'energy_date_selection',
-            label: 'Energy Date Selection',
             selector: { boolean: {} },
           },
           {

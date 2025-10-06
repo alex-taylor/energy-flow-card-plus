@@ -74,6 +74,10 @@
     "transparency": "Transparency",
     "grey_color": "Grey Color",
     "tap_action": "Tap Action",
-    "navigation_path": "Navigation Path"
+    "navigation_path": "Navigation Path",
+    "display_mode": "Display Mode",
+    "live": "Live",
+    "history": "History",
+    "hybrid": "Hybrid"
   }
 }

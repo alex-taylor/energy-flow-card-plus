@@ -1,7 +1,7 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { html, TemplateResult } from "lit";
-import { ComboEntity, SecondaryInfoEntity } from "./types";
-import { EntitiesConfig } from "./energy-flow-card-plus-config";
+import { ComboEntity, SecondaryInfoEntity } from "../types";
+import { EntitiesConfig } from "../energy-flow-card-plus-config";
 
 export class GridEntity {
   isPresent: boolean;

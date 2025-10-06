@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { ComboEntity } from "./types";
-import { EntitiesConfig } from "./energy-flow-card-plus-config";
+import { ComboEntity } from "../types";
+import { EntitiesConfig } from "../energy-flow-card-plus-config";
 
 export class BatteryEntity {
   isPresent: boolean;

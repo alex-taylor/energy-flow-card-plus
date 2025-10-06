@@ -2,6 +2,7 @@ import { LovelaceCardConfig } from 'custom-card-helpers';
 import { ComboEntity, IndividualDeviceType, SecondaryInfoType, baseConfigEntity, baseEntity, gridPowerOutage } from './types';
 
 interface mainConfigOptions {
+  display_mode?: 'live' | 'history' | 'hybrid';
   dashboard_link?: string;
   dashboard_link_label?: string;
   min_flow_rate?: number;
@@ -15,7 +16,6 @@ interface mainConfigOptions {
   max_expected_energy?: number;
   min_expected_energy?: number;
   display_zero_lines?: boolean;
-  energy_date_selection?: boolean;
   use_new_flow_rate_model?: boolean;
 }
 
@@ -74,7 +74,7 @@ export interface EntitiesConfig {
     unit_white_space?: boolean;
     decimals?: number;
     calculate_flow_rate?: boolean | number;
-    seconday_info: SecondaryInfoType;
+    secondary_info: SecondaryInfoType;
   };
   individual1?: IndividualDeviceType;
   individual2?: IndividualDeviceType;

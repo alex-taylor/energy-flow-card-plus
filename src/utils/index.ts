@@ -29,6 +29,26 @@ export function formatState(state: number, round: number): string {
   return formattedState;
 }
 
+export function toWattHours(units: string | undefined, value: number): number {
+  if (units?.startsWith("KWH")) {
+    return round(value * 1000, 0);
+  }
+
+  if (units?.startsWith("MWH")) {
+    return round(value * 1000000, 0);
+  }
+
+  return value;
+}
+
+export function clampStateValue(value: number, tolerance: number | undefined): number {
+  if (tolerance !== undefined && tolerance >= value) {
+    return 0;
+  }
+
+  return value;
+}
+
 export function normalizeStateValue(
   unit_prefix: '' | keyof typeof UNIT_PREFIXES,
   state: number,

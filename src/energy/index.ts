@@ -116,29 +116,26 @@ const fetchStatistics = (
   startTime: Date,
   endTime?: Date,
   statistic_ids?: string[],
-  period: '5minute' | 'hour' | 'day' | 'week' | 'month' = 'hour',
-  // units?: StatisticsUnitConfiguration
+  period: '5minute' | 'hour' | 'day' | 'week' | 'month' = 'hour'
 ) =>
   hass.callWS<Statistics>({
     type: 'recorder/statistics_during_period',
     start_time: startTime.toISOString(),
     end_time: endTime?.toISOString(),
     statistic_ids,
-    period,
-    // units,
+    period
   });
 
-export async function getStatistics(hass: HomeAssistant, energyData: EnergyData, devices: string[]): Promise<Statistics> {
-  const dayDifference = differenceInDays(energyData.end || new Date(), energyData.start);
+export async function getStatistics(hass: HomeAssistant, periodStart: Date, periodEnd: Date, entities: string[]): Promise<Statistics> {
+  const dayDifference: number = differenceInDays(periodEnd, periodStart);
   const period = dayDifference > 35 ? 'month' : dayDifference > 2 ? 'day' : 'hour';
 
-  const data = await fetchStatistics(
+  const data: Statistics = await fetchStatistics(
     hass,
-    energyData.start,
-    energyData.end,
-    devices,
-    period,
-    // units
+    periodStart,
+    periodEnd,
+    entities,
+    period
   );
 
   return data;
