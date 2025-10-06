@@ -36,7 +36,7 @@ export const getEntityStateWattHours = (hass: HomeAssistant, displayMode: string
   return sum;
 };
 
-export function getEntityStatistics(hass: HomeAssistant, displayMode: string | undefined, periodStart: Date | undefined, periodEnd: Date | undefined, statistics: Statistics, entity: baseEntity): Map<string, number> {
+export const getEntityStatistics = (hass: HomeAssistant, displayMode: string | undefined, periodStart: Date | undefined, periodEnd: Date | undefined, statistics: Statistics, entity: baseEntity): Map<string, number> => {
   const result: Map<string, number> = new Map();
   let entityArr: string[] = [];
 
@@ -99,9 +99,9 @@ export function getEntityStatistics(hass: HomeAssistant, displayMode: string | u
   });
 
   return result;
-}
+};
 
-function toWattHours(units: string | undefined, value: number): number {
+const toWattHours = (units: string | undefined, value: number): number => {
   if (units?.startsWith("KWH")) {
     return round(value * 1000, 0);
   }
@@ -111,5 +111,4 @@ function toWattHours(units: string | undefined, value: number): number {
   }
 
   return value;
-}
-
+};
