@@ -19,6 +19,9 @@
   <ItemGroup>
     <Content Include="hacs.json" />
     <Content Include="package.json" />
+    <Content Include="TODO.txt">
+      <SubType>Code</SubType>
+    </Content>
     <None Include="tsconfig.json" />
     <Content Include="CHANGELOG.md" />
     <Content Include="CODE_OF_CONDUCT.md" />

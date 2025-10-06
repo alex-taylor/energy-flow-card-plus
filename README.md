@@ -1,12 +1,7 @@
 # Energy Flow Card Plus
 
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/flixlix/energy-flow-card-plus?style=flat-square)
-![GitHub all releases](https://img.shields.io/github/downloads/flixlix/energy-flow-card-plus/total?style=flat-square)
-[![hacs_badge](https://img.shields.io/badge/HACS-Default-41BDF5.svg?style=flat-square)](https://github.com/hacs/integration)
-[![ko-fi support](https://img.shields.io/badge/support-me-ff5e5b?style=flat-square&logo=ko-fi)](https://ko-fi.com/flixlix)
-![commit_activity](https://img.shields.io/github/commit-activity/y/flixlix/energy-flow-card-plus?color=brightgreen&label=Commits&style=flat-square)
-
-![demo_energy_flow_card_plus](https://github.com/flixlix/energy-flow-card-plus/assets/61006057/d3650e8a-1c82-4993-9951-18c04fbdf4d6)
+![GitHub release (latest by date)](https://github.com/alex-taylor/energy-flow-card-plus/releases/tag/v0.1.1-alpha)
+![GitHub all releases](https://github.com/alex-taylor/energy-flow-card-plus/releases)
 
 <details> <summary>✅ Advantages of this Card compared to the official Energy Distribution Card</summary>
 

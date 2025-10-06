@@ -1,0 +1,35 @@
+Check the HASS algorithm for switching between hour/day/month granularity of the stats
+
+Verify that the bi-directional grid<->battery line works correctly
+
+Split-colour rings for grid and battery
+  Optional
+
+See if something can be done about the values spilling out of the circle?
+  Maybe cap at 3dp?
+  Draw the values with an opaque background?
+
+Missing translations in the Advanced config options
+  And quite possibly other missing localizations generally
+
+Secondary info may not be working
+
+Test the other entities
+  And refactor the code out
+
+README updates
+
+Display the flow rates as hover-overs on the lines
+
+Option to disable animations
+
+See if the entity_date_picker flag can be removed without breaking existing configs
+
+Fix the duplicate 'use metadata' flags
+
+Verify that metadata works
+
+Test multiple-entities for a single node
+
+Option to 'grey out' the lines rather than hiding when inactive
+  See the power-flow-card for the implementation
