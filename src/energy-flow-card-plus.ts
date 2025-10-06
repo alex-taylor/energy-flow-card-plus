@@ -21,6 +21,7 @@ import { registerCustomCard } from "./utils/register-custom-card";
 import { calculateFlowValues } from "./flows";
 import { entityExists, entityAvailable, getEntityStateObj, getEntityState, getEntityStateWattHours } from "./entities";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
+import { differenceInDays, isFirstDayOfMonth, isLastDayOfMonth } from 'date-fns';
 
 registerCustomCard({
   type: "energy-flow-card-plus",
@@ -97,19 +98,28 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           this._energyData = data;
 
           if (this._entitiesArr) {
-            let start: Date;
-            let end: Date;
+            let periodStart: Date;
+            let periodEnd: Date;
 
             if (this._config.display_mode === "live") {
-              end = new Date();
-              start = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+              periodEnd = new Date();
+              periodStart = new Date(periodEnd.getFullYear(), periodEnd.getMonth(), periodEnd.getDate());
             } else {
-              start = data.start;
-              end = data.end ?? new Date();
+              periodStart = data.start;
+              periodEnd = data.end ?? new Date();
             }
 
-            this._statistics = await getStatistics(this.hass, start, end, this._entitiesArr);
-            calculateFlowValues(this.hass, this._config.display_mode, this._energyData?.start, this._energyData?.end, this._statistics, this._solar, this._battery, this._grid);
+            const dayDifference: number = differenceInDays(periodEnd, periodStart);
+            const period = this._config.use_hourly_stats
+              ? 'hour'
+              : isFirstDayOfMonth(periodStart) && (!periodEnd || isLastDayOfMonth(periodEnd)) && dayDifference > 35
+                ? 'month'
+                : dayDifference > 2
+                  ? 'day'
+                  : 'hour';
+
+            this._statistics = await getStatistics(this.hass, periodStart, periodEnd, this._entitiesArr, period);
+            calculateFlowValues(this.hass, this._config.display_mode, periodStart, periodEnd, this._statistics, this._solar, this._battery, this._grid);
           }
         });
       }),

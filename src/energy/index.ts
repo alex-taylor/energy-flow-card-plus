@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HomeAssistant } from 'custom-card-helpers';
 import { Collection } from 'home-assistant-js-websocket';
-import { differenceInDays } from 'date-fns';
 
 interface StatisticsMetaData {
   statistics_unit_of_measurement: string | null;
@@ -126,10 +125,7 @@ const fetchStatistics = (
     period
   });
 
-export async function getStatistics(hass: HomeAssistant, periodStart: Date, periodEnd: Date, entities: string[]): Promise<Statistics> {
-  const dayDifference: number = differenceInDays(periodEnd, periodStart);
-  const period = dayDifference > 35 ? 'month' : dayDifference > 2 ? 'day' : 'hour';
-
+export async function getStatistics(hass: HomeAssistant, periodStart: Date, periodEnd: Date, entities: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month'): Promise<Statistics> {
   const data: Statistics = await fetchStatistics(
     hass,
     periodStart,

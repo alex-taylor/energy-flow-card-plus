@@ -1,7 +1,3 @@
-Check the HASS algorithm for switching between hour/day/month granularity of the stats
-
-Verify that the bi-directional grid<->battery line works correctly
-
 Split-colour rings for grid and battery
   Optional
 

@@ -53,6 +53,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
     clickable_entities: true,
     display_zero_lines: true,
     use_new_flow_rate_model: true,
+    use_hourly_stats: true,
     wh_decimals: defaultValues.watthourDecimals,
     kwh_decimals: defaultValues.kilowatthourDecimals,
     min_flow_rate: defaultValues.minFlowRate,

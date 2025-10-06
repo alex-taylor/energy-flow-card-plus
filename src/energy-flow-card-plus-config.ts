@@ -17,6 +17,7 @@ interface mainConfigOptions {
   min_expected_energy?: number;
   display_zero_lines?: boolean;
   use_new_flow_rate_model?: boolean;
+  use_hourly_stats?: boolean;
 }
 
 export interface EntitiesConfig {

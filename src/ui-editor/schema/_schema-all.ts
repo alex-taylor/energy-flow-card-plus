@@ -32,6 +32,7 @@ export const cardConfigStruct = assign(
     clickable_entities: optional(boolean()),
     display_zero_lines: optional(boolean()),
     use_new_flow_rate_model: optional(boolean()),
+    use_hourly_stats: optional(boolean()),
     energy_date_selection: optional(boolean()),
     entities: object({
       battery: optional(any()),
@@ -124,7 +125,6 @@ export const advancedOptionsSchema = memoizeOne(localize => [
                   { value: 'history', label: 'History' },
                   { value: 'hybrid', label: 'Hybrid' },
                 ],
-                custom_value: true,
               },
             }
           },
@@ -195,9 +195,14 @@ export const advancedOptionsSchema = memoizeOne(localize => [
           },
           {
             name: 'use_new_flow_rate_model',
-            label: 'New Flow Model?',
+            label: 'Use New Flow Model',
             selector: { boolean: {} },
           },
+          {
+            name: 'use_hourly_stats',
+            label: 'Use Hourly Stats',
+            selector: { boolean: {} },
+          }
         ],
       },
     ],

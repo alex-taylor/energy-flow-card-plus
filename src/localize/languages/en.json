@@ -78,6 +78,7 @@
     "display_mode": "Display Mode",
     "live": "Live",
     "history": "History",
-    "hybrid": "Hybrid"
+    "hybrid": "Hybrid",
+    "use_hourly_stats": "Use Hourly Stats"
   }
 }

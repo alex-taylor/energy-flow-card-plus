@@ -39,7 +39,7 @@ export const calculateFlowValues = (hass: HomeAssistant, displayMode: string | u
   let solarToGrid: number = 0;
 
   combinedStats.forEach((entry, timestamp) => {
-    const results: Flows = calculateFlows(solar.isPresent, battery.isPresent, entry.get(solar.entity) ?? 0, entry.get(battery.entity.consumption) ?? 0, entry.get(battery.entity.production) ?? 0, entry.get(grid.entity.consumption) ?? 0, entry.get(grid.entity.production) ?? 0);
+    const results: Flows = calculateFlows(entry.get(solar.entity) ?? 0, entry.get(battery.entity.consumption) ?? 0, entry.get(battery.entity.production) ?? 0, entry.get(grid.entity.consumption) ?? 0, entry.get(grid.entity.production) ?? 0);
     solarToHome += results.solarToHome;
     gridToHome += results.gridToHome;
     gridToBattery += results.gridToBattery;
@@ -82,65 +82,44 @@ export const calculateFlowValues = (hass: HomeAssistant, displayMode: string | u
   }
 };
 
-const calculateFlows = (solarIsPresent: boolean, batteryIsPresent: boolean, solarProduction: number, batteryConsumption: number, batteryProduction: number, gridConsumption: number, gridProduction: number): Flows => {
-  let solarToHome: number = 0
-  let gridToHome: number = 0;
-  let gridToBattery: number = 0;
-  let batteryToGrid: number = 0;
-  let batteryToHome: number = 0;
-  let solarToBattery: number = 0;
-  let solarToGrid: number = 0;
+const calculateFlows = (solarProduction: number, batteryConsumption: number, batteryProduction: number, gridConsumption: number, gridProduction: number): Flows => {
+  let solarToHome: number;
+  let gridToHome: number;
+  let gridToBattery: number;
+  let batteryToGrid: number;
+  let batteryToHome: number;
+  let solarToBattery: number;
+  let solarToGrid: number;
+  let total: number = gridConsumption + solarProduction + batteryConsumption - gridProduction - batteryProduction;
+  let remaining: number = Math.max(total, 0);
 
-  if (solarIsPresent) {
-    solarToHome = solarProduction - (gridProduction ?? 0) - (batteryProduction ?? 0);
-  }
+  const excess: number = Math.max(0, Math.min(batteryProduction, gridConsumption - remaining));
+  gridToBattery = excess;
+  batteryProduction -= excess;
+  gridConsumption -= excess;
 
-  // Update State Values of Battery to Grid and Grid to Battery
-  if (solarToHome < 0) {
-    // What we returned to the grid and what went in to the battery is more
-    // than produced, so we have used grid energy to fill the battery or
-    // returned battery energy to the grid
-    if (batteryIsPresent) {
-      gridToBattery = Math.abs(solarToHome);
+  solarToBattery = Math.min(solarProduction, batteryProduction);
+  batteryProduction -= solarToBattery;
+  solarProduction -= solarToBattery;
 
-      if (gridToBattery > gridConsumption) {
-        batteryToGrid = Math.min(gridToBattery - gridConsumption, 0);
-        gridToBattery = gridConsumption;
-      }
-    }
+  solarToGrid = Math.min(solarProduction, gridProduction);
+  gridProduction -= solarToGrid;
+  solarProduction -= solarToGrid;
 
-    solarToHome = 0;
-  }
+  batteryToGrid = Math.min(batteryConsumption, gridProduction);
+  batteryConsumption -= batteryToGrid;
 
-  // Update State Values of Solar to Battery and Battery to Grid
-  if (solarIsPresent && batteryIsPresent) {
-    if (!batteryToGrid) {
-      batteryToGrid = Math.max(0, (gridProduction || 0) - (solarProduction || 0) - (batteryProduction || 0) - (gridToBattery || 0));
-    }
+  const gridToBattery2: number = Math.min(gridConsumption, batteryProduction);
+  gridToBattery += gridToBattery2;
+  gridConsumption -= gridToBattery2;
 
-    solarToBattery = batteryProduction - (gridToBattery || 0);
-  } else if (!solarIsPresent && batteryIsPresent) {
-    // In the absence of solar production, the battery is the only energy producer
-    // besides the grid, so whatever was given to the grid must come from
-    // the battery
-    batteryToGrid = gridProduction ?? 0;
+  solarToHome = Math.min(remaining, solarProduction);
+  remaining -= solarToHome;
 
-    // In the absence of solar production, what was consumed by the battery
-    // must come from the grid, since there are no other energy producers.
-    gridToBattery = batteryProduction ?? 0;
-  }
+  batteryToHome = Math.min(batteryConsumption, remaining);
+  remaining -= batteryToHome;
 
-  // Update State Values of Solar to Grid
-  if (solarIsPresent && gridProduction) {
-    solarToGrid = gridProduction - (batteryToGrid ?? 0);
-  }
-
-  // Update State Values of Battery to Home
-  if (batteryIsPresent) {
-    batteryToHome = (batteryConsumption ?? 0) - (batteryToGrid ?? 0);
-  }
-
-  gridToHome = (gridConsumption ?? 0) - gridToBattery;
+  gridToHome = Math.min(remaining, gridConsumption);
 
   return {
     solarToHome: solarToHome,
