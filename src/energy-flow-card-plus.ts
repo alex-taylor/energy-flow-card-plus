@@ -1545,8 +1545,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     const valueInNumber = new Decimal(value);
-    const isMWh = unit === undefined && valueInNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config.kwh_mwh_threshold!));
-    const isKWh = unit === undefined && valueInNumber.abs().greaterThanOrEqualTo(new Decimal(this._config.wh_kwh_threshold!));
+    const isMWh = !unit && valueInNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config.kwh_mwh_threshold!));
+    const isKWh = !unit && valueInNumber.abs().greaterThanOrEqualTo(new Decimal(this._config.wh_kwh_threshold!));
     const formattedValue = formatNumber(
       isMWh
         ? valueInNumber.dividedBy(1000000).toDecimalPlaces(this._config.mwh_decimals).toString()
