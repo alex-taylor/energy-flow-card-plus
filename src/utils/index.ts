@@ -2,6 +2,7 @@
 import { createThing, HomeAssistant, LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
 import { html, TemplateResult } from 'lit';
 import { DEFAULT_ENTITY_CONF, UNIT_PREFIXES } from '../const';
+import { logError } from "../logging";
 import {
   Box,
   Config,
@@ -27,26 +28,6 @@ export function formatState(state: number, round: number): string {
 
   const formattedState = parseFloat(rounded).toLocaleString();
   return formattedState;
-}
-
-export function toWattHours(units: string | undefined, value: number): number {
-  if (units?.startsWith("KWH")) {
-    return round(value * 1000, 0);
-  }
-
-  if (units?.startsWith("MWH")) {
-    return round(value * 1000000, 0);
-  }
-
-  return value;
-}
-
-export function clampStateValue(value: number, tolerance: number | undefined): number {
-  if (tolerance !== undefined && tolerance >= value) {
-    return 0;
-  }
-
-  return value;
 }
 
 export function normalizeStateValue(
@@ -138,18 +119,6 @@ export async function renderError(
   return html` ${element} `;
 }
 
-
-
-
-
-
-
-/* eslint-disable no-redeclare */
-export const round = (value: number, decimalPlaces: number): number =>
-  Number(
-    `${Math.round(Number(`${value}e${decimalPlaces}`))}e-${decimalPlaces}`
-  );
-
 /**
  * @license
  * Copyright Google LLC All Rights Reserved.
@@ -191,3 +160,14 @@ export function coerceStringArray(
 
   return result;
 }
+
+export const mapRange = (value: number, minOut: number, maxOut: number, minIn: number, maxIn: number): number => {
+  if (value > maxIn) {
+    return maxOut;
+  }
+
+  return ((value - minIn) * (maxOut - minOut)) / (maxIn - minIn) + minOut;
+};
+
+export const unavailableOrMisconfiguredError = (entityId: string | undefined) => logError(`Entity "${entityId ?? "Unknown"}" is not available or misconfigured`);
+

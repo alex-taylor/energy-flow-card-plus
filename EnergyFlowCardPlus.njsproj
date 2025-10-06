@@ -68,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\entities\" />
+    <Folder Include="src\flows\" />
     <Folder Include="__tests__" />
     <Folder Include="dist" />
     <Folder Include="src" />
@@ -80,6 +81,12 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\entities\battery-entity.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\entities\index.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\flows\index.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\entities\solar-entity.ts">
