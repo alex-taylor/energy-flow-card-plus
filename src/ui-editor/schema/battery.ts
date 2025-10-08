@@ -10,12 +10,7 @@ const mainSchema = {
       name: 'invert_state',
       label: 'Invert State',
       selector: { boolean: {} },
-    },
-    {
-      name: 'use_metadata',
-      label: 'Use Metadata',
-      selector: { boolean: {} },
-    },
+    }
   ],
 };
 
@@ -56,7 +51,7 @@ const stateOfChargeSchema = [
               { value: 'consumption', label: 'Consumption' },
               { value: 'production', label: 'Production' },
             ],
-            custom_value: true,
+            mode: 'dropdown'
           },
         },
       },

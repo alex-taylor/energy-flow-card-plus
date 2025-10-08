@@ -1,5 +1,4 @@
 import {
-  getEntityCombinedSelectionSchema,
   getEntitySeparatedSelectionSchema,
   secondaryInfoSchema,
   getBaseMainConfigSchema,
@@ -15,12 +14,7 @@ const mainSchema = {
       name: 'invert_state',
       label: 'Invert State',
       selector: { boolean: {} },
-    },
-    {
-      name: 'use_metadata',
-      label: 'Use Metadata',
-      selector: { boolean: {} },
-    },
+    }
   ],
 };
 
@@ -38,7 +32,7 @@ const powerOutageGridSchema = [
       { name: 'state_alert', label: 'Outage State', selector: { text: {} } },
     ],
   },
-] as const;
+];
 
 export const gridSchema = [
   getEntitySeparatedSelectionSchema(),

@@ -6,8 +6,8 @@ const mainSchema = {
   schema: [
     ...getBaseMainConfigSchema().schema,
     {
-      name: 'color_value',
-      label: 'Color Value',
+      name: 'color_of_value',
+      label: 'Color of Value',
       selector: {
         select: {
           options: [
@@ -17,13 +17,13 @@ const mainSchema = {
             { value: 'grid', label: 'Grid' },
             { value: 'battery', label: 'Battery' },
           ],
-          custom_value: true,
+          mode: 'dropdown'
         },
       },
     },
     {
-      name: 'color_icon',
-      label: 'Color Icon',
+      name: 'color_of_icon',
+      label: 'Color of Icon',
       selector: {
         select: {
           options: [
@@ -33,7 +33,7 @@ const mainSchema = {
             { value: 'grid', label: 'Grid' },
             { value: 'battery', label: 'Battery' },
           ],
-          custom_value: true,
+          mode: 'dropdown'
         },
       },
     },
@@ -46,12 +46,7 @@ const mainSchema = {
       name: 'override_state',
       label: 'Override State (With Home Entity)',
       selector: { boolean: {} },
-    },
-    {
-      name: 'use_metadata',
-      label: 'Use Metadata',
-      selector: { boolean: {} },
-    },
+    }
   ],
 };
 

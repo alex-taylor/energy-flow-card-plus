@@ -1,19 +1,17 @@
 import localize from '../../localize/localize';
 
-export function getEntityCombinedSelectionSchema() {
-  return {
-    type: 'expandable',
-    title: localize('editor.combined'),
-    schema: [
-      {
-        name: 'entity',
-        selector: { entity: {} },
-      },
-    ],
-  } as const;
-}
+export const getEntityCombinedSelectionSchema = {
+  type: 'expandable',
+  title: localize('editor.combined'),
+  schema: [
+    {
+      name: 'entity',
+      selector: { entity: {} },
+    },
+  ],
+} as const
 
-export function getEntitySeparatedSelectionSchema() {
+export const getEntitySeparatedSelectionSchema = () => {
   return {
     type: 'expandable',
     title: localize('editor.separated'),
@@ -29,7 +27,7 @@ export function getEntitySeparatedSelectionSchema() {
         label: 'Production Entity',
         selector: { entity: {} },
       },
-    ],
+    ]
   } as const;
 }
 
@@ -84,7 +82,7 @@ export const secondaryInfoSchema = [
 
 const batteryOrGridMainConfigSchema = [
   {
-    name: 'color_icon',
+    name: 'color_of_icon',
     label: 'Color of Icon',
     selector: {
       select: {
@@ -94,12 +92,12 @@ const batteryOrGridMainConfigSchema = [
           { value: 'production', label: 'Production' },
           { value: 'consumption', label: 'Consumption' },
         ],
-        custom_value: true,
+        mode: 'dropdown'
       },
     },
   },
   {
-    name: 'color_circle',
+    name: 'color_of_circle',
     label: 'Color of Circle',
     selector: {
       select: {
@@ -108,7 +106,7 @@ const batteryOrGridMainConfigSchema = [
           { value: false, label: 'Consumption' },
           { value: 'production', label: 'Production' },
         ],
-        custom_value: true,
+        mode: 'dropdown'
       },
     },
   },
@@ -134,11 +132,11 @@ const batteryOrGridMainConfigSchema = [
           { value: 'one_way', label: 'One Way' },
           { value: 'one_way_no_zero', label: 'One Way (Show Zero)' },
         ],
-        custom_value: true,
+        mode: 'dropdown'
       },
     },
   },
-] as const;
+];
 
 export function getBaseMainConfigSchema(field?: string) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -151,8 +149,10 @@ export function getBaseMainConfigSchema(field?: string) {
       { name: 'use_metadata', label: 'Use Metadata', selector: { boolean: {} } },
     ],
   };
+
   if (field === 'battery' || field === 'grid') {
     result.schema.push(...batteryOrGridMainConfigSchema);
   }
+
   return result;
 }

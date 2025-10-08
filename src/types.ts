@@ -10,7 +10,13 @@ declare global {
 
 export type BoxType = 'entity' | 'passthrough' | 'remaining_parent_state' | 'remaining_child_state';
 
-export enum DisplayMode { LIVE = 'live', HISTORY = 'history', HYBRID = 'hybrid' };
+export enum DisplayMode { Live = 'live', History = 'history', Hybrid = 'hybrid' };
+
+export namespace DisplayMode {
+  export function getName(value: DisplayMode) {
+    return Object.keys(DisplayMode)[Object.values(DisplayMode).indexOf(value)];
+  }
+}
 
 export interface EntityConfig {
   entity_id: string;

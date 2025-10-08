@@ -49,17 +49,7 @@ const mainSchema = {
       name: 'inverted_animation',
       label: 'Invert Animation',
       selector: { boolean: {} },
-    },
-    /* {
-      name: 'show_direction',
-      label: 'Show Direction',
-      selector: { boolean: {} },
-    }, */
-    {
-      name: 'use_metadata',
-      label: 'Use Metadata',
-      selector: { boolean: {} },
-    },
+    }
   ],
 };
 
