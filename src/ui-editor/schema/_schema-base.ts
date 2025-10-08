@@ -78,7 +78,6 @@ export const secondaryInfoSchema = [
       { name: 'display_zero_tolerance', label: 'Display Zero Tolerance', selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } } },
       { name: 'decimals', label: 'Decimals', selector: { number: { mode: 'box', min: 0, max: 10, step: 1 } } },
       { name: 'display_zero', label: 'Display Zero', selector: { boolean: {} } },
-      { name: 'energy_date_selection', label: 'Energy Date Selection', selector: { boolean: {} } },
     ],
   },
 ] as const;

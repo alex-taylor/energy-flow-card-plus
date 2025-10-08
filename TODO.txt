@@ -17,9 +17,6 @@ Display the flow rates as hover-overs on the lines
 
 Option to disable animations
 
-See if the entity_date_picker flag can be removed without breaking existing configs
-  And get rid of the per-entity flags
-
 Fix the duplicate 'use metadata' flags
 
 Verify that metadata works

@@ -12,10 +12,11 @@ import { HomeAssistantReal } from "./hass";
 import localize from "./localize/localize";
 import { styles } from "./style";
 import type { baseEntity, EntityType, SecondaryInfoEntity } from "./types";
+import { DisplayMode } from "./types";
 import { BatteryEntity } from "./entities/battery-entity";
 import { GridEntity } from "./entities/grid-entity";
 import { SolarEntity } from "./entities/solar-entity";
-import { coerceNumber, isNumberValue, mapRange } from "./utils";
+import { coerceNumber, getDisplayMode, isNumberValue, mapRange } from "./utils";
 import { defaultValues, getDefaultConfig } from "./utils/get-default-config";
 import { registerCustomCard } from "./utils/register-custom-card";
 import { calculateFlowValues } from "./flows";
@@ -141,6 +142,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     this._config = {
       ...config,
+      display_mode: getDisplayMode(config),
       min_flow_rate: coerceNumber(config.min_flow_rate, defaultValues.minFlowRate),
       max_flow_rate: coerceNumber(config.max_flow_rate, defaultValues.maxFlowRate),
       wh_decimals: coerceNumber(config.wh_decimals, defaultValues.watthourDecimals),
@@ -201,7 +203,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         unit_white_space: entities.home?.secondary_info?.unit_white_space,
         icon: entities.home?.secondary_info?.icon,
         decimals: entities.home?.secondary_info?.decimals,
-        energyDateSelection: entities.home?.secondary_info?.energy_date_selection,
         color_type: entities.home?.secondary_info?.color_value
       }
     };
@@ -232,7 +233,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         displayZero: entities[field]?.secondary_info?.display_zero,
         decimals: entities[field]?.secondary_info?.decimals,
         displayZeroTolerance: entities[field]?.secondary_info?.display_zero_tolerance,
-        energyDateSelection: entities[field]?.secondary_info?.energy_date_selection,
         color_type: entities[field]?.secondary_info?.color_value
       }
     });
@@ -264,8 +264,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         icon: entities.fossil_fuel_percentage?.secondary_info?.icon,
         unit: entities.fossil_fuel_percentage?.secondary_info?.unit_of_measurement,
         unit_white_space: entities.fossil_fuel_percentage?.secondary_info?.unit_white_space,
-        color_value: entities.fossil_fuel_percentage?.secondary_info?.color_value,
-        energyDateSelection: entities.fossil_fuel_percentage?.secondary_info?.energy_date_selection
+        color_value: entities.fossil_fuel_percentage?.secondary_info?.color_value
       }
     };
 

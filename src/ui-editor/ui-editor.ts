@@ -8,6 +8,8 @@ import { assert } from 'superstruct';
 import { EnergyFlowCardPlusConfig } from '../energy-flow-card-plus-config';
 import { cardConfigStruct, generalConfigSchema, entitiesSchema, advancedOptionsSchema } from './schema/_schema-all';
 import localize from '../localize/localize';
+import { DisplayMode } from '../types';
+import { getDisplayMode } from '../utils';
 
 export const loadHaForm = async () => {
   if (customElements.get('ha-form')) return;
@@ -40,7 +42,7 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
     }
     const data = {
       ...this._config,
-      display_mode: this._config.display_mode ?? "live"
+      display_mode: getDisplayMode(this._config)
     };
 
     return html`

@@ -1,5 +1,6 @@
 {
   "compileOnSave": false,
+  "buildOnSave": false,
   "compilerOptions": {
     "target": "es2017",
     "module": "esnext",

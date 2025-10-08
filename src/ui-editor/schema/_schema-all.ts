@@ -33,6 +33,7 @@ export const cardConfigStruct = assign(
     display_zero_lines: optional(boolean()),
     use_new_flow_rate_model: optional(boolean()),
     use_hourly_stats: optional(boolean()),
+    // @deprecated redundant, but can't be removed as this would break existing configs
     energy_date_selection: optional(boolean()),
     entities: object({
       battery: optional(any()),

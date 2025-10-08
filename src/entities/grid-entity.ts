@@ -66,7 +66,6 @@ export class GridEntity {
       unit: grid?.secondary_info?.unit_of_measurement,
       unit_white_space: grid?.secondary_info?.unit_white_space,
       decimals: grid?.secondary_info?.decimals,
-      energyDateSelection: grid?.secondary_info?.energy_date_selection || false,
       color_type: grid?.secondary_info?.color_value
     };
 

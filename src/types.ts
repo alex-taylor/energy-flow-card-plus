@@ -10,6 +10,8 @@ declare global {
 
 export type BoxType = 'entity' | 'passthrough' | 'remaining_parent_state' | 'remaining_child_state';
 
+export enum DisplayMode { LIVE = 'live', HISTORY = 'history', HYBRID = 'hybrid' };
+
 export interface EntityConfig {
   entity_id: string;
   add_entities?: string[];
@@ -74,44 +76,11 @@ export interface SectionConfig {
   min_width?: string;
 }
 
-export interface EnergyFlowCardPlusConfig extends LovelaceCardConfig {
-  type: string;
-  autoconfig?: {
-    print_yaml?: boolean;
-  };
-  title?: string;
-  sections?: SectionConfig[];
-  unit_prefix?: '' | keyof typeof UNIT_PREFIXES;
-  round?: number;
-  height?: number;
-  wide?: boolean;
-  show_icons?: boolean;
-  show_names?: boolean;
-  show_states?: boolean;
-  show_units?: boolean;
-  energy_date_selection?: boolean;
-  display_mode?: string;
-  min_box_height?: number;
-  min_box_distance?: number;
-  throttle?: number;
-  min_state?: number;
-}
-
 export interface Section {
   entities: EntityConfigInternal[];
   sort_by?: 'state';
   sort_dir?: 'asc' | 'desc';
   min_width?: string;
-}
-
-export interface Config extends EnergyFlowCardPlusConfig {
-  unit_prefix: '' | keyof typeof UNIT_PREFIXES;
-  round: number;
-  height: number;
-  min_box_height: number;
-  min_box_distance: number;
-  min_state: number;
-  sections: Section[];
 }
 
 export interface Connection {
@@ -179,7 +148,6 @@ export type SecondaryInfoEntity = {
   unit?: string;
   unit_white_space?: boolean;
   decimals?: number;
-  energyDateSelection?: boolean;
   color_type?: boolean | "production" | "consumption";
 };
 
@@ -193,7 +161,6 @@ export type SecondaryInfoType = {
   color_value?: boolean | 'production' | 'consumption';
   template?: string;
   decimals?: number;
-  energy_date_selection?: boolean;
 };
 
 export interface baseConfigEntity {

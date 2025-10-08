@@ -8,6 +8,7 @@ import {
   Config,
   Connection,
   ConnectionState,
+  DisplayMode,
   EnergyFlowCardPlusConfig,
   EntityConfigOrStr,
   Section,
@@ -171,3 +172,4 @@ export const mapRange = (value: number, minOut: number, maxOut: number, minIn: n
 
 export const unavailableOrMisconfiguredError = (entityId: string | undefined) => logError(`Entity "${entityId ?? "Unknown"}" is not available or misconfigured`);
 
+export const getDisplayMode = (config: EnergyFlowCardPlusConfig): DisplayMode => config.display_mode ?? (config.energy_date_selection ? DisplayMode.HISTORY : DisplayMode.LIVE);
