@@ -79,6 +79,13 @@
     "live": "Live",
     "history": "History",
     "hybrid": "Hybrid",
-    "use_hourly_stats": "Use Hourly Stats"
+    "use_hourly_stats": "Use Hourly Stats",
+    "wh_decimals": "Watt Decimals",
+    "kwh_decimals": "Kilowatt Decimals",
+    "mwh_decimals": "Megawatt Decimals",
+    "max_expected_energy": "Max Expected Energy",
+    "min_expected_energy": "Min Expected Energy",
+    "wh_kwh_threshold": "Watt to Kilowatt Threshold (Wh)",
+    "kwh_mwh_threshold": "Kilowatt to Megawatt Threshold (kWh)"
   }
 }

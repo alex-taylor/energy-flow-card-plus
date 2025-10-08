@@ -55,6 +55,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   @state() private _energyData?: EnergyData;
   @state() private _width = 0;
   @state() private _statistics?: Statistics;
+  @state() private _loading: boolean = false;
 
   private _grid!: GridEntity;
   private _solar!: SolarEntity;
@@ -94,6 +95,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     return [
       energyPromise.then(async (collection: EnergyCollection) => {
+        this._loading = true;
+
         return collection.subscribe(async (data: EnergyData) => {
           this._energyData = data;
 
@@ -120,6 +123,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
             this._statistics = await getStatistics(this.hass, periodStart, periodEnd, this._entitiesArr, period);
             calculateFlowValues(this.hass, this._config.display_mode, periodStart, periodEnd, this._statistics, this._solar, this._battery, this._grid);
+            this._loading = false;
           }
         });
       }),
@@ -157,13 +161,15 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       return html``;
     }
 
+    if (this._loading) {
+      return html`<ha-card style="padding: 2rem">${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}</ha-card>`;
+    }
+
     if (!this._energyData && this._config.display_mode !== "live") {
       return html`<ha-card style="padding: 2rem">
-        ${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}<br />Make sure you have the Energy Integration setup and a Date Selector in
-        this View or set
+        ${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}<br />Make sure you have the Energy Integration setup and a Date Selector in this View or set
         <pre>display_mode: live</pre>
-        .</ha-card
-      >`;
+        </ha-card>`;
     }
 
     const entities = this._config.entities;

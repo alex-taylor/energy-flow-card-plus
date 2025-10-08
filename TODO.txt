@@ -5,15 +5,12 @@ See if something can be done about the values spilling out of the circle?
   Maybe cap at 3dp?
   Draw the values with an opaque background?
 
-Missing translations in the Advanced config options
-  And quite possibly other missing localizations generally
-
 Secondary info may not be working
 
 Test the other entities
   And refactor the code out
 
-README updates
+README and CHANGELOG updates
 
 Display the flow rates as hover-overs on the lines
   Or over the circles?
@@ -35,16 +32,10 @@ Option to 'grey out' the lines rather than hiding when inactive
   See the power-flow-card for the implementation
 
 Dropdowns in the UI shouldn't allow text-entry in many cases
+  Also remove the 'use date picker' options
 
 Whitespace option should be global
 
 See if it's possible to pick up the built-in energy config for the sensors?
 
-When loading, it displays the 'make sure you have a date-picker' message briefly
-
 See if the stat-summing calculations can be cached - after all, the stats only update hourly or when the date-picker is changed
-
-Check the timestamps of the stats coming back in Live and History/Hybrid modes - are they correct for the current TZ?
-    Particularly Live, this may well be wrong
-    Also check the start/end dates, see what's actually being passed around here
-

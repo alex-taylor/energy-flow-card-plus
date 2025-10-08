@@ -14,7 +14,7 @@ import * as pl from "./languages/pl.json";
 import * as sk from "./languages/sk.json";
 import * as sv from "./languages/sv.json";
 
-const languages: Record<string, unknown> = {
+const LANGUAGES: Record<string, unknown> = {
   cs,
   en,
   de,
@@ -32,21 +32,24 @@ const languages: Record<string, unknown> = {
   sv,
 };
 
-const defaultLang = "en";
+const DEFAULT_LANGUAGE = "en";
 
 function getTranslatedString(key: string, lang: string): string | undefined {
   try {
-    return key.split(".").reduce((o, i) => (o as Record<string, unknown>)[i], languages[lang]) as string;
+    return key.split(".").reduce((o, i) => (o as Record<string, unknown>)[i], LANGUAGES[lang]) as string;
   } catch (_) {
     return undefined;
   }
 }
 
 export function setupCustomlocalize(key: string) {
-  const lang = (localStorage.getItem("selectedLanguage") || "en").replace(/['"]+/g, "").replace("-", "_");
-
+  const lang = (localStorage.getItem("selectedLanguage") || DEFAULT_LANGUAGE).replace(/['"]+/g, "").replace("-", "_");
   let translated = getTranslatedString(key, lang);
-  if (!translated) translated = getTranslatedString(key, defaultLang);
+
+  if (!translated) {
+    translated = getTranslatedString(key, DEFAULT_LANGUAGE);
+  }
+
   return translated ?? key;
 }
 

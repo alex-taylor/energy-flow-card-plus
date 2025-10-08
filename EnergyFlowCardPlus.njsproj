@@ -86,6 +86,7 @@
     <TypeScriptCompile Include="src\entities\battery-entity.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="src\entities\index.ts" />
     <TypeScriptCompile Include="src\flows\index.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
