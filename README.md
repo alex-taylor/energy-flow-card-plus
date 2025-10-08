@@ -1,7 +1,8 @@
 # Energy Flow Card Plus
 
-![GitHub release (latest by date)](https://github.com/alex-taylor/energy-flow-card-plus/releases/tag/v0.1.1-alpha)
-![GitHub all releases](https://github.com/alex-taylor/energy-flow-card-plus/releases)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/alex-taylor/energy-flow-card-plus?style=flat-square)
+![GitHub all releases](https://img.shields.io/github/downloads/alex-taylor/energy-flow-card-plus/total?style=flat-square)
+![commit_activity](https://img.shields.io/github/commit-activity/y/alex-taylor/energy-flow-card-plus?color=brightgreen&label=Commits&style=flat-square)
 
 <details> <summary>✅ Advantages of this Card compared to the official Energy Distribution Card</summary>
 
@@ -58,7 +59,7 @@ To install this:
 
 <details>  <summary>Manual Install</summary>
 
-1. Download and copy `energy-flow-card-plus.js` from the [latest release](https://github.com/flixlix/energy-flow-card-plus/releases/latest) into your `config/www` directory.
+1. Download and copy `energy-flow-card-plus.js` from the [latest release](https://github.com/alex-taylor/energy-flow-card-plus/releases/latest) into your `config/www` directory.
 
 2. Add the resource reference as decribed below.
 
