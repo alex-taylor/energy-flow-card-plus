@@ -2,6 +2,7 @@ import { HomeAssistant } from "custom-card-helpers";
 import { html, TemplateResult } from "lit";
 import { ComboEntity, SecondaryInfoEntity } from "../types";
 import { EntitiesConfig } from "../energy-flow-card-plus-config";
+import { ColorMode } from "../enums";
 
 export class GridEntity {
   isPresent: boolean;
@@ -30,8 +31,8 @@ export class GridEntity {
   color: {
     fromGrid?: string;
     toGrid?: string;
-    icon_type?: string | boolean;
-    circle_type?: boolean | "production" | "consumption";
+    color_icon?: ColorMode;
+    color_circle?: ColorMode;
   };
 
   public constructor(hass: HomeAssistant, entities: EntitiesConfig) {
@@ -66,7 +67,7 @@ export class GridEntity {
       unit: grid?.secondary_info?.unit_of_measurement,
       unit_white_space: grid?.secondary_info?.unit_white_space,
       decimals: grid?.secondary_info?.decimals,
-      color_type: grid?.secondary_info?.color_value
+      color_type: grid?.secondary_info?.color_of_value
     };
 
     this.state = {
@@ -86,8 +87,8 @@ export class GridEntity {
     this.color = {
       fromGrid: grid?.color?.consumption,
       toGrid: grid?.color?.production,
-      icon_type: grid?.color_icon,
-      circle_type: grid?.color_circle
+      color_icon: grid?.color_of_icon,
+      color_circle: grid?.color_of_circle
     };
   }
 };

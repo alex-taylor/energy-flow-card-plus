@@ -5,19 +5,25 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { EnergyFlowCardPlusConfig } from '../energy-flow-card-plus-config';
+import { EnergyFlowCardPlusConfig, upgradeConfig } from '../energy-flow-card-plus-config';
 import { cardConfigStruct, generalConfigSchema, entitiesSchema, advancedOptionsSchema } from './schema/_schema-all';
 import localize from '../localize/localize';
-import { DisplayMode } from '../types';
-import { getDisplayMode } from '../utils';
 
 export const loadHaForm = async () => {
   if (customElements.get('ha-form')) return;
 
   const helpers = await (window as any).loadCardHelpers?.();
-  if (!helpers) return;
+
+  if (!helpers) {
+    return;
+  }
+
   const card = await helpers.createCardElement({ type: 'entity' });
-  if (!card) return;
+
+  if (!card) {
+    return;
+  }
+
   await card.getConfigElement();
 };
 
@@ -40,10 +46,8 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
     if (!this.hass || !this._config) {
       return nothing;
     }
-    const data = {
-      ...this._config,
-      display_mode: getDisplayMode(this._config)
-    };
+
+    const data: EnergyFlowCardPlusConfig = upgradeConfig(this._config);
 
     return html`
       <div class="card-config">
@@ -74,16 +78,18 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
       </div>
     `;
   }
+
   private _valueChanged(ev: any): void {
     const config = ev.detail.value || '';
+
     if (!this._config || !this.hass) {
       return;
     }
+
     fireEvent(this, 'config-changed', { config });
   }
 
-  private _computeLabelCallback = (schema: any) =>
-    this.hass!.localize(`ui.panel.lovelace.editor.card.generic.${schema?.name}`) || localize(`editor.${schema?.name}`);
+  private _computeLabelCallback = (schema: any) => this.hass!.localize(`ui.panel.lovelace.editor.card.generic.${schema?.name}`) || localize(`editor.${schema?.name}`);
 
   static get styles() {
     return css`

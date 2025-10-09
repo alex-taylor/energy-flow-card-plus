@@ -1,5 +1,6 @@
 import { getBaseMainConfigSchema, secondaryInfoSchema } from './_schema-base';
 import localize from '../../localize/localize';
+import { ColorMode } from '../../enums';
 
 const mainSchema = {
   ...getBaseMainConfigSchema(),
@@ -11,11 +12,11 @@ const mainSchema = {
       selector: {
         select: {
           options: [
-            { value: true, label: 'Color dynamically' },
-            { value: false, label: 'Do Not Color' },
-            { value: 'solar', label: 'Solar' },
-            { value: 'grid', label: 'Grid' },
-            { value: 'battery', label: 'Battery' },
+            ColorMode.getItem(ColorMode.Do_Not_Color),
+            ColorMode.getItem(ColorMode.Color_Dynamically),
+            ColorMode.getItem(ColorMode.Solar),
+            ColorMode.getItem(ColorMode.Grid),
+            ColorMode.getItem(ColorMode.Battery),
           ],
           mode: 'dropdown'
         },
@@ -27,11 +28,11 @@ const mainSchema = {
       selector: {
         select: {
           options: [
-            { value: true, label: 'Color dynamically' },
-            { value: false, label: 'Do Not Color' },
-            { value: 'solar', label: 'Solar' },
-            { value: 'grid', label: 'Grid' },
-            { value: 'battery', label: 'Battery' },
+            ColorMode.getItem(ColorMode.Do_Not_Color),
+            ColorMode.getItem(ColorMode.Color_Dynamically),
+            ColorMode.getItem(ColorMode.Solar),
+            ColorMode.getItem(ColorMode.Grid),
+            ColorMode.getItem(ColorMode.Battery),
           ],
           mode: 'dropdown'
         },

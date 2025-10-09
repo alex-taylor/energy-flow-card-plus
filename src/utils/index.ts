@@ -4,13 +4,8 @@ import { html, TemplateResult } from 'lit';
 import { UNIT_PREFIXES } from '../const';
 import { EnergyFlowCardPlusConfig } from '../energy-flow-card-plus-config';
 import { logError } from "../logging";
-import {
-  Box,
-  Connection,
-  ConnectionState,
-  DisplayMode,
-  EntityConfigOrStr,
-} from '../types';
+import { Box, Connection, ConnectionState, EntityConfigOrStr } from '../types';
+import { DisplayMode } from "../enums";
 
 export function cloneObj<T extends Record<string, unknown>>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));
@@ -167,5 +162,3 @@ export const mapRange = (value: number, minOut: number, maxOut: number, minIn: n
 };
 
 export const unavailableOrMisconfiguredError = (entityId: string | undefined) => logError(`Entity "${entityId ?? "Unknown"}" is not available or misconfigured`);
-
-export const getDisplayMode = (config: EnergyFlowCardPlusConfig): DisplayMode => config.display_mode ?? (config.energy_date_selection ? DisplayMode.History : DisplayMode.Live);

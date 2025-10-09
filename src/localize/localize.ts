@@ -1,33 +1,35 @@
 import * as cs from "./languages/cs.json";
-import * as en from "./languages/en.json";
 import * as de from "./languages/de.json";
 import * as dk from "./languages/dk.json";
-import * as pt from "./languages/pt-PT.json";
-import * as ptBR from "./languages/pt-BR.json";
+import * as en from "./languages/en.json";
+import * as enGB from "./languages/en-GB.json";
 import * as es from "./languages/es.json";
-import * as nl from "./languages/nl.json";
-import * as it from "./languages/it.json";
-import * as fr from "./languages/fr.json";
-import * as ru from "./languages/ru.json";
 import * as fi from "./languages/fi.json";
+import * as fr from "./languages/fr.json";
+import * as it from "./languages/it.json";
+import * as nl from "./languages/nl.json";
 import * as pl from "./languages/pl.json";
+import * as ptBR from "./languages/pt-BR.json";
+import * as ptPT from "./languages/pt-PT.json";
+import * as ru from "./languages/ru.json";
 import * as sk from "./languages/sk.json";
 import * as sv from "./languages/sv.json";
 
 const LANGUAGES: Record<string, unknown> = {
   cs,
-  en,
   de,
   dk,
-  pt,
-  pt_BR: ptBR,
+  en,
+  en_GB: enGB,
   es,
-  nl,
-  it,
-  fr,
-  ru,
   fi,
+  fr,
+  it,
+  nl,
   pl,
+  pt_BR: ptBR,
+  pt_PT: ptPT,
+  ru,
   sk,
   sv,
 };
@@ -43,7 +45,7 @@ function getTranslatedString(key: string, lang: string): string | undefined {
 }
 
 export function setupCustomlocalize(key: string) {
-  const lang = (localStorage.getItem("selectedLanguage") || DEFAULT_LANGUAGE).replace(/['"]+/g, "").replace("-", "_");
+  const lang = (localStorage.getItem("selectedLanguage") || DEFAULT_LANGUAGE).replace(/['"]+/g, "").replace("-", "_");;
   let translated = getTranslatedString(key, lang);
 
   if (!translated) {

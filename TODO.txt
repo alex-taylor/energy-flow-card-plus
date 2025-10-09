@@ -47,4 +47,6 @@ Test multiple-entities for a single node
 
 See if the stat-summing calculations can be cached - after all, the stats only update hourly or when the date-picker is changed
 
-More enums for config options
+Test localisation by disabling EN and checking that all strings revert to their keys
+
+Remove the 'separated entities' accordion

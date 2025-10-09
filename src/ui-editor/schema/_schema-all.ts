@@ -6,8 +6,7 @@ import { individualSchema } from './individual';
 import { nonFossilSchema } from './fossil_fuel_percentage';
 import { homeSchema } from './home';
 import memoizeOne from 'memoize-one';
-import { DisplayMode } from '../../types';
-import { getEnumName } from '../../utils';
+import { DisplayMode } from '../../enums';
 
 const baseLovelaceCardConfig = object({
   type: string(),
@@ -124,9 +123,9 @@ export const advancedOptionsSchema = memoizeOne(localize => [
             selector: {
               select: {
                 options: [
-                  { value: DisplayMode.Live, label: DisplayMode.getName(DisplayMode.Live) },
-                  { value: DisplayMode.History, label: DisplayMode.getName(DisplayMode.History) },
-                  { value: DisplayMode.Hybrid, label: DisplayMode.getName(DisplayMode.Hybrid) }
+                  DisplayMode.getItem(DisplayMode.Live),
+                  DisplayMode.getItem(DisplayMode.History),
+                  DisplayMode.getItem(DisplayMode.Hybrid)
                 ],
                 mode: 'dropdown'
               },

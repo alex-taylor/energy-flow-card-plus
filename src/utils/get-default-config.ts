@@ -1,5 +1,6 @@
 import { HomeAssistant } from 'custom-card-helpers';
 import { EnergyFlowCardPlusConfig } from '../energy-flow-card-plus-config';
+import { DisplayMode } from '../enums';
 
 export const defaultValues = {
   maxFlowRate: 6,
@@ -49,7 +50,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
       },
       solar: firstSolarEnergyEntity ? { entity: firstSolarEnergyEntity, display_zero_state: true } : undefined,
     },
-    display_mode: "live",
+    display_mode: DisplayMode.Live,
     clickable_entities: true,
     display_zero_lines: true,
     use_new_flow_rate_model: true,

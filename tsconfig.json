@@ -2,10 +2,10 @@
   "compileOnSave": false,
   "buildOnSave": false,
   "compilerOptions": {
-    "target": "es2017",
+    "target": "es2021",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": [ "es2017", "dom", "dom.iterable" ],
+    "lib": [ "es2021", "dom", "dom.iterable" ],
     "noEmit": true,
     "noUnusedParameters": false,
     "noImplicitReturns": true,

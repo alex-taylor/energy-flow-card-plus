@@ -1,6 +1,7 @@
 import { ActionConfig, BaseActionConfig, HapticType, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
 import { HassEntity, HassServiceTarget } from 'home-assistant-js-websocket';
 import { UNIT_PREFIXES } from './const';
+import { ColorMode } from './enums';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -9,14 +10,6 @@ declare global {
 }
 
 export type BoxType = 'entity' | 'passthrough' | 'remaining_parent_state' | 'remaining_child_state';
-
-export enum DisplayMode { Live = 'live', History = 'history', Hybrid = 'hybrid' };
-
-export namespace DisplayMode {
-  export function getName(value: DisplayMode) {
-    return Object.keys(DisplayMode)[Object.values(DisplayMode).indexOf(value)];
-  }
-}
 
 export interface EntityConfig {
   entity_id: string;
@@ -164,7 +157,9 @@ export type SecondaryInfoType = {
   display_zero?: boolean;
   unit_white_space?: boolean;
   display_zero_tolerance?: number;
-  color_value?: boolean | 'production' | 'consumption';
+  // @deprecated replaced by color_of_value
+  color_value?: boolean | string;
+  color_of_value?: boolean | 'production' | 'consumption';
   template?: string;
   decimals?: number;
 };
@@ -174,7 +169,6 @@ export interface baseConfigEntity {
   name?: string;
   icon?: string;
   color?: ComboEntity | string;
-  color_icon?: boolean | string;
   display_state?: 'two_way' | 'one_way' | 'one_way_no_zero';
   display_zero_tolerance?: number;
   unit_of_measurement?: string;

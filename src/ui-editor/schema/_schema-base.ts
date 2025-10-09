@@ -1,3 +1,4 @@
+import { ColorMode } from '../../enums';
 import localize from '../../localize/localize';
 
 export const getEntityCombinedSelectionSchema = {
@@ -87,10 +88,10 @@ const batteryOrGridMainConfigSchema = [
     selector: {
       select: {
         options: [
-          { value: false, label: 'Do not Color' },
-          { value: true, label: 'Color dynamically' },
-          { value: 'production', label: 'Production' },
-          { value: 'consumption', label: 'Consumption' },
+          ColorMode.getItem(ColorMode.Do_Not_Color),
+          ColorMode.getItem(ColorMode.Color_Dynamically),
+          ColorMode.getItem(ColorMode.Production),
+          ColorMode.getItem(ColorMode.Consumption)
         ],
         mode: 'dropdown'
       },
@@ -102,9 +103,9 @@ const batteryOrGridMainConfigSchema = [
     selector: {
       select: {
         options: [
-          { value: true, label: 'Color dynamically' },
-          { value: false, label: 'Consumption' },
-          { value: 'production', label: 'Production' },
+          ColorMode.getItem(ColorMode.Color_Dynamically),
+          ColorMode.getItem(ColorMode.Production),
+          ColorMode.getItem(ColorMode.Consumption)
         ],
         mode: 'dropdown'
       },

@@ -36,7 +36,7 @@ export class SolarEntity {
       unit: solar?.secondary_info?.unit_of_measurement,
       decimals: solar?.secondary_info?.decimals,
       unit_white_space: solar?.secondary_info?.unit_white_space,
-      color_type: solar?.secondary_info?.color_value
+      color_type: solar?.secondary_info?.color_of_value
     };
 
     this.state = {

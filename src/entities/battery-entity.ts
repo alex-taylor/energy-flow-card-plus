@@ -1,6 +1,7 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { ComboEntity } from "../types";
 import { EntitiesConfig } from "../energy-flow-card-plus-config";
+import { ColorMode } from "../enums";
 
 export class BatteryEntity {
   isPresent: boolean;
@@ -27,8 +28,8 @@ export class BatteryEntity {
   color: {
     fromBattery?: string;
     toBattery?: string;
-    icon_type?: string | boolean;
-    circle_type?: boolean | "production" | "consumption";
+    icon_type?: ColorMode;
+    circle_type?: ColorMode;
     state_of_charge_type?: boolean | "production" | "consumption";
   };
 
@@ -62,8 +63,8 @@ export class BatteryEntity {
     this.color = {
       fromBattery: battery?.color?.consumption,
       toBattery: battery?.color?.production,
-      icon_type: battery?.color_icon,
-      circle_type: battery?.color_circle,
+      icon_type: battery?.color_of_icon,
+      circle_type: battery?.color_of_circle,
       state_of_charge_type: battery?.color_state_of_charge_value
     };
   }
