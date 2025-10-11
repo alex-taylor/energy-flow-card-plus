@@ -39,11 +39,6 @@ const mainSchema = {
       selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } },
     },
     {
-      name: 'display_zero_state',
-      label: 'Display Zero State',
-      selector: { boolean: {} },
-    },
-    {
       name: 'decimals',
       label: 'Decimals',
       selector: { number: { mode: 'box', min: 0, max: 4, step: 1 } },

@@ -5,6 +5,7 @@ Secondary info may not be working
 
 Home icon/value colour calculation requires that we have a value for 'non-fossil' energy, which is never calculated
 
+DisplayZeroTolerance missing from 'Home'
 
 
 
@@ -40,9 +41,13 @@ Verify that metadata works
 Test the Individual entities, which likely have similar math errors
 
 Test multiple-entities for a single node
+  And FossilFuel doesn't appear to support this yet
+  Neither do Grid/Battery
 
 Test localisation by disabling EN and checking that all strings revert to their keys
 
 Remove the 'separated entities' accordion
 
 Add things like 'units' to the Entity classes, to save lookups each time they are needed (eg in getTotalEnergy)
+
+Test Non-Fossil

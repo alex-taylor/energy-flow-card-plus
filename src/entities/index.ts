@@ -2,7 +2,7 @@ import { HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 import { coerceNumber, isNumberValue, unavailableOrMisconfiguredError } from "../utils";
 import { Statistics, StatisticValue } from "../energy";
-import type { baseEntity } from "../types";
+import type { BasicEntity } from "../config";
 
 export const entityExists = (hass: HomeAssistant, entityId: string): boolean => entityId in hass.states;
 
@@ -21,7 +21,7 @@ export const getEntityState = (hass: HomeAssistant, entity: string | undefined):
   return coerceNumber(getEntityStateObj(hass, entity)?.state || 0);
 };
 
-export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statistics | undefined, entity: baseEntity | undefined): number => {
+export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statistics | undefined, entity: BasicEntity | undefined): number => {
   if (!statistics || !entity) {
     return 0;
   }
@@ -36,7 +36,7 @@ export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statist
   return sum;
 };
 
-export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics, entity: baseEntity): Map<number, number> => {
+export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics, entity: BasicEntity): Map<number, number> => {
   const result: Map<number, number> = new Map();
   let entityArr: string[] = [];
 

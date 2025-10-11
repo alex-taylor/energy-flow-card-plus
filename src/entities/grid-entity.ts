@@ -1,14 +1,14 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { html, TemplateResult } from "lit";
-import { ComboEntity, SecondaryInfoEntity } from "../types";
-import { EntitiesConfig } from "../energy-flow-card-plus-config";
+import { ComboEntity, GridConfigEntity } from "../config";
+import { SecondaryInfoEntity } from "./secondary-info-entity";
 import { ColorMode } from "../enums";
 
 export class GridEntity {
   isPresent: boolean;
   name: string;
   icon: string;
-  display_zero_tolerance?: number;
+  displayZeroTolerance?: number;
   hasReturnToGrid: boolean;
   mainEntity?: string;
   entity: ComboEntity;
@@ -31,17 +31,16 @@ export class GridEntity {
   color: {
     fromGrid?: string;
     toGrid?: string;
-    color_icon?: ColorMode;
-    color_circle?: ColorMode;
+    colorIcon?: ColorMode;
+    colorCircle?: ColorMode;
   };
 
-  public constructor(hass: HomeAssistant, entities: EntitiesConfig) {
-    const grid = entities.grid;
+  public constructor(hass: HomeAssistant, grid: GridConfigEntity | undefined) {
     this.isPresent = grid?.entity !== undefined;
     this.name = grid?.name || hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.grid");
     this.icon = grid?.icon || "mdi:transmission-tower";
-    this.display_zero_tolerance = grid?.display_zero_tolerance;
-    this.hasReturnToGrid = !!grid?.entity.production;
+    this.displayZeroTolerance = grid?.display_zero_tolerance;
+    this.hasReturnToGrid = !!grid?.entity?.production;
 
     this.mainEntity = Array.isArray(grid?.entity?.consumption)
       ? grid?.entity?.consumption[0]
@@ -54,8 +53,8 @@ export class GridEntity {
             : undefined;
 
     this.entity = {
-      consumption: grid?.entity.consumption as string,
-      production: grid?.entity.production as string
+      consumption: grid?.entity?.consumption as string,
+      production: grid?.entity?.production as string
     };
 
     this.secondary = {
@@ -66,7 +65,7 @@ export class GridEntity {
       icon: grid?.secondary_info?.icon,
       unit: grid?.secondary_info?.unit_of_measurement,
       decimals: grid?.secondary_info?.decimals,
-      color_type: grid?.secondary_info?.color_of_value
+      colorType: grid?.secondary_info?.color_of_value
     };
 
     this.state = {
@@ -86,8 +85,8 @@ export class GridEntity {
     this.color = {
       fromGrid: grid?.color?.consumption,
       toGrid: grid?.color?.production,
-      color_icon: grid?.color_of_icon,
-      color_circle: grid?.color_of_circle
+      colorIcon: grid?.color_of_icon,
+      colorCircle: grid?.color_of_circle
     };
   }
 };

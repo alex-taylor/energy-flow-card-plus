@@ -1,17 +1,16 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { ComboEntity } from "../types";
-import { EntitiesConfig } from "../energy-flow-card-plus-config";
+import { BatteryConfigEntity, ComboEntity } from "../config";
 import { ColorMode } from "../enums";
 
 export class BatteryEntity {
   isPresent: boolean;
   name: string;
   icon?: string;
-  display_zero_tolerance?: number;
+  displayZeroTolerance?: number;
   mainEntity?: string;
   entity: ComboEntity;
 
-  state_of_charge: {
+  stateOfCharge: {
     state: number;
     unit: string;
     decimals: number;
@@ -27,25 +26,24 @@ export class BatteryEntity {
   color: {
     fromBattery?: string;
     toBattery?: string;
-    icon_type?: ColorMode;
-    circle_type?: ColorMode;
-    state_of_charge_type?: boolean | "production" | "consumption";
+    iconType?: ColorMode;
+    circleType?: ColorMode;
+    stateOfChargeType?: ColorMode;
   };
 
-  public constructor(hass: HomeAssistant, entities: EntitiesConfig) {
-    const battery = entities.battery;
+  public constructor(hass: HomeAssistant, battery: BatteryConfigEntity | undefined) {
     this.isPresent = battery?.entity !== undefined;
     this.name = battery?.name || hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.battery");
     this.icon = battery?.icon || "mdi:battery-high";
-    this.display_zero_tolerance = battery?.display_zero_tolerance;
+    this.displayZeroTolerance = battery?.display_zero_tolerance;
     this.mainEntity = typeof battery?.entity === "object" ? battery.entity.consumption : battery?.entity;
 
     this.entity = {
-      consumption: battery?.entity.consumption as string,
-      production: battery?.entity.production as string
+      consumption: battery?.entity?.consumption as string,
+      production: battery?.entity?.production as string
     };
 
-    this.state_of_charge = {
+    this.stateOfCharge = {
       state: 0,
       unit: battery?.state_of_charge_unit || "%",
       decimals: battery?.state_of_charge_decimals || 0
@@ -61,9 +59,9 @@ export class BatteryEntity {
     this.color = {
       fromBattery: battery?.color?.consumption,
       toBattery: battery?.color?.production,
-      icon_type: battery?.color_of_icon,
-      circle_type: battery?.color_of_circle,
-      state_of_charge_type: battery?.color_state_of_charge_value
+      iconType: battery?.color_of_icon,
+      circleType: battery?.color_of_circle,
+      stateOfChargeType: battery?.color_state_of_charge_value
     };
   }
 };

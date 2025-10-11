@@ -1,12 +1,12 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { EntitiesConfig } from "../energy-flow-card-plus-config";
-import { SecondaryInfoEntity } from "../types";
+import { SolarConfigEntity } from "../config";
+import { SecondaryInfoEntity } from "./secondary-info-entity";
 
 export class SolarEntity {
   isPresent: boolean;
   name: string;
   icon: string;
-  display_zero_tolerance?: number;
+  displayZeroTolernace?: number;
   mainEntity?: string;
   entity: string;
   secondary: SecondaryInfoEntity;
@@ -18,12 +18,11 @@ export class SolarEntity {
     toBattery: number;
   };
 
-  public constructor(hass: HomeAssistant, entities: EntitiesConfig) {
-    const solar = entities.solar;
+  public constructor(hass: HomeAssistant, solar: SolarConfigEntity | undefined) {
     this.isPresent = solar?.entity !== undefined;
     this.name = solar?.name || hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.solar");
     this.icon = solar?.icon || "mdi:solar-power";
-    this.display_zero_tolerance = solar?.display_zero_tolerance;
+    this.displayZeroTolernace = solar?.display_zero_tolerance;
     this.mainEntity = Array.isArray(solar?.entity) ? solar?.entity[0] : solar?.entity;
     this.entity = solar?.entity as string;
 
@@ -35,7 +34,7 @@ export class SolarEntity {
       icon: solar?.secondary_info?.icon,
       unit: solar?.secondary_info?.unit_of_measurement,
       decimals: solar?.secondary_info?.decimals,
-      color_type: solar?.secondary_info?.color_of_value
+      colorType: solar?.secondary_info?.color_of_value
     };
 
     this.state = {

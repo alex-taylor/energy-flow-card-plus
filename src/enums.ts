@@ -36,7 +36,19 @@ export namespace ColorMode {
   }
 }
 
-
+export enum EntityType {
+  Battery = "battery",
+  Grid = "grid",
+  Grid_Secondary = "gridSecondary",
+  Solar = "solar",
+  Solar_Secondary = "solarSecondary",
+  Individual1 = "individual1",
+  Individual1_Secondary = "individual1Secondary",
+  Individual2 = "individual2",
+  Individual2_Secondary = "individual2Secondary",
+  HomeSecondary = "homeSecondary",
+  Non_Fossil_Secondary = "nonFossilSecondary"
+};
 
 function getEnumValueName(type: any, value: any): string {
   return localize("editor." + value);

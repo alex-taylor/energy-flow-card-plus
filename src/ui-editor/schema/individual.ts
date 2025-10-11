@@ -26,11 +26,6 @@ const mainSchema = {
       selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } },
     },
     {
-      name: 'display_zero_state',
-      label: 'Display Zero State',
-      selector: { boolean: {} },
-    },
-    {
       name: 'unit_of_measurement',
       label: 'Unit of Measurement',
       selector: { text: {} },

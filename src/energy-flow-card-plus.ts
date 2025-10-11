@@ -5,24 +5,24 @@ import { formatNumber, HomeAssistant, LovelaceCardEditor } from "custom-card-hel
 import { Decimal } from "decimal.js";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
-import { EnergyFlowCardPlusConfig, upgradeConfig } from "./energy-flow-card-plus-config";
+import { upgradeConfig, getDefaultConfig } from "./config/config";
 import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics } from "./energy";
 import { SubscribeMixin } from "./energy/subscribe-mixin";
 import { HomeAssistantReal } from "./hass";
 import localize from "./localize/localize";
 import { styles } from "./style";
-import type { baseEntity, EntityType, Flows, SecondaryInfoEntity } from "./types";
+import type { BasicEntity, EnergyFlowCardPlusConfig } from "./config";
 import { BatteryEntity } from "./entities/battery-entity";
 import { GridEntity } from "./entities/grid-entity";
 import { SolarEntity } from "./entities/solar-entity";
+import { SecondaryInfoEntity } from "./entities/secondary-info-entity";
 import { coerceNumber, isNumberValue, mapRange } from "./utils";
-import { defaultValues, getDefaultConfig } from "./utils/get-default-config";
 import { registerCustomCard } from "./utils/register-custom-card";
-import { calculateStatisticsFlows, getLiveDeltas } from "./flows";
+import { Flows, calculateStatisticsFlows, getLiveDeltas } from "./flows";
 import { entityExists, entityAvailable, getEntityStateObj, getEntityState, getEntityStateWattHours } from "./entities";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { differenceInDays, isFirstDayOfMonth, isLastDayOfMonth } from 'date-fns';
-import { ColorMode, DisplayMode } from "./enums";
+import { ColorMode, DisplayMode, EntityType } from "./enums";
 
 registerCustomCard({
   type: "energy-flow-card-plus",
@@ -140,21 +140,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       throw new Error("At least one entity for battery, grid or solar must be defined");
     }
 
-    config = upgradeConfig(config);
-
-    this._config = {
-      ...config,
-      min_flow_rate: coerceNumber(config.min_flow_rate, defaultValues.minFlowRate),
-      max_flow_rate: coerceNumber(config.max_flow_rate, defaultValues.maxFlowRate),
-      wh_decimals: coerceNumber(config.wh_decimals, defaultValues.watthourDecimals),
-      kwh_decimals: coerceNumber(config.kwh_decimals, defaultValues.kilowatthourDecimals),
-      mwh_decimals: coerceNumber(config.mwh_decimals, defaultValues.megawatthourDecimals),
-      wh_kwh_threshold: coerceNumber(config.wh_kwh_threshold, defaultValues.whkWhThreshold),
-      kwh_mwh_threshold: coerceNumber(config.kwh_mwh_threshold, defaultValues.kwhMwhThreshold),
-      max_expected_energy: coerceNumber(config.max_expected_energy, defaultValues.maxExpectedEnergy),
-      min_expected_energy: coerceNumber(config.min_expected_energy, defaultValues.minExpectedEnergy),
-    };
-
+    this._config = upgradeConfig(config);
     this.populateEntitiesArr();
     this.resetSubscriptions();
   }
@@ -296,11 +282,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Grid Icon
     this.style.setProperty(
       "--icon-grid-color",
-      grid.color.color_icon === ColorMode.Consumption
+      grid.color.colorIcon === ColorMode.Consumption
         ? "var(--energy-grid-consumption-color)"
-        : grid.color.color_icon === ColorMode.Production
+        : grid.color.colorIcon === ColorMode.Production
           ? "var(--energy-grid-return-color)"
-          : grid.color.color_icon === ColorMode.Color_Dynamically
+          : grid.color.colorIcon === ColorMode.Color_Dynamically
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -310,11 +296,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Grid Name
     this.style.setProperty(
       "--secondary-text-grid-color",
-      grid.secondary.color_type === ColorMode.Consumption
+      grid.secondary.colorType === ColorMode.Consumption
         ? "var(--energy-grid-consumption-color)"
-        : grid.secondary.color_type === ColorMode.Production
+        : grid.secondary.colorType === ColorMode.Production
           ? "var(--energy-grid-return-color)"
-          : grid.secondary.color_type === ColorMode.Color_Dynamically
+          : grid.secondary.colorType === ColorMode.Color_Dynamically
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -324,11 +310,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Grid Circle
     this.style.setProperty(
       "--circle-grid-color",
-      grid.color.color_circle === ColorMode.Consumption
+      grid.color.colorCircle === ColorMode.Consumption
         ? "var(--energy-grid-consumption-color)"
-        : grid.color.color_circle === ColorMode.Production
+        : grid.color.colorCircle === ColorMode.Production
           ? "var(--energy-grid-return-color)"
-          : grid.color.color_circle === ColorMode.Color_Dynamically
+          : grid.color.colorCircle === ColorMode.Color_Dynamically
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -360,12 +346,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     this.style.setProperty("--icon-individualone-color", entities.individual1?.color_icon ? "var(--individualone-color)" : "var(--primary-text-color)");
     this.style.setProperty("--icon-individualtwo-color", entities.individual2?.color_icon ? "var(--individualtwo-color)" : "var(--primary-text-color)");
 
-    individual1.secondary.state = this.getSecondaryState(individual1.secondary, "individual1Secondary");
-    individual2.secondary.state = this.getSecondaryState(individual2.secondary, "individual2Secondary");
-    solar.secondary.state = this.getSecondaryState(solar.secondary, "solarSecondary");
-    home.secondary.state = this.getSecondaryState(home.secondary, "homeSecondary");
-    nonFossil.secondary.state = this.getSecondaryState(nonFossil.secondary, "nonFossilSecondary");
-    grid.secondary.state = this.getSecondaryState(grid.secondary, "gridSecondary");
+    individual1.secondary.state = this.getSecondaryState(individual1.secondary, EntityType.Individual1_Secondary);
+    individual2.secondary.state = this.getSecondaryState(individual2.secondary, EntityType.Individual2_Secondary);
+    solar.secondary.state = this.getSecondaryState(solar.secondary, EntityType.Solar_Secondary);
+    home.secondary.state = this.getSecondaryState(home.secondary, EntityType.HomeSecondary);
+    nonFossil.secondary.state = this.getSecondaryState(nonFossil.secondary, EntityType.Non_Fossil_Secondary);
+    grid.secondary.state = this.getSecondaryState(grid.secondary, EntityType.Grid_Secondary);
 
     // Update and Set Color of Solar
     if (entities.solar?.color !== undefined) {
@@ -461,11 +447,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Battery Icon
     this.style.setProperty(
       "--icon-battery-color",
-      battery.color.icon_type === "consumption"
+      battery.color.iconType === ColorMode.Consumption
         ? "var(--energy-battery-in-color)"
-        : battery.color.icon_type === "production"
+        : battery.color.iconType === ColorMode.Production
           ? "var(--energy-battery-out-color)"
-          : battery.color.icon_type === ColorMode.Color_Dynamically
+          : battery.color.iconType === ColorMode.Color_Dynamically
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -475,11 +461,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Battery State of Charge
     this.style.setProperty(
       "--text-battery-state-of-charge-color",
-      battery.color.state_of_charge_type === "consumption"
+      battery.color.stateOfChargeType === ColorMode.Consumption
         ? "var(--energy-battery-in-color)"
-        : battery.color.state_of_charge_type === "production"
+        : battery.color.stateOfChargeType === ColorMode.Production
           ? "var(--energy-battery-out-color)"
-          : battery.color.state_of_charge_type === true
+          : battery.color.stateOfChargeType === ColorMode.Color_Dynamically
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -489,11 +475,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Battery Circle
     this.style.setProperty(
       "--circle-battery-color",
-      battery.color.circle_type === ColorMode.Consumption
+      battery.color.circleType === ColorMode.Consumption
         ? "var(--energy-battery-in-color)"
-        : battery.color.circle_type === ColorMode.Production
+        : battery.color.circleType === ColorMode.Production
           ? "var(--energy-battery-out-color)"
-          : battery.color.circle_type === ColorMode.Color_Dynamically
+          : battery.color.circleType === ColorMode.Color_Dynamically
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -577,8 +563,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     this.style.setProperty("--icon-non-fossil-color", entities.fossil_fuel_percentage?.color_icon ? "var(--non-fossil-color)" : "var(--primary-text-color)" ?? "var(--non-fossil-color)");
 
-    const homeIconColorType = entities.home?.color_of_icon;
-
     const homeSources = {
       battery: {
         value: batteryToHome,
@@ -602,14 +586,15 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     let iconHomeColor;
     let textHomeColor;
 
-    if (homeConsumptionError) {
+    /* return source object with largest value property */
+    const homeLargestSource: string = Object.keys(homeSources).reduce((a, b) => homeSources[a].value > homeSources[b].value ? a : b);
+    const homeValueIsZero: boolean = homeSources[homeLargestSource].value == 0;
+
+    if (homeConsumptionError || homeValueIsZero) {
       iconHomeColor = "var(--primary-text-color)";
       textHomeColor = "var(--primary-text-color)";
     } else {
-      /* return source object with largest value property */
-      const homeLargestSource = Object.keys(homeSources).reduce((a, b) => homeSources[a].value > homeSources[b].value ? a : b);
-
-      switch (homeIconColorType) {
+      switch (entities.home?.color_of_icon) {
         case ColorMode.Solar:
           iconHomeColor = "var(--energy-solar-color)";
           break;
@@ -631,9 +616,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           break;
       }
 
-      const homeTextColorType = entities.home?.color_of_value;
-
-      switch (homeTextColorType) {
+      switch (entities.home?.color_of_value) {
         case ColorMode.Solar:
           textHomeColor = "var(--energy-solar-color)";
           break;
@@ -688,16 +671,22 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     this.style.setProperty("--secondary-text-solar-color", entities.solar?.secondary_info?.color_of_value ? "var(--energy-solar-color)" : "var(--primary-text-color)");
     this.style.setProperty("--secondary-text-home-color", entities.home?.secondary_info?.color_of_value ? "var(--text-home-color)" : "var(--primary-text-color)");
 
-    const homeUsageToDisplay: string =
-      homeConsumptionError
-        ? localize("common.unknown")
-        : entities.home?.override_state && entities.home.entity
+    let homeUsageToDisplay: string;
+
+    if (homeConsumptionError) {
+      homeUsageToDisplay = localize("common.unknown");
+    } else {
+      const homeUsageState: number =
+        entities.home?.override_state && entities.home.entity
           ? entities.home?.subtract_individual
-            ? this.displayValue(this.getEntityStateWattHours(entities.home.entity) - totalIndividualConsumption)
-            : this.displayValue(this.getEntityStateWattHours(entities.home.entity))
+            ? this.getEntityStateWattHours(entities.home.entity) - totalIndividualConsumption
+            : this.getEntityStateWattHours(entities.home.entity)
           : entities.home?.subtract_individual
-            ? this.displayValue(totalHomeConsumption - totalIndividualConsumption || 0)
-            : this.displayValue(totalHomeConsumption);
+            ? totalHomeConsumption - totalIndividualConsumption || 0
+            : totalHomeConsumption
+
+      homeUsageToDisplay = homeUsageState > 0 || entities.home?.display_zero_state ? this.displayValue(homeUsageState) : "";
+    }
 
     let lowCarbonPercentage: number | undefined;
 
@@ -920,11 +909,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           id="individual2-icon"
                           .icon=${individual2.icon}
                           style="${individual2.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.individual2?.display_zero_state !== false || (individual2.state || 0) > 0
+                          ${entities.individual2?.display_zero_state || (individual2.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.individual2?.display_zero_state !== false || (individual2.state || 0) > 0
+                        ${entities.individual2?.display_zero_state || (individual2.state || 0) > 0
                           ? html` <span class="individual2">${individual2DisplayState} </span>`
                           : ""}
                       </div>
@@ -973,12 +962,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           id="individual1-icon"
                           .icon=${individual1.icon}
                           style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.individual1?.display_zero_state !== false || (individual1.state || 0) > 0
+                          ${entities.individual1?.display_zero_state || (individual1.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.individual1?.display_zero_state !== false || (individual1.state || 0) > 0
-                          ? html` <span class="individual1">${individual1DisplayState} </span>`
+                        ${entities.individual1?.display_zero_state || (individual1.state || 0) > 0
+                          ? html`<span class="individual1">${individual1DisplayState}</span>`
                           : ""}
                       </div>
                       ${this.showLine(individual1.state || 0)
@@ -1026,26 +1015,19 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                   >
                     ${generalSecondarySpan(grid, "grid")}
                     <ha-icon .icon=${grid.icon}></ha-icon>
-                    ${(
-                        entities.grid?.display_state === "two_way" ||
-                        entities.grid?.display_state === undefined ||
-                        (entities.grid?.display_state === "one_way" && (gridToGrid ?? 0) > 0) ||
-                        (entities.grid?.display_state === "one_way_no_zero" && (gridFromGrid === null || gridFromGrid === 0) && gridToGrid !== 0)
-                      ) &&
-                      gridToGrid !== null &&
-                      !grid.powerOutage.isOutage
+                    ${gridToGrid !== null && !grid.powerOutage.isOutage && (entities.grid?.display_zero_state || gridToGrid > 0)
                       ? html`<span class="return"
                           @click=${(e: { stopPropagation: () => void }) => {
-                            const target = Array.isArray(entities.grid!.entity.production)
+                            const target = Array.isArray(entities.grid?.entity?.production)
                               ? entities?.grid?.entity?.production[0]
-                              : entities?.grid?.entity.production;
+                              : entities?.grid?.entity?.production;
                             this.openDetails(e, target);
                           }}
                           @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
                             if (e.key === "Enter") {
-                              const target = Array.isArray(entities.grid!.entity.production)
+                              const target = Array.isArray(entities.grid?.entity?.production)
                                 ? entities?.grid?.entity?.production[0]
-                                : entities?.grid?.entity.production;
+                                : entities?.grid?.entity?.production;
                               this.openDetails(e, target);
                             }
                           }}
@@ -1054,13 +1036,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           ${this.displayValue(gridToGrid)}
                         </span>`
                       : null}
-                    ${(
-                        entities.grid?.display_state === "two_way" ||
-                        entities.grid?.display_state === undefined ||
-                        (entities.grid?.display_state === "one_way" && gridFromGrid > 0) ||
-                        (entities.grid?.display_state === "one_way_no_zero" && !gridToGrid)
-                      ) &&
-                      gridFromGrid !== null && !grid.powerOutage.isOutage 
+                    ${gridFromGrid !== null && !grid.powerOutage.isOutage && (entities.grid?.display_zero_state || gridFromGrid > 0)
                         ? html`<span class="consumption">
                             <ha-icon class="small" .icon=${"mdi:arrow-right"}></ha-icon>
                             ${this.displayValue(gridFromGrid)}
@@ -1124,7 +1100,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           />`
                     : ""}
                   <circle
-                    class="${homeConsumptionError ? `home-unknown` : `grid`}"
+                    class="${homeConsumptionError || homeValueIsZero ? `home-unknown` : `grid`}"
                     cx="40"
                     cy="40"
                     r="38"
@@ -1188,11 +1164,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           : null}
                         <ha-icon
                           .icon=${batteryIcon}
-                          style=${entities.battery?.display_state === "two_way"
+                          style=${entities.battery?.display_zero_state
                             ? "padding-top: 0px; padding-bottom: 2px;"
-                            : entities.battery?.display_state === "one_way" && batteryToBattery === 0 && batteryFromBattery === 0
-                            ? "padding-top: 2px; padding-bottom: 0px;"
-                            : "padding-top: 2px; padding-bottom: 2px;"}
+                            : "padding-top: 2px; padding-bottom: 0px;"}
                           @click=${(e: { stopPropagation: () => void }) => {
                             e.stopPropagation();
                             this.openDetails(e, entities.battery?.state_of_charge);
@@ -1204,10 +1178,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                             }
                           }}
                         ></ha-icon>
-                        ${entities.battery?.display_state === "two_way" ||
-                        entities.battery?.display_state === undefined ||
-                        (entities.battery?.display_state === "one_way" && batteryToBattery > 0) ||
-                        (entities.battery?.display_state === "one_way_no_zero" && batteryToBattery !== 0)
+                        ${batteryToBattery !== null && (entities.battery?.display_zero_state || batteryToBattery > 0)
                           ? html`<span
                               class="battery-in"
                               @click=${(e: { stopPropagation: () => void }) => {
@@ -1227,10 +1198,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               ${this.displayValue(batteryToBattery)}
                             </span>`
                           : ""}
-                        ${entities.battery?.display_state === "two_way" ||
-                        entities.battery?.display_state === undefined ||
-                        (entities.battery?.display_state === "one_way" && batteryFromBattery > 0) ||
-                        (entities.battery?.display_state === "one_way_no_zero" && (batteryToBattery === 0 || batteryFromBattery !== 0))
+                        ${batteryFromBattery !== null && (entities.battery?.display_zero_state || batteryFromBattery > 0)
                           ? html`<span
                               class="battery-out"
                               @click=${(e: { stopPropagation: () => void }) => {
@@ -1546,9 +1514,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   private initEntities = (config: EnergyFlowCardPlusConfig): void => {
     const entities = config.entities;
-    this._grid = new GridEntity(this.hass, entities);
-    this._solar = new SolarEntity(this.hass, entities);
-    this._battery = new BatteryEntity(this.hass, entities);
+    this._grid = new GridEntity(this.hass, entities.grid);
+    this._solar = new SolarEntity(this.hass, entities.solar);
+    this._battery = new BatteryEntity(this.hass, entities.battery);
   };
 
   private populateEntitiesArr = (): void => {
@@ -1581,7 +1549,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   private entityInverted = (entityType: EntityType) => !!this._config.entities[entityType]?.invert_state;
 
-  private getEntityStateWattHours = (entity: baseEntity | undefined): number => getEntityStateWattHours(this.hass, this._statistics, entity);
+  private getEntityStateWattHours = (entity: BasicEntity | undefined): number => getEntityStateWattHours(this.hass, this._statistics, entity);
 
   private circleRate = (value: number, total: number): number => {
     const maxRate = this._config.max_flow_rate!;

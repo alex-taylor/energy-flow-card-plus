@@ -5,7 +5,8 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { EnergyFlowCardPlusConfig, upgradeConfig } from '../energy-flow-card-plus-config';
+import { upgradeConfig } from '../config/config';
+import { EnergyFlowCardPlusConfig } from '../config';
 import { cardConfigStruct, generalConfigSchema, entitiesSchema, advancedOptionsSchema } from './schema/_schema-all';
 import localize from '../localize/localize';
 

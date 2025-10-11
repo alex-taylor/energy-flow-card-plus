@@ -33,19 +33,17 @@
     <None Include=".eslintrc.ts" />
     <None Include="jest.config.ts" />
     <None Include="src\const.ts" />
-    <None Include="src\energy-flow-card-plus-config.ts" />
+    <None Include="src\config\config.ts" />
     <None Include="src\energy-flow-card-plus.ts" />
-    <None Include="src\handle-actions.ts" />
     <None Include="src\hass.ts" />
     <None Include="src\logging.ts" />
     <None Include="src\style.ts" />
-    <None Include="src\types.ts" />
+    <None Include="src\config\index.ts" />
     <None Include="__tests__\i18n.test.ts" />
     <None Include="src\energy\index.ts" />
     <None Include="src\energy\subscribe-mixin.ts" />
     <None Include="src\localize\localize.ts" />
     <None Include="src\ui-editor\ui-editor.ts" />
-    <None Include="src\utils\get-default-config.ts" />
     <None Include="src\utils\get-element-width.ts" />
     <None Include="src\utils\index.ts" />
     <None Include="src\utils\register-custom-card.ts" />
@@ -76,6 +74,7 @@
   <ItemGroup>
     <Folder Include="src\entities\" />
     <Folder Include="src\flows\" />
+    <Folder Include="src\config\" />
     <Folder Include="__tests__" />
     <Folder Include="dist" />
     <Folder Include="src" />
@@ -90,6 +89,9 @@
     <TypeScriptCompile Include="src\entities\battery-entity.ts" />
     <TypeScriptCompile Include="src\entities\grid-entity.ts" />
     <TypeScriptCompile Include="src\entities\index.ts" />
+    <TypeScriptCompile Include="src\entities\secondary-info-entity.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\entities\solar-entity.ts" />
     <TypeScriptCompile Include="src\enums.ts">
       <SubType>Code</SubType>

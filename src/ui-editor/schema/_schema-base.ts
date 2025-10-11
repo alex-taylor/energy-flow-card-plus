@@ -170,20 +170,6 @@ const batteryOrGridMainConfigSchema = [
       },
     },
   },
-  {
-    name: 'display_state',
-    label: 'Display State',
-    selector: {
-      select: {
-        options: [
-          { value: 'two_way', label: 'Two Way' },
-          { value: 'one_way', label: 'One Way' },
-          { value: 'one_way_no_zero', label: 'One Way (Show Zero)' },
-        ],
-        mode: 'dropdown'
-      },
-    },
-  },
 ];
 
 export function getBaseMainConfigSchema(field?: string) {
@@ -195,6 +181,7 @@ export function getBaseMainConfigSchema(field?: string) {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'use_metadata', label: 'Use Metadata', selector: { boolean: {} } },
+      { name: 'display_zero_state', label: 'Display Zero State', selector: { boolean: {} } },
     ],
   };
 

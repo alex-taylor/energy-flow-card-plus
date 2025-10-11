@@ -1,12 +1,21 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { Statistics, StatisticValue } from "../energy";
-import { Flows } from "../types";
 import type { BatteryEntity } from "../entities/battery-entity";
 import type { GridEntity } from "../entities/grid-entity";
 import type { SolarEntity } from "../entities/solar-entity";
 import { getEntityStatistics, toWattHours } from "../entities";
 import { coerceNumber } from "../utils";
 import { HassEntity } from "home-assistant-js-websocket";
+
+export interface Flows {
+  solarToHome: number;
+  solarToGrid: number;
+  solarToBattery: number;
+  gridToHome: number;
+  gridToBattery: number;
+  batteryToHome: number;
+  batteryToGrid: number;
+};
 
 export const getLiveDeltas = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, statistics: Statistics, solar: SolarEntity, battery: BatteryEntity, grid: GridEntity): Flows => {
   const solarProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, solar.entity);
@@ -107,12 +116,12 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
       grid.state.fromGrid = 0;
       grid.state.toGrid = 0;
     } else {
-      grid.state.toHome = clampStateValue(gridToHome, grid.display_zero_tolerance);
-      grid.state.toBattery = clampStateValue(gridToBattery, grid.display_zero_tolerance);
-      grid.state.fromGrid = clampStateValue(fromGrid, grid.display_zero_tolerance);
+      grid.state.toHome = clampStateValue(gridToHome, grid.displayZeroTolerance);
+      grid.state.toBattery = clampStateValue(gridToBattery, grid.displayZeroTolerance);
+      grid.state.fromGrid = clampStateValue(fromGrid, grid.displayZeroTolerance);
 
       if (grid.hasReturnToGrid) {
-        grid.state.toGrid = clampStateValue(toGrid, grid.display_zero_tolerance);
+        grid.state.toGrid = clampStateValue(toGrid, grid.displayZeroTolerance);
       } else {
         grid.state.toGrid = 0;
       }
@@ -120,17 +129,17 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
   }
 
   if (battery.isPresent) {
-    battery.state.toGrid = clampStateValue(batteryToGrid, battery.display_zero_tolerance);
-    battery.state.toHome = clampStateValue(batteryToHome, battery.display_zero_tolerance);
-    battery.state.fromBattery = clampStateValue(fromBattery, battery.display_zero_tolerance);
-    battery.state.toBattery = clampStateValue(toBattery, battery.display_zero_tolerance);
+    battery.state.toGrid = clampStateValue(batteryToGrid, battery.displayZeroTolerance);
+    battery.state.toHome = clampStateValue(batteryToHome, battery.displayZeroTolerance);
+    battery.state.fromBattery = clampStateValue(fromBattery, battery.displayZeroTolerance);
+    battery.state.toBattery = clampStateValue(toBattery, battery.displayZeroTolerance);
   }
 
   if (solar.isPresent) {
-    solar.state.toHome = clampStateValue(solarToHome, solar.display_zero_tolerance);
-    solar.state.toBattery = clampStateValue(solarToBattery, solar.display_zero_tolerance);
-    solar.state.toGrid = clampStateValue(solarToGrid, solar.display_zero_tolerance);
-    solar.state.total = clampStateValue(fromSolar, solar.display_zero_tolerance);
+    solar.state.toHome = clampStateValue(solarToHome, solar.displayZeroTolernace);
+    solar.state.toBattery = clampStateValue(solarToBattery, solar.displayZeroTolernace);
+    solar.state.toGrid = clampStateValue(solarToGrid, solar.displayZeroTolernace);
+    solar.state.total = clampStateValue(fromSolar, solar.displayZeroTolernace);
   }
 };
 
