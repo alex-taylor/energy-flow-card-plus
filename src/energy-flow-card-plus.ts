@@ -201,7 +201,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         isPresent: this.hasField(entities.home?.secondary_info, true),
         state: null as number | string | null,
         unit: entities.home?.secondary_info?.unit_of_measurement,
-        unit_white_space: entities.home?.secondary_info?.unit_white_space,
         icon: entities.home?.secondary_info?.icon,
         decimals: entities.home?.secondary_info?.decimals,
         color_type: entities.home?.secondary_info?.color_of_value
@@ -219,7 +218,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       name: this.computeFieldName(entities[field], field === "individual1" ? localize("card.label.car") : localize("card.label.motorbike")),
       color: entities[field]?.color,
       unit: entities[field]?.unit_of_measurement,
-      unit_white_space: entities[field]?.unit_white_space,
       decimals: entities[field]?.decimals,
       invertAnimation: entities[field]?.inverted_animation,
       showDirection: entities[field]?.show_direction,
@@ -230,7 +228,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         state: null as number | string | null,
         icon: entities[field]?.secondary_info?.icon,
         unit: entities[field]?.secondary_info?.unit_of_measurement,
-        unit_white_space: entities[field]?.secondary_info?.unit_white_space,
         displayZero: entities[field]?.secondary_info?.display_zero,
         decimals: entities[field]?.secondary_info?.decimals,
         displayZeroTolerance: entities[field]?.secondary_info?.display_zero_tolerance,
@@ -264,7 +261,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         state: null as number | string | null,
         icon: entities.fossil_fuel_percentage?.secondary_info?.icon,
         unit: entities.fossil_fuel_percentage?.secondary_info?.unit_of_measurement,
-        unit_white_space: entities.fossil_fuel_percentage?.secondary_info?.unit_white_space,
         color_value: entities.fossil_fuel_percentage?.secondary_info?.color_of_value
       }
     };
@@ -314,11 +310,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Grid Name
     this.style.setProperty(
       "--secondary-text-grid-color",
-      grid.secondary.color_type === "consumption"
+      grid.secondary.color_type === ColorMode.Consumption
         ? "var(--energy-grid-consumption-color)"
-        : grid.secondary.color_type === "production"
+        : grid.secondary.color_type === ColorMode.Production
           ? "var(--energy-grid-return-color)"
-          : grid.secondary.color_type === true
+          : grid.secondary.color_type === ColorMode.Color_Dynamically
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -672,14 +668,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     const individual1DisplayState = this.displayValue(
       individual1.state,
       entities.individual1?.unit_of_measurement,
-      undefined,
       entities.individual1?.decimals
     );
 
     const individual2DisplayState = this.displayValue(
       individual2.state,
       entities.individual2?.unit_of_measurement,
-      undefined,
       entities.individual2?.decimals
     );
 
@@ -787,14 +781,14 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             className: key,
             entityId: field.secondary.entity,
             icon: field.secondary.icon,
-            value: this.displayValue(field.secondary.state, field.secondary.unit, field.secondary.unit_white_space, field?.secondary?.decimals),
+            value: this.displayValue(field.secondary.state, field.secondary.unit, field?.secondary?.decimals),
           })}`
         : ""}`;
     };
 
     const individualSecondarySpan = (individual: Individual, key: string) => {
       const value = individual.secondary.isPresent
-        ? this.displayValue(individual.secondary.state, individual.secondary.unit, individual.secondary.unit_white_space)
+        ? this.displayValue(individual.secondary.state, individual.secondary.unit)
         : undefined;
       const passesDisplayZeroCheck =
         individual.secondary.displayZero !== false ||
@@ -847,7 +841,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                                 >${this.displayValue(
                                   entities.fossil_fuel_percentage?.state_type === "percentage" ? lowCarbonPercentage || 0 : lowCarbonEnergy || 0,
                                   entities.fossil_fuel_percentage?.state_type === "percentage" ? "%" : undefined,
-                                  entities.fossil_fuel_percentage?.unit_white_space,
                                   entities.fossil_fuel_percentage?.decimals
                                 )}</span
                               >
@@ -901,7 +894,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
                         ${entities.solar?.display_zero_state !== false || (solarTotal || 0) > 0
-                          ? html` <span class="solar"> ${this.displayValue(solarTotal)}</span>`
+                          ? html` <span class="solar value"> ${this.displayValue(solarTotal)}</span>`
                           : ""}
                       </div>
                     </div>`
@@ -1067,15 +1060,14 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         (entities.grid?.display_state === "one_way" && gridFromGrid > 0) ||
                         (entities.grid?.display_state === "one_way_no_zero" && !gridToGrid)
                       ) &&
-                      gridFromGrid !== null &&
-                      !grid.powerOutage.isOutage
-                      ? html`<span class="consumption">
-                          <ha-icon class="small" .icon=${"mdi:arrow-right"}></ha-icon>
-                          ${this.displayValue(gridFromGrid)}
-                        </span>`
-                      : ""}
+                      gridFromGrid !== null && !grid.powerOutage.isOutage 
+                        ? html`<span class="consumption">
+                            <ha-icon class="small" .icon=${"mdi:arrow-right"}></ha-icon>
+                            ${this.displayValue(gridFromGrid)}
+                          </span>`
+                        : ""}
                     ${grid.powerOutage.isOutage
-                      ? html`<span class="grid power-outage"> ${entities.grid?.power_outage?.label_alert || html`Power<br />Outage`} </span>`
+                      ? html`<span class="grid power-outage">${entities.grid?.power_outage?.label_alert || html`Power<br/>Outage`}</span>`
                       : ""}
                   </div>
                   <span class="label">${grid.name}</span>
@@ -1132,7 +1124,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           />`
                     : ""}
                   <circle
-                    class="${homeConsumptionError ? `homeUnknown` : `grid`}"
+                    class="${homeConsumptionError ? `home-unknown` : `grid`}"
                     cx="40"
                     cy="40"
                     r="38"
@@ -1174,7 +1166,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                         }}
                       >
                         ${batteryChargeState !== null
-                          ? html` <span
+                          ? html`<span
                               @click=${(e: { stopPropagation: () => void }) => {
                                 e.stopPropagation();
                                 this.openDetails(e, entities.battery?.state_of_charge);
@@ -1190,7 +1182,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               ${this.displayValue(
                                 batteryChargeState,
                                 entities?.battery?.state_of_charge_unit || "%",
-                                entities?.battery?.state_of_charge_unit_white_space,
                                 entities?.battery?.state_of_charge_decimals || 0
                               )}
                             </span>`
@@ -1233,8 +1224,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               }}
                             >
                               <ha-icon class="small" .icon=${"mdi:arrow-down"}></ha-icon>
-                              ${this.displayValue(batteryToBattery)}</span
-                            >`
+                              ${this.displayValue(batteryToBattery)}
+                            </span>`
                           : ""}
                         ${entities.battery?.display_state === "two_way" ||
                         entities.battery?.display_state === undefined ||
@@ -1256,8 +1247,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               }}
                             >
                               <ha-icon class="small" .icon=${"mdi:arrow-up"}></ha-icon>
-                              ${this.displayValue(batteryFromBattery)}</span
-                            >`
+                              ${this.displayValue(batteryFromBattery)}
+                            </span>`
                           : ""}
                       </div>
                       <span class="label">${battery.name}</span>
@@ -1266,15 +1257,10 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 ${individual2.isPresent && individual1.isPresent
                   ? html`<div class="circle-container individual1 bottom">
                       ${this.showLine(individual1.state || 0)
-                        ? html`
-                            <svg width="80" height="30">
-                              <path d="M40 40 v-40" id="individual1" />
-                              ${individual1.state
-                                ? svg`<circle
-                                r="2.4"
-                                class="individual1"
-                                vector-effect="non-scaling-stroke"
-                              >
+                        ? html`<svg width="80" height="30">
+                          <path d="M40 40 v-40" id="individual1" />
+                            ${individual1.state
+                              ? svg`<circle r="2.4" class="individual1" vector-effect="non-scaling-stroke">
                                 <animateMotion
                                   dur="${this.additionalCircleRate(entities.individual1?.calculate_flow_rate, newDur.individual1)}s"
                                   repeatCount="indefinite"
@@ -1285,9 +1271,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                                   <mpath xlink:href="#individual1" />
                                 </animateMotion>
                               </circle>`
-                                : ""}
-                            </svg>
-                          `
+                              : ""}
+                            </svg>`
                         : html` <svg width="80" height="30"></svg> `}
                       <div
                         class="circle"
@@ -1627,10 +1612,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
    * Return a string to display with value and unit.
    * @param value - value to display (if text, will be returned as is)
    * @param unit - unit to display (default is dynamic)
-   * @param unitWhiteSpace - wether add space between value and unit (default true)
    * @param decimals - number of decimals to display (default is user defined)
    */
-  private displayValue = (value: number | string | null, unit?: string | undefined, unitWhiteSpace?: boolean | undefined, decimals?: number | undefined): string => {
+  private displayValue = (value: number | string | null, unit?: string | undefined, decimals?: number | undefined): string => {
     if (value === null) {
       return "0";
     }
@@ -1651,7 +1635,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       this.hass.locale
     );
 
-    return `${formattedValue}${unitWhiteSpace ? " " : ""}${unit ?? (isMWh ? "MWh" : isKWh ? "kWh" : "Wh")}`;
+    return `${formattedValue}${this._config.unit_white_space ? " " : ""}${unit ?? (isMWh ? "MWh" : isKWh ? "kWh" : "Wh")}`;
   };
 
   private openDetails = (event: { stopPropagation: any; key?: string }, entityId?: string | undefined): void => {

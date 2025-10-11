@@ -1,10 +1,6 @@
 BUGS
 ----
 
-See if something can be done about the values spilling out of the circle?
-  Maybe cap at 3dp?
-  Draw the values with an opaque background?
-
 Secondary info may not be working
 
 Home icon/value colour calculation requires that we have a value for 'non-fossil' energy, which is never calculated
@@ -26,8 +22,6 @@ Option to disable animations
 Option to 'grey out' the lines rather than hiding when inactive
   See the power-flow-card for the implementation
 
-Whitespace option should be global
-
 See if it's possible to pick up the built-in energy config for the sensors?
 
 
@@ -46,8 +40,6 @@ Verify that metadata works
 Test the Individual entities, which likely have similar math errors
 
 Test multiple-entities for a single node
-
-See if the stat-summing calculations can be cached - after all, the stats only update hourly or when the date-picker is changed
 
 Test localisation by disabling EN and checking that all strings revert to their keys
 

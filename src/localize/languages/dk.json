@@ -39,7 +39,6 @@
     "icon_alert": "Ikon for alarm",
     "state_alert": "Alarmtilstand",
     "state_of_charge": "Ladningstilstand",
-    "state_of_charge_unit_white_space": "Tomt mellemrum",
     "state_of_charge_unit": "Enhed",
     "state_of_charge_decimals": "Decimal",
     "state_of_charge_icon": "Ikon",

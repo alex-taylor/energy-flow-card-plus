@@ -39,7 +39,6 @@
     "icon_alert": "Иконка для предупреждения",
     "state_alert": "Состояние предупреждения",
     "state_of_charge": "Уровень заряда",
-    "state_of_charge_unit_white_space": "Пробел",
     "state_of_charge_unit": "Единица измерения",
     "state_of_charge_decimals": "Десятичные",
     "state_of_charge_icon": "Иконка",

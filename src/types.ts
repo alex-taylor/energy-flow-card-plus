@@ -1,6 +1,5 @@
 import { ActionConfig, BaseActionConfig, HapticType, LovelaceCard, LovelaceCardConfig, LovelaceCardEditor } from 'custom-card-helpers';
 import { HassEntity, HassServiceTarget } from 'home-assistant-js-websocket';
-import { UNIT_PREFIXES } from './const';
 import { ColorMode } from './enums';
 
 declare global {
@@ -145,9 +144,8 @@ export type SecondaryInfoEntity = {
   state: string | number | null;
   icon?: string;
   unit?: string;
-  unit_white_space?: boolean;
   decimals?: number;
-  color_type?: boolean | "production" | "consumption";
+  color_type?: ColorMode;
 };
 
 export type SecondaryInfoType = {
@@ -155,11 +153,12 @@ export type SecondaryInfoType = {
   unit_of_measurement?: string;
   icon?: string;
   display_zero?: boolean;
+  // @deprecated replaced by mainConfigOptions#unit_white_space
   unit_white_space?: boolean;
   display_zero_tolerance?: number;
   // @deprecated replaced by color_of_value
   color_value?: boolean | string;
-  color_of_value?: boolean | 'production' | 'consumption';
+  color_of_value?: ColorMode;
   template?: string;
   decimals?: number;
 };
@@ -201,6 +200,7 @@ export type IndividualDeviceType = {
   calculate_flow_rate?: boolean;
   use_metadata?: boolean;
   decimals?: number;
+  // @deprecated replaced by mainConfigOptions#unit_white_space
   unit_white_space?: boolean;
   show_direction?: boolean;
 };

@@ -39,7 +39,6 @@
     "icon_alert": "Symbol für Alarm",
     "state_alert": "Alarmzustand",
     "state_of_charge": "Ladezustand",
-    "state_of_charge_unit_white_space": "Leerzeichen",
     "state_of_charge_unit": "Einheit",
     "state_of_charge_decimals": "Dezimalstellen",
     "state_of_charge_icon": "Symbol",

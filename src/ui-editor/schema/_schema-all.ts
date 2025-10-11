@@ -34,6 +34,7 @@ export const cardConfigStruct = assign(
     display_zero_lines: optional(boolean()),
     use_new_flow_rate_model: optional(boolean()),
     use_hourly_stats: optional(boolean()),
+    unit_white_space: optional(boolean()),
     // @deprecated redundant, but can't be removed as this would break existing configs
     energy_date_selection: optional(boolean()),
     entities: object({
@@ -205,6 +206,11 @@ export const advancedOptionsSchema = memoizeOne(localize => [
             name: 'use_hourly_stats',
             label: 'Use Hourly Stats',
             selector: { boolean: {} },
+          },
+          {
+            name: 'unit_white_space',
+            label: 'Unit White Space',
+            selector: { boolean: {} }
           }
         ],
       },

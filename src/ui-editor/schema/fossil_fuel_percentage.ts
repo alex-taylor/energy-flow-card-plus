@@ -44,11 +44,6 @@ const mainSchema = {
       selector: { boolean: {} },
     },
     {
-      name: 'unit_white_space',
-      label: 'Unit White Space',
-      selector: { boolean: {} },
-    },
-    {
       name: 'decimals',
       label: 'Decimals',
       selector: { number: { mode: 'box', min: 0, max: 4, step: 1 } },

@@ -39,7 +39,6 @@
     "icon_alert": "Varningsikon",
     "state_alert": "Status vid strömavbrott",
     "state_of_charge": "Laddningsnivå",
-    "state_of_charge_unit_white_space": "Mellanrum före enhet",
     "state_of_charge_unit": "Enhet",
     "state_of_charge_decimals": "Decimaler",
     "state_of_charge_icon": "Ikon",

@@ -20,6 +20,7 @@ interface mainConfigOptions {
   energy_date_selection?: boolean;
   use_new_flow_rate_model?: boolean;
   use_hourly_stats?: boolean;
+  unit_white_space?: boolean;
 }
 
 export interface EntitiesConfig {
@@ -30,6 +31,7 @@ export interface EntitiesConfig {
     };
     state_of_charge?: string;
     state_of_charge_unit?: string;
+    // @deprecated replaced by mainConfigOptions#unit_white_space
     state_of_charge_unit_white_space?: boolean;
     state_of_charge_decimals?: number;
     color_state_of_charge_value?: boolean | 'production' | 'consumption';
@@ -88,6 +90,7 @@ export interface EntitiesConfig {
     display_zero_tolerance?: number;
     color_value?: boolean;
     color_label?: boolean;
+    // @deprecated replaced by mainConfigOptions#unit_white_space
     unit_white_space?: boolean;
     decimals?: number;
     calculate_flow_rate?: boolean | number;
@@ -131,21 +134,53 @@ export function upgradeConfig(config: EnergyFlowCardPlusConfig): EnergyFlowCardP
         color_of_icon: getColorOfIconOrValue(config.entities.grid?.color_of_icon, config.entities.grid?.color_icon),
         color_icon: undefined,
         color_of_circle: getColorOfCircle(config.entities.grid?.color_of_circle, config.entities.grid?.color_circle),
-        color_circle: undefined
+        color_circle: undefined,
+        secondary_info: {
+          ...config.entities.grid?.secondary_info,
+          color_of_value: getColorOfIconOrValue(config.entities.grid?.secondary_info?.color_of_value, config.entities.grid?.secondary_info?.color_value),
+          color_value: undefined,
+          unit_white_space: undefined
+        }
       },
       battery: {
         ...config.entities.battery,
         color_of_icon: getColorOfIconOrValue(config.entities.battery?.color_of_icon, config.entities.battery?.color_icon),
         color_icon: undefined,
         color_of_circle: getColorOfCircle(config.entities.battery?.color_of_circle, config.entities.battery?.color_circle),
-        color_circle: undefined
+        color_circle: undefined,
+        state_of_charge_unit_white_space: undefined
+      },
+      solar: {
+        ...config.entities.solar,
+        secondary_info: {
+          ...config.entities.solar?.secondary_info,
+          color_of_value: getColorOfIconOrValue(config.entities.solar?.secondary_info?.color_of_value, config.entities.solar?.secondary_info?.color_value),
+          color_value: undefined,
+          unit_white_space: undefined
+        }
       },
       home: {
         ...config.entities.home,
         color_of_icon: getColorOfIconOrValue(config.entities.home?.color_of_icon, config.entities.home?.color_icon),
         color_icon: undefined,
         color_of_value: getColorOfIconOrValue(config.entities.home?.color_of_value, config.entities.home?.color_value),
-        color_value: undefined
+        color_value: undefined,
+        secondary_info: {
+          ...config.entities.home?.secondary_info,
+          color_of_value: getColorOfIconOrValue(config.entities.home?.secondary_info?.color_of_value, config.entities.home?.secondary_info?.color_value),
+          color_value: undefined,
+          unit_white_space: undefined
+        }
+      },
+      fossil_fuel_percentage: {
+        ...config.entities.fossil_fuel_percentage,
+        unit_white_space: undefined,
+        secondary_info: {
+          ...config.entities.fossil_fuel_percentage?.secondary_info,
+          color_of_value: getColorOfIconOrValue(config.entities.fossil_fuel_percentage?.secondary_info?.color_of_value, config.entities.fossil_fuel_percentage?.secondary_info?.color_value),
+          color_value: undefined,
+          unit_white_space: undefined
+        }
       }
     }
   };

@@ -127,7 +127,6 @@ export const styles = css`
     position: relative;
     text-decoration: none;
     color: var(--primary-text-color);
-    // background-color: var(--card-background-color); /* hide overflowing lines behind background */
   }
   .circle-container .circle {
     cursor: var(--clickable-cursor);
@@ -309,7 +308,7 @@ export const styles = css`
   .grid ha-icon:not(.small) {
     color: var(--icon-grid-color);
   }
-  circle.homeUnknown {
+  circle.home-unknown {
     stroke: var(--primary-text-color);
   }
   .home .circle {

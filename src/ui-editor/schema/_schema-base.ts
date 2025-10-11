@@ -70,13 +70,60 @@ export const secondaryInfoSchema = [
     type: 'grid',
     column_min_width: '200px',
     schema: [
-      { name: 'icon', selector: { icon: {} } },
-      { name: 'unit_of_measurement', label: 'Unit of Measurement', selector: { text: {} } },
-      { name: 'color_value', label: 'Color Value', selector: { boolean: {} } },
-      { name: 'unit_white_space', label: 'Unit White Space', selector: { boolean: {} } },
-      { name: 'display_zero_tolerance', label: 'Display Zero Tolerance', selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } } },
-      { name: 'decimals', label: 'Decimals', selector: { number: { mode: 'box', min: 0, max: 10, step: 1 } } },
-      { name: 'display_zero', label: 'Display Zero', selector: { boolean: {} } },
+      {
+        name: 'icon',
+        label: 'Icon',
+        selector: { icon: {} }
+      },
+      {
+        name: 'unit_of_measurement',
+        label: 'Unit of Measurement',
+        selector: { text: {} }
+      },
+      {
+        name: 'color_of_value',
+        label: 'Color Value',
+        selector: {
+          select: {
+            options: [
+              ColorMode.getItem(ColorMode.Do_Not_Color),
+              ColorMode.getItem(ColorMode.Color_Dynamically),
+              ColorMode.getItem(ColorMode.Production),
+              ColorMode.getItem(ColorMode.Consumption)
+            ],
+            mode: 'dropdown'
+          }
+        }
+      },
+      {
+        name: 'display_zero_tolerance',
+        label: 'Display Zero Tolerance',
+        selector: {
+          number: {
+            mode: 'box',
+            min: 0,
+            max: 1000000,
+            step: 0.1
+          }
+        }
+      },
+      {
+        name: 'decimals',
+        label: 'Decimals',
+        selector: {
+          number: {
+            mode: 'box',
+            min: 0,
+            max: 10,
+            step: 1
+          }
+        }
+      },
+      {
+        name: 'display_zero',
+        label: 'Display Zero',
+        selector: { boolean: {} }
+      },
     ],
   },
 ] as const;

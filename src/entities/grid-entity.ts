@@ -65,7 +65,6 @@ export class GridEntity {
       state: 0,
       icon: grid?.secondary_info?.icon,
       unit: grid?.secondary_info?.unit_of_measurement,
-      unit_white_space: grid?.secondary_info?.unit_white_space,
       decimals: grid?.secondary_info?.decimals,
       color_type: grid?.secondary_info?.color_of_value
     };

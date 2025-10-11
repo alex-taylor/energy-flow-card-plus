@@ -14,7 +14,6 @@ export class BatteryEntity {
   state_of_charge: {
     state: number;
     unit: string;
-    unit_white_space: boolean;
     decimals: number;
   };
 
@@ -49,7 +48,6 @@ export class BatteryEntity {
     this.state_of_charge = {
       state: 0,
       unit: battery?.state_of_charge_unit || "%",
-      unit_white_space: battery?.state_of_charge_unit_white_space || true,
       decimals: battery?.state_of_charge_decimals || 0
     };
 

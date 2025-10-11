@@ -31,11 +31,6 @@ const stateOfChargeSchema = [
         selector: { text: {} },
       },
       {
-        name: 'state_of_charge_unit_white_space',
-        label: 'Unit White Space',
-        selector: { boolean: {} },
-      },
-      {
         name: 'state_of_charge_decimals',
         label: 'Decimals',
         selector: { number: { mode: 'box', min: 0, max: 4, step: 1 } },

@@ -39,7 +39,6 @@
     "icon_alert": "Hälytyksen kuvake",
     "state_alert": "Hälytyksen tila",
     "state_of_charge": "Varauksen tila",
-    "state_of_charge_unit_white_space": "Välilyönti",
     "state_of_charge_unit": "Yksikkö",
     "state_of_charge_decimals": "Desimaalit",
     "state_of_charge_icon": "Kuvake",
