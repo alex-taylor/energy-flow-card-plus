@@ -5,6 +5,10 @@
       "motorbike": "Motorbike"
     }
   },
+  "common": {
+    "invalid_configuration": "Invalid Configuration",
+    "unknown": "Unknown"
+  },
   "editor": {
     "entity_generator": "Generator",
     "separated": "Separated Entities (One entity for consumption and one for production)",

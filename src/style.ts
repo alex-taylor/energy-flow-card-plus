@@ -309,6 +309,9 @@ export const styles = css`
   .grid ha-icon:not(.small) {
     color: var(--icon-grid-color);
   }
+  circle.homeUnknown {
+    stroke: var(--primary-text-color);
+  }
   .home .circle {
     border-width: 0;
     border-color: var(--primary-color);

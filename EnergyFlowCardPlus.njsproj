@@ -26,10 +26,10 @@
     <Content Include="TODO.txt">
       <SubType>Code</SubType>
     </Content>
-    <None Include="tsconfig.json" />
     <Content Include="CHANGELOG.md" />
     <Content Include="CODE_OF_CONDUCT.md" />
     <Content Include="README.md" />
+    <Content Include="tsconfig.json" />
     <None Include=".eslintrc.ts" />
     <None Include="jest.config.ts" />
     <None Include="src\const.ts" />
@@ -87,9 +87,14 @@
     <Folder Include="src\utils" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\entities\battery-entity.ts" />
+    <TypeScriptCompile Include="src\entities\grid-entity.ts" />
+    <TypeScriptCompile Include="src\entities\index.ts" />
+    <TypeScriptCompile Include="src\entities\solar-entity.ts" />
     <TypeScriptCompile Include="src\enums.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
+    <TypeScriptCompile Include="src\flows\index.ts" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />

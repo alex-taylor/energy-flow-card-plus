@@ -1,6 +1,6 @@
 {
   "name": "energy-flow-card-plus",
-  "version": "0.1.2",
+  "version": "0.1.2-alpha",
   "description": "Energy Flow Card Plus",
   "keywords": [
     "home-assistant",
@@ -12,7 +12,7 @@
     "dashboard"
   ],
   "module": "energy-flow-card-plus.js",
-  "repository": "git@github.com:flixlix/energy-flow-card-plus.git",
+  "repository": "git@github.com:alex-taylor/energy-flow-card-plus.git",
   "author": "Luca Félix <luca.ziegler.felix@gmail.com>",
   "dependencies": {
     "@mdi/js": "^7.2.96",

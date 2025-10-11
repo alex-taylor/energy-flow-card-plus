@@ -7,6 +7,8 @@ See if something can be done about the values spilling out of the circle?
 
 Secondary info may not be working
 
+Home icon/value colour calculation requires that we have a value for 'non-fossil' energy, which is never calculated
+
 
 
 
@@ -50,3 +52,5 @@ See if the stat-summing calculations can be cached - after all, the stats only u
 Test localisation by disabling EN and checking that all strings revert to their keys
 
 Remove the 'separated entities' accordion
+
+Add things like 'units' to the Entity classes, to save lookups each time they are needed (eg in getTotalEnergy)

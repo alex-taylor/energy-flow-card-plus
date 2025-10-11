@@ -2,10 +2,8 @@
 import { createThing, HomeAssistant, LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
 import { html, TemplateResult } from 'lit';
 import { UNIT_PREFIXES } from '../const';
-import { EnergyFlowCardPlusConfig } from '../energy-flow-card-plus-config';
 import { logError } from "../logging";
 import { Box, Connection, ConnectionState, EntityConfigOrStr } from '../types';
-import { DisplayMode } from "../enums";
 
 export function cloneObj<T extends Record<string, unknown>>(obj: T): T {
   return JSON.parse(JSON.stringify(obj));

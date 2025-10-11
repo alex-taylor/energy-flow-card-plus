@@ -1,4 +1,4 @@
-import { HomeAssistant, round } from "custom-card-helpers";
+import { HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 import { coerceNumber, isNumberValue, unavailableOrMisconfiguredError } from "../utils";
 import { Statistics, StatisticValue } from "../energy";
@@ -21,12 +21,12 @@ export const getEntityState = (hass: HomeAssistant, entity: string | undefined):
   return coerceNumber(getEntityStateObj(hass, entity)?.state || 0);
 };
 
-export const getEntityStateWattHours = (hass: HomeAssistant, displayMode: string | undefined, periodStart: Date | undefined, periodEnd: Date | undefined, statistics: Statistics | undefined, entity: baseEntity | undefined): number => {
+export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statistics | undefined, entity: baseEntity | undefined): number => {
   if (!statistics || !entity) {
     return 0;
   }
 
-  const entityStatistics = getEntityStatistics(hass, displayMode, periodStart, periodEnd, statistics, entity);
+  const entityStatistics = getEntityStatistics(hass, statistics, entity);
   let sum = 0;
 
   entityStatistics.forEach((value, key) => {
@@ -36,8 +36,8 @@ export const getEntityStateWattHours = (hass: HomeAssistant, displayMode: string
   return sum;
 };
 
-export const getEntityStatistics = (hass: HomeAssistant, displayMode: string | undefined, periodStart: Date | undefined, periodEnd: Date | undefined, statistics: Statistics, entity: baseEntity): Map<string, number> => {
-  const result: Map<string, number> = new Map();
+export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics, entity: baseEntity): Map<number, number> => {
+  const result: Map<number, number> = new Map();
   let entityArr: string[] = [];
 
   if (typeof entity === "string") {
@@ -67,33 +67,6 @@ export const getEntityStatistics = (hass: HomeAssistant, displayMode: string | u
             result.set(entry.start, value);
           }
         });
-
-        if (displayMode !== "history") {
-          const timestamp = Date.parse(stateObj.last_changed);
-
-          if (!result.has(timestamp.toString())) {
-            let start: Date;
-            let end: Date;
-
-            if (displayMode == "hybrid") {
-              if (!periodStart) {
-                return;
-              }
-
-              start = periodStart;
-              end = periodEnd ?? new Date();
-            } else {
-              end = new Date();
-              start = new Date(end.getFullYear(), end.getMonth(), end.getDate());
-            }
-
-            if (timestamp >= start.getTime() && timestamp <= end.getTime()) {
-              const state: number = coerceNumber(stateObj.state);
-              const delta: number = toWattHours(units, state - coerceNumber(statisticsForEntity[statisticsForEntity.length - 1].state));
-              result.set(Number.MAX_VALUE.toString(), delta);
-            }
-          }
-        }
       }
     }
   });
@@ -101,13 +74,13 @@ export const getEntityStatistics = (hass: HomeAssistant, displayMode: string | u
   return result;
 };
 
-const toWattHours = (units: string | undefined, value: number): number => {
+export const toWattHours = (units: string | undefined, value: number): number => {
   if (units?.startsWith("KWH")) {
-    return round(value * 1000, 0);
+    return value * 1000;
   }
 
   if (units?.startsWith("MWH")) {
-    return round(value * 1000000, 0);
+    return value * 1000000;
   }
 
   return value;

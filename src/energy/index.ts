@@ -54,8 +54,8 @@ export interface Statistics {
 
 export interface StatisticValue {
   statistic_id: string;
-  start: string;
-  end: string;
+  start: number;
+  end: number;
   last_reset: string | null;
   max: number | null;
   mean: number | null;
@@ -106,6 +106,7 @@ export const getEnergyDataCollection = (hass: HomeAssistant, key = '_energy'): E
   if ((hass.connection as any)[key]) {
     return (hass.connection as any)[key];
   }
+
   // HA has not initialized the collection yet and we don't want to interfere with that
   return null;
 };
@@ -134,6 +135,20 @@ export async function getStatistics(hass: HomeAssistant, periodStart: Date, peri
     period
   );
 
+  // if the first stat is after the start of our requested period, fake one up
+  Object.values(data).forEach(stat => {
+    if (stat.length != 0 && stat[0].start > periodStart.getTime()) {
+      stat.unshift({
+        ...stat[0],
+        start: periodStart.getTime(),
+        end: periodStart.getTime(),
+        sum: 0,
+        state: (stat[0].state ?? 0) - (stat[0].change ?? 0),
+        change: 0
+      });
+    }
+  });
+
   return data;
 }
 
@@ -141,8 +156,10 @@ export function getEnergySourceColor(type: string) {
   if (type === 'solar') {
     return 'var(--warning-color)';
   }
+
   if (type === 'battery') {
     return 'var(--success-color)';
   }
+
   return undefined;
 }

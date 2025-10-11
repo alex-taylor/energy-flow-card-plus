@@ -1,33 +1,68 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { Statistics } from "../energy";
-import type { Flows } from "../types";
+import { Statistics, StatisticValue } from "../energy";
+import { Flows } from "../types";
 import type { BatteryEntity } from "../entities/battery-entity";
 import type { GridEntity } from "../entities/grid-entity";
 import type { SolarEntity } from "../entities/solar-entity";
-import { getEntityStatistics } from "../entities";
+import { getEntityStatistics, toWattHours } from "../entities";
+import { coerceNumber } from "../utils";
+import { HassEntity } from "home-assistant-js-websocket";
 
-export const calculateFlowValues = (hass: HomeAssistant, displayMode: string | undefined, periodStart: Date | undefined, periodEnd: Date | undefined, statistics: Statistics | undefined, solar: SolarEntity, battery: BatteryEntity, grid: GridEntity): void => {
+export const getLiveDeltas = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, statistics: Statistics, solar: SolarEntity, battery: BatteryEntity, grid: GridEntity): Flows => {
+  const solarProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, solar.entity);
+  const batteryConsumptionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, battery.entity.consumption);
+  const batteryProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, battery.entity.production);
+  const gridConsumptionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, grid.entity.consumption);
+  const gridProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, grid.entity.production);
+  return calculateFlows(solarProductionDelta, batteryConsumptionDelta, batteryProductionDelta, gridConsumptionDelta, gridProductionDelta);
+};
+
+const getDelta = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, statistics: Statistics, entity: string): number => {
+  const entityStats: StatisticValue[] = statistics[entity];
+
+  if (!entityStats || entityStats.length == 0) {
+    return 0;
+  }
+
+  const stateObj: HassEntity = hass.states[entity];
+
+  if (!stateObj) {
+    return 0;
+  }
+
+  const timestamp: number = Date.parse(stateObj.last_changed);
+
+  if (timestamp >= periodStart.getTime() && timestamp <= periodEnd.getTime()) {
+    const state: number = coerceNumber(stateObj.state);
+    const units = stateObj.attributes.unit_of_measurement?.toUpperCase();
+    return toWattHours(units, state - (entityStats[entityStats.length - 1].state ?? 0));
+  }
+
+  return 0;
+};
+
+export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statistics | undefined, solar: SolarEntity, battery: BatteryEntity, grid: GridEntity): void => {
   if (!statistics) {
     return;
   }
 
-  const combinedStats: Map<string, Map<string, number>> = new Map();
+  const combinedStats: Map<number, Map<string, number>> = new Map();
 
   if (grid.isPresent) {
-    addFlowStats(hass, displayMode, periodStart, periodEnd, statistics, combinedStats, grid.entity.consumption);
+    addFlowStats(hass, statistics, combinedStats, grid.entity.consumption);
 
     if (grid.hasReturnToGrid) {
-      addFlowStats(hass, displayMode, periodStart, periodEnd, statistics, combinedStats, grid.entity.production);
+      addFlowStats(hass, statistics, combinedStats, grid.entity.production);
     }
   }
 
   if (battery.isPresent) {
-    addFlowStats(hass, displayMode, periodStart, periodEnd, statistics, combinedStats, battery.entity.consumption);
-    addFlowStats(hass, displayMode, periodStart, periodEnd, statistics, combinedStats, battery.entity.production);
+    addFlowStats(hass, statistics, combinedStats, battery.entity.consumption);
+    addFlowStats(hass, statistics, combinedStats, battery.entity.production);
   }
 
   if (solar.isPresent) {
-    addFlowStats(hass, displayMode, periodStart, periodEnd, statistics, combinedStats, solar.entity);
+    addFlowStats(hass, statistics, combinedStats, solar.entity);
   }
 
   let solarToHome: number = 0;
@@ -37,9 +72,20 @@ export const calculateFlowValues = (hass: HomeAssistant, displayMode: string | u
   let batteryToHome: number = 0;
   let solarToBattery: number = 0;
   let solarToGrid: number = 0;
+  let fromSolar: number = 0;
+  let fromGrid: number = 0;
+  let toGrid: number = 0;
+  let toBattery: number = 0;
+  let fromBattery: number = 0;
 
   combinedStats.forEach((entry, timestamp) => {
-    const results: Flows = calculateFlows(entry.get(solar.entity) ?? 0, entry.get(battery.entity.consumption) ?? 0, entry.get(battery.entity.production) ?? 0, entry.get(grid.entity.consumption) ?? 0, entry.get(grid.entity.production) ?? 0);
+    const fs: number = entry.get(solar.entity) ?? 0;
+    const fb: number = entry.get(battery.entity.consumption) ?? 0;
+    const tb: number = entry.get(battery.entity.production) ?? 0;
+    const fg: number = entry.get(grid.entity.consumption) ?? 0;
+    const tg: number = entry.get(grid.entity.production) ?? 0;
+    const results: Flows = calculateFlows(fs, fb, tb, fg, tg);
+
     solarToHome += results.solarToHome;
     gridToHome += results.gridToHome;
     gridToBattery += results.gridToBattery;
@@ -47,25 +93,26 @@ export const calculateFlowValues = (hass: HomeAssistant, displayMode: string | u
     batteryToHome += results.batteryToHome;
     solarToBattery += results.solarToBattery;
     solarToGrid += results.solarToGrid;
+    fromSolar += fs;
+    fromGrid += fg;
+    toGrid += tg;
+    fromBattery += fb;
+    toBattery += tb;
   });
-
-  solar.state.toHome = solarToHome;
-  grid.state.toHome = gridToHome;
-  grid.state.toBattery = gridToBattery;
-  battery.state.toGrid = batteryToGrid;
-  battery.state.toHome = batteryToHome;
-  solar.state.toBattery = solarToBattery;
-  solar.state.toGrid = solarToGrid;
 
   if (grid.isPresent) {
     if (grid.powerOutage.isOutage) {
+      grid.state.toHome = 0;
+      grid.state.toBattery = 0;
       grid.state.fromGrid = 0;
       grid.state.toGrid = 0;
     } else {
-      grid.state.fromGrid = clampStateValue(grid.state.toHome + grid.state.toBattery, grid.display_zero_tolerance);
+      grid.state.toHome = clampStateValue(gridToHome, grid.display_zero_tolerance);
+      grid.state.toBattery = clampStateValue(gridToBattery, grid.display_zero_tolerance);
+      grid.state.fromGrid = clampStateValue(fromGrid, grid.display_zero_tolerance);
 
       if (grid.hasReturnToGrid) {
-        grid.state.toGrid = clampStateValue(solar.state.toGrid + battery.state.toGrid, grid.display_zero_tolerance);
+        grid.state.toGrid = clampStateValue(toGrid, grid.display_zero_tolerance);
       } else {
         grid.state.toGrid = 0;
       }
@@ -73,16 +120,24 @@ export const calculateFlowValues = (hass: HomeAssistant, displayMode: string | u
   }
 
   if (battery.isPresent) {
-    battery.state.toBattery = clampStateValue(solar.state.toBattery + grid.state.toBattery, battery.display_zero_tolerance ?? 0);
-    battery.state.fromBattery = clampStateValue(battery.state.toHome + battery.state.toGrid, battery.display_zero_tolerance ?? 0);
+    battery.state.toGrid = clampStateValue(batteryToGrid, battery.display_zero_tolerance);
+    battery.state.toHome = clampStateValue(batteryToHome, battery.display_zero_tolerance);
+    battery.state.fromBattery = clampStateValue(fromBattery, battery.display_zero_tolerance);
+    battery.state.toBattery = clampStateValue(toBattery, battery.display_zero_tolerance);
   }
 
   if (solar.isPresent) {
-    solar.state.total = Math.max(solar.state.toGrid + solar.state.toBattery + solar.state.toHome, solar.display_zero_tolerance ?? 0);
+    solar.state.toHome = clampStateValue(solarToHome, solar.display_zero_tolerance);
+    solar.state.toBattery = clampStateValue(solarToBattery, solar.display_zero_tolerance);
+    solar.state.toGrid = clampStateValue(solarToGrid, solar.display_zero_tolerance);
+    solar.state.total = clampStateValue(fromSolar, solar.display_zero_tolerance);
   }
 };
 
-const calculateFlows = (solarProduction: number, batteryConsumption: number, batteryProduction: number, gridConsumption: number, gridProduction: number): Flows => {
+const calculateFlows = (fromSolar: number, fromBattery: number, toBattery: number, fromGrid: number, toGrid: number): Flows => {
+  const energyIn: number = fromGrid + fromSolar + fromBattery;
+  const energyOut: number = toGrid + toBattery;
+  let remaining: number = Math.max(0, energyIn - energyOut);
   let solarToHome: number;
   let gridToHome: number;
   let gridToBattery: number;
@@ -90,36 +145,34 @@ const calculateFlows = (solarProduction: number, batteryConsumption: number, bat
   let batteryToHome: number;
   let solarToBattery: number;
   let solarToGrid: number;
-  let total: number = gridConsumption + solarProduction + batteryConsumption - gridProduction - batteryProduction;
-  let remaining: number = Math.max(total, 0);
 
-  const excess: number = Math.max(0, Math.min(batteryProduction, gridConsumption - remaining));
+  const excess: number = Math.max(0, Math.min(toBattery, fromGrid - remaining));
   gridToBattery = excess;
-  batteryProduction -= excess;
-  gridConsumption -= excess;
+  toBattery -= excess;
+  fromGrid -= excess;
 
-  solarToBattery = Math.min(solarProduction, batteryProduction);
-  batteryProduction -= solarToBattery;
-  solarProduction -= solarToBattery;
+  solarToBattery = Math.min(fromSolar, toBattery);
+  toBattery -= solarToBattery;
+  fromSolar -= solarToBattery;
 
-  solarToGrid = Math.min(solarProduction, gridProduction);
-  gridProduction -= solarToGrid;
-  solarProduction -= solarToGrid;
+  solarToGrid = Math.min(fromSolar, toGrid);
+  toGrid -= solarToGrid;
+  fromSolar -= solarToGrid;
 
-  batteryToGrid = Math.min(batteryConsumption, gridProduction);
-  batteryConsumption -= batteryToGrid;
+  batteryToGrid = Math.min(fromBattery, toGrid);
+  fromBattery -= batteryToGrid;
 
-  const gridToBattery2: number = Math.min(gridConsumption, batteryProduction);
+  const gridToBattery2: number = Math.min(fromGrid, toBattery);
   gridToBattery += gridToBattery2;
-  gridConsumption -= gridToBattery2;
+  fromGrid -= gridToBattery2;
 
-  solarToHome = Math.min(remaining, solarProduction);
+  solarToHome = Math.min(remaining, fromSolar);
   remaining -= solarToHome;
 
-  batteryToHome = Math.min(batteryConsumption, remaining);
+  batteryToHome = Math.min(fromBattery, remaining);
   remaining -= batteryToHome;
 
-  gridToHome = Math.min(remaining, gridConsumption);
+  gridToHome = Math.min(remaining, fromGrid);
 
   return {
     solarToHome: solarToHome,
@@ -132,8 +185,8 @@ const calculateFlows = (solarProduction: number, batteryConsumption: number, bat
   };
 }
 
-const addFlowStats = (hass: HomeAssistant, displayMode: string | undefined, periodStart: Date | undefined, periodEnd: Date | undefined, statistics: Statistics, combinedStats: Map<string, Map<string, number>>, entity: string): void => {
-  const entityStats: Map<string, number> = getEntityStatistics(hass, displayMode, periodStart, periodEnd, statistics, entity);
+const addFlowStats = (hass: HomeAssistant, statistics: Statistics, combinedStats: Map<number, Map<string, number>>, entity: string): void => {
+  const entityStats: Map<number, number> = getEntityStatistics(hass, statistics, entity);
 
   entityStats.forEach((value, timestamp) => {
     let entry: Map<string, number> | undefined = combinedStats.get(timestamp);
