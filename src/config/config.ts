@@ -10,6 +10,7 @@ const defaultValues = {
   useNewFlowRateModel: true,
   useHourlyStats: false,
   unitWhiteSpace: true,
+  displayZeroState: true,
   maxFlowRate: 6,
   minFlowRate: 1,
   watthourDecimals: 0,
@@ -57,7 +58,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
         },
       },
       solar: firstSolarEnergyEntity
-        ? { entity: firstSolarEnergyEntity, display_zero_state: true }
+        ? { entity: firstSolarEnergyEntity }
         : undefined,
     },
     display_mode: defaultValues.displayMode,
@@ -66,6 +67,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
     use_new_flow_rate_model: defaultValues.useNewFlowRateModel,
     use_hourly_stats: defaultValues.useHourlyStats,
     unit_white_space: defaultValues.unitWhiteSpace,
+    display_zero_state: defaultValues.displayZeroState,
     wh_decimals: defaultValues.watthourDecimals,
     kwh_decimals: defaultValues.kilowatthourDecimals,
     min_flow_rate: defaultValues.minFlowRate,

@@ -37,6 +37,7 @@ interface MainConfigOptions {
   use_new_flow_rate_model?: boolean;
   use_hourly_stats?: boolean;
   unit_white_space?: boolean;
+  display_zero_state?: boolean;
 }
 
 interface EntitiesConfig {
@@ -52,7 +53,6 @@ interface EntitiesConfig {
 interface EntityConfigOptions {
   name?: string;
   icon?: string;
-  display_zero_state?: boolean;
   display_zero_tolerance?: number;
   use_metadata?: boolean;
   secondary_info?: SecondaryInfoType;
@@ -157,7 +157,6 @@ type IndividualDeviceType = {
   inverted_animation?: boolean;
   unit_of_measurement?: string;
   display_zero?: boolean;
-  display_zero_state?: boolean;
   display_zero_tolerance?: number;
   secondary_info?: SecondaryInfoType;
   color_value?: boolean;

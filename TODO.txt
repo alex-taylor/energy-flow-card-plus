@@ -60,5 +60,3 @@ Remove the 'separated entities' accordion
 Add things like 'units' to the Entity classes, to save lookups each time they are needed (eg in getTotalEnergy)
 
 Test Non-Fossil
-
-Move 'display zero state' up to global config

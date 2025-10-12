@@ -181,7 +181,6 @@ export function getBaseMainConfigSchema(field?: string) {
       { name: 'name', selector: { text: {} } },
       { name: 'icon', selector: { icon: {} } },
       { name: 'use_metadata', label: 'Use Metadata', selector: { boolean: {} } },
-      { name: 'display_zero_state', label: 'Display Zero State', selector: { boolean: {} } },
     ],
   };
 

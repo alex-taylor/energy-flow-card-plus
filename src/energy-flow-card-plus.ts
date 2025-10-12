@@ -685,7 +685,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             ? totalHomeConsumption - totalIndividualConsumption || 0
             : totalHomeConsumption
 
-      homeUsageToDisplay = homeUsageState > 0 || entities.home?.display_zero_state ? this.displayValue(homeUsageState) : "";
+      homeUsageToDisplay = homeUsageState > 0 || this._config.display_zero_state ? this.displayValue(homeUsageState) : "";
     }
 
     let lowCarbonPercentage: number | undefined;
@@ -707,7 +707,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     const hasNonFossilFuelUsage = lowCarbonEnergy !== null && lowCarbonEnergy && lowCarbonEnergy > ((entities.fossil_fuel_percentage?.display_zero_tolerance ?? 0) * 1000 || 0);
-    const hasFossilFuelPercentage = entities.fossil_fuel_percentage?.show === true;
+    const hasFossilFuelPercentage = entities.fossil_fuel_percentage?.show;
 
     if (this._config.display_mode === DisplayMode.Live) {
       lowCarbonPercentage = 100 - getEntityState(this.hass, entities.fossil_fuel_percentage?.entity);
@@ -780,7 +780,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         ? this.displayValue(individual.secondary.state, individual.secondary.unit)
         : undefined;
       const passesDisplayZeroCheck =
-        individual.secondary.displayZero !== false ||
+        individual.secondary.displayZero ||
         (isNumberValue(individual.secondary.state)
           ? (Number(individual.secondary.state) ?? 0) > (individual.secondary.displayZeroTolerance ?? 0)
           : true);
@@ -799,7 +799,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         <div class="card-content" id="energy-flow-card-plus">
           ${solar.isPresent || individual2.isPresent || individual1.isPresent || hasFossilFuelPercentage
             ? html`<div class="row">
-                ${!hasFossilFuelPercentage || (!hasNonFossilFuelUsage && entities.fossil_fuel_percentage?.display_zero === false)
+                ${!hasFossilFuelPercentage || (!hasNonFossilFuelUsage && !entities.fossil_fuel_percentage?.display_zero)
                   ? html`<div class="spacer"></div>`
                   : html`<div class="circle-container low-carbon">
                       <span class="label">${nonFossilName}</span>
@@ -819,12 +819,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           .icon=${nonFossilIcon}
                           class="low-carbon"
                           style="${nonFossil.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.fossil_fuel_percentage?.display_zero_state !== false ||
-                          (nonFossilFuelEnergy || 0) > (entities.fossil_fuel_percentage?.display_zero_tolerance || 0)
+                          ${this._config.display_zero_state || (nonFossilFuelEnergy || 0) > (entities.fossil_fuel_percentage?.display_zero_tolerance || 0)
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.fossil_fuel_percentage?.display_zero_state !== false || hasNonFossilFuelUsage !== false
+                        ${this._config.display_zero_state || hasNonFossilFuelUsage
                           ? html`
                               <span class="low-carbon"
                                 >${this.displayValue(
@@ -878,11 +877,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           id="solar-icon"
                           .icon=${solarIcon}
                           style="${solar.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.solar?.display_zero_state !== false || (solarTotal || 0) > 0
+                          ${this._config.display_zero_state || (solarTotal || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.solar?.display_zero_state !== false || (solarTotal || 0) > 0
+                        ${this._config.display_zero_state || (solarTotal || 0) > 0
                           ? html` <span class="solar value"> ${this.displayValue(solarTotal)}</span>`
                           : ""}
                       </div>
@@ -909,11 +908,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           id="individual2-icon"
                           .icon=${individual2.icon}
                           style="${individual2.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.individual2?.display_zero_state || (individual2.state || 0) > 0
+                          ${this._config.display_zero_state || (individual2.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.individual2?.display_zero_state || (individual2.state || 0) > 0
+                        ${this._config.display_zero_state || (individual2.state || 0) > 0
                           ? html` <span class="individual2">${individual2DisplayState} </span>`
                           : ""}
                       </div>
@@ -962,11 +961,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           id="individual1-icon"
                           .icon=${individual1.icon}
                           style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.individual1?.display_zero_state || (individual1.state || 0) > 0
+                          ${this._config.display_zero_state || (individual1.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.individual1?.display_zero_state || (individual1.state || 0) > 0
+                        ${this._config.display_zero_state || (individual1.state || 0) > 0
                           ? html`<span class="individual1">${individual1DisplayState}</span>`
                           : ""}
                       </div>
@@ -1015,7 +1014,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                   >
                     ${generalSecondarySpan(grid, "grid")}
                     <ha-icon .icon=${grid.icon}></ha-icon>
-                    ${gridToGrid !== null && !grid.powerOutage.isOutage && (entities.grid?.display_zero_state || gridToGrid > 0)
+                    ${gridToGrid !== null && !grid.powerOutage.isOutage && (this._config.display_zero_state || gridToGrid > 0)
                       ? html`<span class="return"
                           @click=${(e: { stopPropagation: () => void }) => {
                             const target = Array.isArray(entities.grid?.entity?.production)
@@ -1036,7 +1035,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           ${this.displayValue(gridToGrid)}
                         </span>`
                       : null}
-                    ${gridFromGrid !== null && !grid.powerOutage.isOutage && (entities.grid?.display_zero_state || gridFromGrid > 0)
+                    ${gridFromGrid !== null && !grid.powerOutage.isOutage && (this._config.display_zero_state || gridFromGrid > 0)
                         ? html`<span class="consumption">
                             <ha-icon class="small" .icon=${"mdi:arrow-right"}></ha-icon>
                             ${this.displayValue(gridFromGrid)}
@@ -1164,7 +1163,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           : null}
                         <ha-icon
                           .icon=${batteryIcon}
-                          style=${entities.battery?.display_zero_state
+                          style=${this._config.display_zero_state
                             ? "padding-top: 0px; padding-bottom: 2px;"
                             : "padding-top: 2px; padding-bottom: 0px;"}
                           @click=${(e: { stopPropagation: () => void }) => {
@@ -1178,7 +1177,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                             }
                           }}
                         ></ha-icon>
-                        ${batteryToBattery !== null && (entities.battery?.display_zero_state || batteryToBattery > 0)
+                        ${batteryToBattery !== null && (this._config || batteryToBattery > 0)
                           ? html`<span
                               class="battery-in"
                               @click=${(e: { stopPropagation: () => void }) => {
@@ -1198,7 +1197,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               ${this.displayValue(batteryToBattery)}
                             </span>`
                           : ""}
-                        ${batteryFromBattery !== null && (entities.battery?.display_zero_state || batteryFromBattery > 0)
+                        ${batteryFromBattery !== null && (this._config || batteryFromBattery > 0)
                           ? html`<span
                               class="battery-out"
                               @click=${(e: { stopPropagation: () => void }) => {
@@ -1258,11 +1257,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           id="individual1-icon"
                           .icon=${individual1.icon}
                           style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${entities.individual1?.display_zero_state !== false || (individual1.state || 0) > 0
+                          ${this._config.display_zero_state || (individual1.state || 0) > 0
                             ? "padding-bottom: 2px;"
                             : "padding-bottom: 0px;"}"
                         ></ha-icon>
-                        ${entities.individual1?.display_zero_state !== false || (individual1.state || 0) > 0
+                        ${this._config.display_zero_state || (individual1.state || 0) > 0
                           ? html` <span class="individual1">${individual1DisplayState} </span>`
                           : ""}
                       </div>
@@ -1565,7 +1564,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   };
 
   private additionalCircleRate = (entry?: boolean | number, value?: number): number | boolean | undefined => {
-    if (entry === true && value) {
+    if (entry && value) {
       return value;
     }
 
@@ -1632,7 +1631,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     return (
-      field?.display_zero === true || (this.getEntityStateWattHours(field?.entity) > (field?.display_zero_tolerance ?? 0) && Array.isArray(field?.entity)
+      field?.display_zero || (this.getEntityStateWattHours(field?.entity) > (field?.display_zero_tolerance ?? 0) && Array.isArray(field?.entity)
         ? entityAvailable(this.hass, field?.mainEntity)
         : entityAvailable(this.hass, field?.entity)) || acceptStringState
           ? typeof this.hass.states[field?.entity]?.state === "string"
@@ -1645,7 +1644,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
    * @param energy - energy value to check
    * @returns boolean to decide if line should be shown (true = show, false = don't show)
    */
-  private showLine = (energy: number): boolean => this._config?.display_zero_lines === true || energy > 0;
+  private showLine = (energy: number): boolean => this._config?.display_zero_lines || energy > 0;
 
   /**
    * Depending on if the user has defined the icon or wants to use the entity icon, return the icon to display.

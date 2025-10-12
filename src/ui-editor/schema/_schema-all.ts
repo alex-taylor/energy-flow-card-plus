@@ -35,8 +35,7 @@ export const cardConfigStruct = assign(
     use_new_flow_rate_model: optional(boolean()),
     use_hourly_stats: optional(boolean()),
     unit_white_space: optional(boolean()),
-    // @deprecated redundant, but can't be removed as this would break existing configs
-    energy_date_selection: optional(boolean()),
+    display_zero_state: optional(boolean()),
     entities: object({
       battery: optional(any()),
       grid: optional(any()),
@@ -46,6 +45,9 @@ export const cardConfigStruct = assign(
       individual1: optional(any()),
       individual2: optional(any()),
     }),
+
+    // @deprecated redundant, but can't be removed as this would break existing configs
+    energy_date_selection: optional(boolean()),
   }),
 );
 
@@ -210,6 +212,11 @@ export const advancedOptionsSchema = memoizeOne(localize => [
           {
             name: 'unit_white_space',
             label: 'Unit White Space',
+            selector: { boolean: {} }
+          },
+          {
+            name: 'display_zero_state',
+            label: 'Display Zero State',
             selector: { boolean: {} }
           }
         ],
