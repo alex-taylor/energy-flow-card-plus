@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { HomeAssistant } from 'custom-card-helpers';
+import { addHours } from 'date-fns';
 import { Collection } from 'home-assistant-js-websocket';
 
 interface StatisticsMetaData {
@@ -111,41 +112,40 @@ export const getEnergyDataCollection = (hass: HomeAssistant, key = '_energy'): E
   return null;
 };
 
-const fetchStatistics = (
-  hass: HomeAssistant,
-  startTime: Date,
-  endTime?: Date,
-  statistic_ids?: string[],
-  period: '5minute' | 'hour' | 'day' | 'week' | 'month' = 'hour'
-) =>
-  hass.callWS<Statistics>({
-    type: 'recorder/statistics_during_period',
-    start_time: startTime.toISOString(),
-    end_time: endTime?.toISOString(),
-    statistic_ids,
-    period
-  });
+const fetchStatistics = (hass: HomeAssistant, startTime: Date, endTime?: Date, statistic_ids?: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month' = 'hour') => hass.callWS<Statistics>({
+  type: 'recorder/statistics_during_period',
+  start_time: startTime.toISOString(),
+  end_time: endTime?.toISOString(),
+  statistic_ids: statistic_ids,
+  period: period
+});
 
 export async function getStatistics(hass: HomeAssistant, periodStart: Date, periodEnd: Date, entities: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month'): Promise<Statistics> {
-  const data: Statistics = await fetchStatistics(
-    hass,
-    periodStart,
-    periodEnd,
-    entities,
-    period
-  );
+  const data: Statistics = await fetchStatistics(hass, addHours(periodStart, -1), periodEnd, entities, period);
 
-  // if the first stat is after the start of our requested period, fake one up
   Object.values(data).forEach(stat => {
-    if (stat.length != 0 && stat[0].start > periodStart.getTime()) {
-      stat.unshift({
-        ...stat[0],
-        start: periodStart.getTime(),
-        end: periodStart.getTime(),
-        sum: 0,
-        state: (stat[0].state ?? 0) - (stat[0].change ?? 0),
-        change: 0
-      });
+    if (stat.length != 0) {
+      let idx: number = 0;
+
+      if (stat[idx].start < periodStart.getTime()) {
+        // This entry is the final stat priod to the period we are interested in.  It is only needed for the case where we need to calculate the
+        // Live/Hybrid-mode state-delta at midnight on the current date (ie, before the first stat of the new day has been generated) so we do
+        // not want to include its values in the stats calculations.
+        if (stat.length > 1) {
+          stat.splice(idx, 1);
+        } else {
+          stat[idx].change = 0;
+
+          // TODO: if this is a 'resetting' sensor, then 'state' also needs zeroing out
+
+          idx++;
+        }
+      }
+
+      if (stat.length > idx) {
+        // TODO: if this is a 'resetting' sensor, then set 'change' to 'state' on stat[idx] - this works around the case where the sensor is incorrectly
+        //       configured as 'Total' rather than 'Total Increasing', which causes a negative 'change' value in the first reading following the reset
+      }
     }
   });
 

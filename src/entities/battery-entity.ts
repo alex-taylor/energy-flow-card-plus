@@ -1,13 +1,9 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { BatteryConfigEntity, ComboEntity } from "../config";
 import { ColorMode } from "../enums";
+import { Entity } from "./entity";
 
-export class BatteryEntity {
-  isPresent: boolean;
-  name: string;
-  icon?: string;
-  displayZeroTolerance?: number;
-  mainEntity?: string;
+export class BatteryEntity extends Entity {
   entity: ComboEntity;
 
   stateOfCharge: {
@@ -32,11 +28,15 @@ export class BatteryEntity {
   };
 
   public constructor(hass: HomeAssistant, battery: BatteryConfigEntity | undefined) {
-    this.isPresent = battery?.entity !== undefined;
-    this.name = battery?.name || hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.battery");
-    this.icon = battery?.icon || "mdi:battery-high";
-    this.displayZeroTolerance = battery?.display_zero_tolerance;
-    this.mainEntity = typeof battery?.entity === "object" ? battery.entity.consumption : battery?.entity;
+    super(
+      hass,
+      battery,
+      typeof battery?.entity === "object"
+        ? battery.entity.consumption
+        : battery?.entity,
+      "ui.panel.lovelace.cards.energy.energy_distribution.battery",
+      "mdi:battery-high"
+    );
 
     this.entity = {
       consumption: battery?.entity?.consumption as string,

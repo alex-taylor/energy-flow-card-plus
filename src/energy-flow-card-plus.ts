@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { formatNumber, HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
+import { EntitiesCardEntityConfig, formatNumber, HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import { Decimal } from "decimal.js";
 import { customElement, property, state } from "lit/decorators.js";
 import { classMap } from "lit/directives/class-map.js";
@@ -23,6 +23,9 @@ import { entityExists, entityAvailable, getEntityStateObj, getEntityState, getEn
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { differenceInDays, isFirstDayOfMonth, isLastDayOfMonth } from 'date-fns';
 import { ColorMode, DisplayMode, EntityType } from "./enums";
+import { HomeEntity } from "./entities/home-entity";
+import { IndividualEntity } from "./entities/individual-entity";
+import { FossilFuelEntity } from "./entities/fossil-fuel-entity";
 
 registerCustomCard({
   type: "energy-flow-card-plus",
@@ -61,6 +64,10 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   private _grid!: GridEntity;
   private _solar!: SolarEntity;
   private _battery!: BatteryEntity;
+  private _home!: HomeEntity;
+  private _individual1!: IndividualEntity;
+  private _individual2!: IndividualEntity;
+  private _fossilFuel!: FossilFuelEntity;
   private _previousDur: { [name: string]: number } = {};
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
@@ -166,90 +173,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // show pointer if clickable entities is enabled
     this.style.setProperty("--clickable-cursor", this._config.clickable_entities ? "pointer" : "default");
 
-    // Create initial objects for each field
-    const grid = this._grid;
-    const solar = this._solar;
-    const battery = this._battery;
-
-    const home = {
-      entity: entities.home?.entity,
-      mainEntity: Array.isArray(entities.home?.entity) ? entities.home?.entity[0] : entities.home?.entity,
-      has: entities?.home?.entity,
-      state: 0,
-      icon: this.computeFieldIcon(entities?.home, "mdi:home"),
-      name: this.computeFieldName(entities?.home, this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.home")),
-      color: {
-        icon_type: entities.home?.color_of_icon
-      },
-      secondary: {
-        entity: entities.home?.secondary_info?.entity,
-        template: entities.home?.secondary_info?.template,
-        isPresent: this.hasField(entities.home?.secondary_info, true),
-        state: null as number | string | null,
-        unit: entities.home?.secondary_info?.unit_of_measurement,
-        icon: entities.home?.secondary_info?.icon,
-        decimals: entities.home?.secondary_info?.decimals,
-        color_type: entities.home?.secondary_info?.color_of_value
-      }
-    };
-
-    const getIndividualObject = (field: "individual1" | "individual2") => ({
-      entity: entities[field]?.entity,
-      mainEntity: Array.isArray(entities[field]?.entity) ? entities[field]?.entity[0] : (entities[field]?.entity as string | undefined),
-      isPresent: this.hasField(entities[field]),
-      displayZero: entities[field]?.display_zero,
-      displayZeroTolerance: entities[field]?.display_zero_tolerance,
-      state: 0,
-      icon: this.computeFieldIcon(entities[field], field === "individual1" ? "mdi:car-electric" : "mdi:motorbike-electric"),
-      name: this.computeFieldName(entities[field], field === "individual1" ? localize("card.label.car") : localize("card.label.motorbike")),
-      color: entities[field]?.color,
-      unit: entities[field]?.unit_of_measurement,
-      decimals: entities[field]?.decimals,
-      invertAnimation: entities[field]?.inverted_animation,
-      showDirection: entities[field]?.show_direction,
-      secondary: {
-        entity: entities[field]?.secondary_info?.entity,
-        template: entities[field]?.secondary_info?.template,
-        isPresent: this.hasField(entities[field]?.secondary_info, true),
-        state: null as number | string | null,
-        icon: entities[field]?.secondary_info?.icon,
-        unit: entities[field]?.secondary_info?.unit_of_measurement,
-        displayZero: entities[field]?.secondary_info?.display_zero,
-        decimals: entities[field]?.secondary_info?.decimals,
-        displayZeroTolerance: entities[field]?.secondary_info?.display_zero_tolerance,
-        color_type: entities[field]?.secondary_info?.color_of_value
-      }
-    });
-
-    const individual1 = getIndividualObject("individual1");
-    const individual2 = getIndividualObject("individual2");
-
-    type Individual = typeof individual2 & typeof individual1;
-
-    const nonFossil = {
-      entity: entities.fossil_fuel_percentage?.entity,
-      mainEntity: Array.isArray(entities.fossil_fuel_percentage?.entity)
-        ? entities.fossil_fuel_percentage?.entity[0]
-        : entities.fossil_fuel_percentage?.entity,
-      name: entities.fossil_fuel_percentage?.name ?? (entities.fossil_fuel_percentage?.use_metadata && getEntityStateObj(this.hass, entities.fossil_fuel_percentage.entity)?.attributes.friendly_name) ?? this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.low_carbon"),
-      icon: entities.fossil_fuel_percentage?.icon ?? (entities.fossil_fuel_percentage?.use_metadata && getEntityStateObj(this.hass, entities.fossil_fuel_percentage.entity)?.attributes?.icon) ?? "mdi:leaf",
-      has: false,
-      hasPercentage: false,
-      state: {
-        power: 0
-      },
-      color: entities.fossil_fuel_percentage?.color,
-      color_value: entities.fossil_fuel_percentage?.color_value,
-      secondary: {
-        entity: entities.fossil_fuel_percentage?.secondary_info?.entity,
-        template: entities.fossil_fuel_percentage?.secondary_info?.template,
-        isPresent: this.hasField(entities.fossil_fuel_percentage?.secondary_info, true),
-        state: null as number | string | null,
-        icon: entities.fossil_fuel_percentage?.secondary_info?.icon,
-        unit: entities.fossil_fuel_percentage?.secondary_info?.unit_of_measurement,
-        color_value: entities.fossil_fuel_percentage?.secondary_info?.color_of_value
-      }
-    };
+    const grid: GridEntity = this._grid;
+    const solar: SolarEntity = this._solar;
+    const battery: BatteryEntity = this._battery;
+    const home: HomeEntity = this._home;
+    const individual1: IndividualEntity = this._individual1;
+    const individual2: IndividualEntity = this._individual2;
+    const fossilFuel: FossilFuelEntity = this._fossilFuel;
 
     // Override in case of Power Outage
     if (grid.powerOutage.isOutage && grid.powerOutage.icon) {
@@ -275,9 +205,10 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     // Update Icon of Grid depending on Power Outage and other user configurations (computeFieldIcon)
-    grid.icon = !grid.powerOutage.isOutage
-      ? this.computeFieldIcon(entities.grid, "mdi:transmission-tower")
-      : entities?.grid?.power_outage?.icon_alert ?? "mdi:transmission-tower-off";
+    const gridIcon: string =
+      grid.powerOutage.isOutage
+        ? entities?.grid?.power_outage?.icon_alert ?? "mdi:transmission-tower-off"
+        : grid.icon;
 
     // Update and Set Color of Grid Icon
     this.style.setProperty(
@@ -350,7 +281,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     individual2.secondary.state = this.getSecondaryState(individual2.secondary, EntityType.Individual2_Secondary);
     solar.secondary.state = this.getSecondaryState(solar.secondary, EntityType.Solar_Secondary);
     home.secondary.state = this.getSecondaryState(home.secondary, EntityType.HomeSecondary);
-    nonFossil.secondary.state = this.getSecondaryState(nonFossil.secondary, EntityType.Non_Fossil_Secondary);
+    fossilFuel.secondary.state = this.getSecondaryState(fossilFuel.secondary, EntityType.Non_Fossil_Secondary);
     grid.secondary.state = this.getSecondaryState(grid.secondary, EntityType.Grid_Secondary);
 
     // Update and Set Color of Solar
@@ -641,13 +572,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     this.style.setProperty("--icon-home-color", iconHomeColor);
 
-    const solarIcon = entities.solar?.icon || (entities.solar?.use_metadata && getEntityStateObj(this.hass, solar.mainEntity)?.attributes?.icon) || "mdi:solar-power";
-    const solarName = entities.solar?.name || (entities.solar?.use_metadata && getEntityStateObj(this.hass, solar.mainEntity)?.attributes.friendly_name) || this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.solar");
-    const homeIcon = entities.home?.icon || (entities.home?.use_metadata && getEntityStateObj(this.hass, home.mainEntity)?.attributes?.icon) || "mdi:home";
-    const homeName = entities.home?.name || (entities.home?.use_metadata && getEntityStateObj(this.hass, home.mainEntity)?.attributes.friendly_name) || this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.home");
-    const nonFossilIcon = entities.fossil_fuel_percentage?.icon || (entities.fossil_fuel_percentage?.use_metadata && getEntityStateObj(this.hass, entities.fossil_fuel_percentage.entity)?.attributes?.icon) || "mdi:leaf";
-    const nonFossilName = entities.fossil_fuel_percentage?.name || (entities.fossil_fuel_percentage?.use_metadata && getEntityStateObj(this.hass, entities.fossil_fuel_percentage.entity)?.attributes.friendly_name) || this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.low_carbon");
-
     const individual1DisplayState = this.displayValue(
       individual1.state,
       entities.individual1?.unit_of_measurement,
@@ -706,7 +630,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       lowCarbonPercentage = ((lowCarbonEnergy || 0) / gridFromGrid) * 100;
     }
 
-    const hasNonFossilFuelUsage = lowCarbonEnergy !== null && lowCarbonEnergy && lowCarbonEnergy > ((entities.fossil_fuel_percentage?.display_zero_tolerance ?? 0) * 1000 || 0);
+    const hasNonFossilFuelUsage = lowCarbonEnergy !== null && lowCarbonEnergy && lowCarbonEnergy >= ((entities.fossil_fuel_percentage?.display_zero_tolerance ?? 0) * 1000 || 0);
     const hasFossilFuelPercentage = entities.fossil_fuel_percentage?.show;
 
     if (this._config.display_mode === DisplayMode.Live) {
@@ -732,115 +656,53 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       }
     }
 
-    const baseSecondarySpan = ({
-      className,
-      template,
-      value,
-      entityId,
-      icon,
-    }: {
-      className: string;
-      template?: string;
-      value?: string;
-      entityId?: string;
-      icon?: string;
-    }) => {
-      if (value || template) {
-        return html`<span
-          class="secondary-info ${className}"
-          @click=${(e: { stopPropagation: () => void }) => {
-            this.openDetails(e, entityId);
-          }}
-          @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-            if (e.key === "Enter") {
-              this.openDetails(e, entityId);
-            }
-          }}
-        >
-          ${entities.solar?.secondary_info?.icon ? html`<ha-icon class="secondary-info small" .icon=${icon}></ha-icon>` : ""}
-          ${template ?? value}</span
-        >`;
-      }
-      return "";
-    };
-
-    const generalSecondarySpan = (field, key: string) => {
-      return html` ${field.secondary.has || field.secondary.template
-        ? html` ${baseSecondarySpan({
-            className: key,
-            entityId: field.secondary.entity,
-            icon: field.secondary.icon,
-            value: this.displayValue(field.secondary.state, field.secondary.unit, field?.secondary?.decimals),
-          })}`
-        : ""}`;
-    };
-
-    const individualSecondarySpan = (individual: Individual, key: string) => {
-      const value = individual.secondary.isPresent
-        ? this.displayValue(individual.secondary.state, individual.secondary.unit)
-        : undefined;
-      const passesDisplayZeroCheck =
-        individual.secondary.displayZero ||
-        (isNumberValue(individual.secondary.state)
-          ? (Number(individual.secondary.state) ?? 0) > (individual.secondary.displayZeroTolerance ?? 0)
-          : true);
-      return html` ${individual.secondary.isPresent && passesDisplayZeroCheck
-        ? html`${baseSecondarySpan({
-            className: key,
-            entityId: individual.secondary.entity,
-            icon: individual.secondary.icon,
-            value,
-          })}`
-        : ""}`;
-    };
-
     return html`
       <ha-card .header=${this._config.title}>
         <div class="card-content" id="energy-flow-card-plus">
           ${solar.isPresent || individual2.isPresent || individual1.isPresent || hasFossilFuelPercentage
-            ? html`<div class="row">
-                ${!hasFossilFuelPercentage || (!hasNonFossilFuelUsage && !entities.fossil_fuel_percentage?.display_zero)
-                  ? html`<div class="spacer"></div>`
-                  : html`<div class="circle-container low-carbon">
-                      <span class="label">${nonFossilName}</span>
+        ? html`<div class="row">
+              ${!hasFossilFuelPercentage || (!hasNonFossilFuelUsage && !entities.fossil_fuel_percentage?.display_zero)
+            ? html`<div class="spacer"></div>`
+            : html`<div class="circle-container low-carbon">
+                      <span class="label">${fossilFuel.name}</span>
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
-                          this.openDetails(e, entities.fossil_fuel_percentage?.entity);
-                        }}
+                this.openDetails(e, entities.fossil_fuel_percentage?.entity);
+              }}
                         @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                          if (e.key === "Enter") {
-                            this.openDetails(e, entities.fossil_fuel_percentage?.entity);
-                          }
-                        }}
+                if (e.key === "Enter") {
+                  this.openDetails(e, entities.fossil_fuel_percentage?.entity);
+                }
+              }}
                       >
-                        ${generalSecondarySpan(nonFossil, "nonFossilFuel")}
+                        ${this.generalSecondarySpan(fossilFuel.secondary, "nonFossilFuel")}
                         <ha-icon
-                          .icon=${nonFossilIcon}
+                          .icon=${fossilFuel.icon}
                           class="low-carbon"
-                          style="${nonFossil.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
-                          ${this._config.display_zero_state || (nonFossilFuelEnergy || 0) > (entities.fossil_fuel_percentage?.display_zero_tolerance || 0)
-                            ? "padding-bottom: 2px;"
-                            : "padding-bottom: 0px;"}"
+                          style="${fossilFuel.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
+                          ${this._config.display_zero_state || (nonFossilFuelEnergy || 0) >= (entities.fossil_fuel_percentage?.display_zero_tolerance || 0)
+                ? "padding-bottom: 2px;"
+                : "padding-bottom: 0px;"}"
                         ></ha-icon>
                         ${this._config.display_zero_state || hasNonFossilFuelUsage
-                          ? html`
+                ? html`
                               <span class="low-carbon"
                                 >${this.displayValue(
-                                  entities.fossil_fuel_percentage?.state_type === "percentage" ? lowCarbonPercentage || 0 : lowCarbonEnergy || 0,
-                                  entities.fossil_fuel_percentage?.state_type === "percentage" ? "%" : undefined,
-                                  entities.fossil_fuel_percentage?.decimals
-                                )}</span
+                  entities.fossil_fuel_percentage?.state_type === "percentage" ? lowCarbonPercentage || 0 : lowCarbonEnergy || 0,
+                  entities.fossil_fuel_percentage?.state_type === "percentage" ? "%" : undefined,
+                  entities.fossil_fuel_percentage?.decimals
+                )}</span
                               >
                             `
-                          : ""}
+                : ""}
                       </div>
                       ${this.showLine(nonFossilFuelEnergy || 0)
-                        ? html`
+                ? html`
                             <svg width="80" height="30">
                               <path d="M40 -10 v40" class="low-carbon" id="low-carbon" />
                               ${hasNonFossilFuelUsage
-                                ? svg`<circle
+                    ? svg`<circle
                               r="2.4"
                               class="low-carbon"
                               vector-effect="non-scaling-stroke"
@@ -853,75 +715,75 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                                   <mpath xlink:href="#low-carbon" />
                                 </animateMotion>
                             </circle>`
-                                : ""}
+                    : ""}
                             </svg>
                           `
-                        : ""}
+                : ""}
                     </div>`}
                 ${solar.isPresent
-                  ? html`<div class="circle-container solar">
-                      <span class="label">${solarName}</span>
+            ? html`<div class="circle-container solar">
+                      <span class="label">${solar.name}</span>
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
-                          this.openDetails(e, solar.mainEntity);
-                        }}
+                this.openDetails(e, solar.mainEntity);
+              }}
                         @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                          if (e.key === "Enter") {
-                            this.openDetails(e, solar.mainEntity);
-                          }
-                        }}
+                if (e.key === "Enter") {
+                  this.openDetails(e, solar.mainEntity);
+                }
+              }}
                       >
-                        ${generalSecondarySpan(solar, "solar")}
+                        ${this.generalSecondarySpan(solar.secondary, "solar")}
                         <ha-icon
                           id="solar-icon"
-                          .icon=${solarIcon}
+                          .icon=${solar.icon}
                           style="${solar.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${this._config.display_zero_state || (solarTotal || 0) > 0
-                            ? "padding-bottom: 2px;"
-                            : "padding-bottom: 0px;"}"
+                ? "padding-bottom: 2px;"
+                : "padding-bottom: 0px;"}"
                         ></ha-icon>
                         ${this._config.display_zero_state || (solarTotal || 0) > 0
-                          ? html` <span class="solar value"> ${this.displayValue(solarTotal)}</span>`
-                          : ""}
+                ? html` <span class="solar value"> ${this.displayValue(solarTotal)}</span>`
+                : ""}
                       </div>
                     </div>`
-                  : individual2.isPresent || individual1.isPresent
-                  ? html`<div class="spacer"></div>`
-                  : ""}
+            : individual2.isPresent || individual1.isPresent
+              ? html`<div class="spacer"></div>`
+              : ""}
                 ${individual2.isPresent
-                  ? html`<div class="circle-container individual2">
+            ? html`<div class="circle-container individual2">
                       <span class="label">${individual2.name}</span>
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
-                          this.openDetails(e, individual2.mainEntity);
-                        }}
+                this.openDetails(e, individual2.mainEntity);
+              }}
                         @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                          if (e.key === "Enter") {
-                            this.openDetails(e, individual2.mainEntity);
-                          }
-                        }}
+                if (e.key === "Enter") {
+                  this.openDetails(e, individual2.mainEntity);
+                }
+              }}
                       >
-                        ${individualSecondarySpan(individual2, "individual2")}
+                        ${this.generalSecondarySpan(individual2.secondary, "individual2")}
                         <ha-icon
                           id="individual2-icon"
                           .icon=${individual2.icon}
                           style="${individual2.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${this._config.display_zero_state || (individual2.state || 0) > 0
-                            ? "padding-bottom: 2px;"
-                            : "padding-bottom: 0px;"}"
+                ? "padding-bottom: 2px;"
+                : "padding-bottom: 0px;"}"
                         ></ha-icon>
                         ${this._config.display_zero_state || (individual2.state || 0) > 0
-                          ? html` <span class="individual2">${individual2DisplayState} </span>`
-                          : ""}
+                ? html` <span class="individual2">${individual2DisplayState} </span>`
+                : ""}
                       </div>
                       ${this.showLine(individual2.state || 0)
-                        ? html`
+                ? html`
                             <svg width="80" height="30">
                               <path d="M40 -10 v50" id="individual2" />
                               ${individual2.state
-                                ? svg`<circle
+                    ? svg`<circle
                               r="2.4"
                               class="individual2"
                               vector-effect="non-scaling-stroke"
@@ -936,45 +798,45 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                                 <mpath xlink:href="#individual2" />
                               </animateMotion>
                             </circle>`
-                                : ""}
+                    : ""}
                             </svg>
                           `
-                        : ""}
+                : ""}
                     </div>`
-                  : individual1.isPresent
-                  ? html`<div class="circle-container individual1">
+            : individual1.isPresent
+              ? html`<div class="circle-container individual1">
                       <span class="label">${individual1.name}</span>
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
-                          e.stopPropagation();
-                          this.openDetails(e, individual1.mainEntity);
-                        }}
+                  e.stopPropagation();
+                  this.openDetails(e, individual1.mainEntity);
+                }}
                         @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                          if (e.key === "Enter") {
-                            this.openDetails(e, individual1.mainEntity);
-                          }
-                        }}
+                  if (e.key === "Enter") {
+                    this.openDetails(e, individual1.mainEntity);
+                  }
+                }}
                       >
-                        ${individualSecondarySpan(individual1, "individual1")}
+                        ${this.generalSecondarySpan(individual1.secondary, "individual1")}
                         <ha-icon
                           id="individual1-icon"
                           .icon=${individual1.icon}
                           style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${this._config.display_zero_state || (individual1.state || 0) > 0
-                            ? "padding-bottom: 2px;"
-                            : "padding-bottom: 0px;"}"
+                  ? "padding-bottom: 2px;"
+                  : "padding-bottom: 0px;"}"
                         ></ha-icon>
                         ${this._config.display_zero_state || (individual1.state || 0) > 0
-                          ? html`<span class="individual1">${individual1DisplayState}</span>`
-                          : ""}
+                  ? html`<span class="individual1">${individual1DisplayState}</span>`
+                  : ""}
                       </div>
                       ${this.showLine(individual1.state || 0)
-                        ? html`
+                  ? html`
                             <svg width="80" height="30">
                               <path d="M40 -10 v40" id="individual1" />
                               ${individual1.state
-                                ? svg`<circle
+                      ? svg`<circle
                                 r="2.4"
                                 class="individual1"
                                 vector-effect="non-scaling-stroke"
@@ -990,80 +852,80 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                                   <mpath xlink:href="#individual1" />
                                 </animateMotion>
                               </circle>`
-                                : ""}
+                      : ""}
                             </svg>
                           `
-                        : html``}
+                  : html``}
                     </div> `
-                  : html`<div class="spacer"></div>`}
+              : html`<div class="spacer"></div>`}
               </div>`
-            : html``}
+        : html``}
           <div class="row">
             ${grid.isPresent
-              ? html` <div class="circle-container grid">
+        ? html` <div class="circle-container grid">
                   <div
                     class="circle"
                     @click=${(e: { stopPropagation: () => void }) => {
-                      this.openDetails(e, grid.mainEntity);
-                    }}
+            this.openDetails(e, grid.mainEntity);
+          }}
                     @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                      if (e.key === "Enter") {
-                        this.openDetails(e, grid.mainEntity);
-                      }
-                    }}
+            if (e.key === "Enter") {
+              this.openDetails(e, grid.mainEntity);
+            }
+          }}
                   >
-                    ${generalSecondarySpan(grid, "grid")}
-                    <ha-icon .icon=${grid.icon}></ha-icon>
+                    ${this.generalSecondarySpan(grid.secondary, "grid")}
+                    <ha-icon .icon=${gridIcon}></ha-icon>
                     ${gridToGrid !== null && !grid.powerOutage.isOutage && (this._config.display_zero_state || gridToGrid > 0)
-                      ? html`<span class="return"
+            ? html`<span class="return"
                           @click=${(e: { stopPropagation: () => void }) => {
-                            const target = Array.isArray(entities.grid?.entity?.production)
-                              ? entities?.grid?.entity?.production[0]
-                              : entities?.grid?.entity?.production;
-                            this.openDetails(e, target);
-                          }}
+                const target = Array.isArray(entities.grid?.entity?.production)
+                  ? entities?.grid?.entity?.production[0]
+                  : entities?.grid?.entity?.production;
+                this.openDetails(e, target);
+              }}
                           @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                            if (e.key === "Enter") {
-                              const target = Array.isArray(entities.grid?.entity?.production)
-                                ? entities?.grid?.entity?.production[0]
-                                : entities?.grid?.entity?.production;
-                              this.openDetails(e, target);
-                            }
-                          }}
+                if (e.key === "Enter") {
+                  const target = Array.isArray(entities.grid?.entity?.production)
+                    ? entities?.grid?.entity?.production[0]
+                    : entities?.grid?.entity?.production;
+                  this.openDetails(e, target);
+                }
+              }}
                         >
                           <ha-icon class="small" .icon=${"mdi:arrow-left"}></ha-icon>
                           ${this.displayValue(gridToGrid)}
                         </span>`
-                      : null}
+            : null}
                     ${gridFromGrid !== null && !grid.powerOutage.isOutage && (this._config.display_zero_state || gridFromGrid > 0)
-                        ? html`<span class="consumption">
+            ? html`<span class="consumption">
                             <ha-icon class="small" .icon=${"mdi:arrow-right"}></ha-icon>
                             ${this.displayValue(gridFromGrid)}
                           </span>`
-                        : ""}
+            : ""}
                     ${grid.powerOutage.isOutage
-                      ? html`<span class="grid power-outage">${entities.grid?.power_outage?.label_alert || html`Power<br/>Outage`}</span>`
-                      : ""}
+            ? html`<span class="grid power-outage">${entities.grid?.power_outage?.label_alert || html`Power<br/>Outage`}</span>`
+            : ""}
                   </div>
                   <span class="label">${grid.name}</span>
                 </div>`
-              : html`<div class="spacer"></div>`}
+        : html`<div class="spacer"></div>`}
             <div class="circle-container home">
               <div
                 class="circle"
                 id="home-circle"
                 @click=${(e: { stopPropagation: () => void }) => {
-                  this.openDetails(e, home.mainEntity);
-                }}
+        this.openDetails(e, home.mainEntity);
+      }}
                 @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                  if (e.key === "Enter") {
-                    this.openDetails(e, home.mainEntity);
-                  }
-                }}
+        if (e.key === "Enter") {
+          this.openDetails(e, home.mainEntity);
+        }
+      }}
               >
                 <svg class="home-circle-sections">
                   ${homeSolarCircumference
-                    ? svg`<circle
+        ? svg`<circle
                             class="solar"
                             cx="40"
                             cy="40"
@@ -1072,9 +934,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                             shape-rendering="geometricPrecision"
                             stroke-dashoffset="-${circleCircumference - homeSolarCircumference}"
                           />`
-                    : ""}
+        : ""}
                   ${homeBatteryCircumference
-                    ? svg`<circle
+        ? svg`<circle
                             class="battery"
                             cx="40"
                             cy="40"
@@ -1083,9 +945,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                             stroke-dashoffset="-${circleCircumference - homeBatteryCircumference - homeSolarCircumference}"
                             shape-rendering="geometricPrecision"
                           />`
-                    : ""}
+        : ""}
                   ${homeNonFossilCircumference
-                    ? svg`<circle
+        ? svg`<circle
                             class="low-carbon"
                             cx="40"
                             cy="40"
@@ -1094,7 +956,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                             stroke-dashoffset="-${circleCircumference - homeNonFossilCircumference - homeBatteryCircumference - homeSolarCircumference}"
                             shape-rendering="geometricPrecision"
                           />`
-                    : ""}
+        : ""}
                   <circle
                     class="${homeConsumptionError || homeValueIsZero ? `home-unknown` : `grid`}"
                     cx="40"
@@ -1105,129 +967,129 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                     shape-rendering="geometricPrecision"
                   />
                 </svg>
-                ${generalSecondarySpan(home, "home")}
-                <ha-icon .icon=${homeIcon}></ha-icon>
+                ${this.generalSecondarySpan(home.secondary, "home")}
+                <ha-icon .icon=${home.icon}></ha-icon>
                 ${homeUsageToDisplay}
               </div>
-              ${this.showLine(individual1.state || 0) && individual2.isPresent ? "" : html`<span class="label">${homeName}</span>`}
+              ${this.showLine(individual1.state || 0) && individual2.isPresent ? "" : html`<span class="label">${home.name}</span>`}
             </div>
           </div>
           ${battery.isPresent || (individual1.isPresent && individual2.isPresent)
-            ? html`<div class="row">
+        ? html`<div class="row">
                 <div class="spacer"></div>
                 ${battery.isPresent
-                  ? html` <div class="circle-container battery">
+            ? html` <div class="circle-container battery">
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
-                          const target = entities.battery?.state_of_charge
-                            ? entities.battery?.state_of_charge
-                            : typeof entities.battery?.entity === "string"
-                            ? entities.battery?.entity
-                            : entities.battery?.entity!.production;
-                          e.stopPropagation();
-                          this.openDetails(e, target);
-                        }}
+                const target = entities.battery?.state_of_charge
+                  ? entities.battery?.state_of_charge
+                  : typeof entities.battery?.entity === "string"
+                    ? entities.battery?.entity
+                    : entities.battery?.entity!.production;
+                e.stopPropagation();
+                this.openDetails(e, target);
+              }}
                         @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                          if (e.key === "Enter") {
-                            const target = entities.battery?.state_of_charge
-                              ? entities.battery?.state_of_charge
-                              : typeof entities.battery!.entity === "string"
-                              ? entities.battery!.entity!
-                              : entities.battery!.entity!.production;
-                            e.stopPropagation();
-                            this.openDetails(e, target);
-                          }
-                        }}
+                if (e.key === "Enter") {
+                  const target = entities.battery?.state_of_charge
+                    ? entities.battery?.state_of_charge
+                    : typeof entities.battery!.entity === "string"
+                      ? entities.battery!.entity!
+                      : entities.battery!.entity!.production;
+                  e.stopPropagation();
+                  this.openDetails(e, target);
+                }
+              }}
                       >
                         ${batteryChargeState !== null
-                          ? html`<span
+                ? html`<span
                               @click=${(e: { stopPropagation: () => void }) => {
-                                e.stopPropagation();
-                                this.openDetails(e, entities.battery?.state_of_charge);
-                              }}
+                    e.stopPropagation();
+                    this.openDetails(e, entities.battery?.state_of_charge);
+                  }}
                               @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                                if (e.key === "Enter") {
-                                  e.stopPropagation();
-                                  this.openDetails(e, entities.battery?.state_of_charge);
-                                }
-                              }}
+                    if (e.key === "Enter") {
+                      e.stopPropagation();
+                      this.openDetails(e, entities.battery?.state_of_charge);
+                    }
+                  }}
                               id="battery-state-of-charge-text"
                             >
                               ${this.displayValue(
-                                batteryChargeState,
-                                entities?.battery?.state_of_charge_unit || "%",
-                                entities?.battery?.state_of_charge_decimals || 0
-                              )}
+                    batteryChargeState,
+                    entities?.battery?.state_of_charge_unit || "%",
+                    entities?.battery?.state_of_charge_decimals || 0
+                  )}
                             </span>`
-                          : null}
+                : null}
                         <ha-icon
                           .icon=${batteryIcon}
                           style=${this._config.display_zero_state
-                            ? "padding-top: 0px; padding-bottom: 2px;"
-                            : "padding-top: 2px; padding-bottom: 0px;"}
+                ? "padding-top: 0px; padding-bottom: 2px;"
+                : "padding-top: 2px; padding-bottom: 0px;"}
                           @click=${(e: { stopPropagation: () => void }) => {
-                            e.stopPropagation();
-                            this.openDetails(e, entities.battery?.state_of_charge);
-                          }}
+                e.stopPropagation();
+                this.openDetails(e, entities.battery?.state_of_charge);
+              }}
                           @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                            if (e.key === "Enter") {
-                              e.stopPropagation();
-                              this.openDetails(e, entities.battery?.state_of_charge);
-                            }
-                          }}
+                if (e.key === "Enter") {
+                  e.stopPropagation();
+                  this.openDetails(e, entities.battery?.state_of_charge);
+                }
+              }}
                         ></ha-icon>
                         ${batteryToBattery !== null && (this._config || batteryToBattery > 0)
-                          ? html`<span
+                ? html`<span
                               class="battery-in"
                               @click=${(e: { stopPropagation: () => void }) => {
-                                const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.production!;
-                                e.stopPropagation();
-                                this.openDetails(e, target);
-                              }}
+                    const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.production!;
+                    e.stopPropagation();
+                    this.openDetails(e, target);
+                  }}
                               @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                                if (e.key === "Enter") {
-                                  const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.production!;
-                                  e.stopPropagation();
-                                  this.openDetails(e, target);
-                                }
-                              }}
+                    if (e.key === "Enter") {
+                      const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.production!;
+                      e.stopPropagation();
+                      this.openDetails(e, target);
+                    }
+                  }}
                             >
                               <ha-icon class="small" .icon=${"mdi:arrow-down"}></ha-icon>
                               ${this.displayValue(batteryToBattery)}
                             </span>`
-                          : ""}
+                : ""}
                         ${batteryFromBattery !== null && (this._config || batteryFromBattery > 0)
-                          ? html`<span
+                ? html`<span
                               class="battery-out"
                               @click=${(e: { stopPropagation: () => void }) => {
-                                const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.consumption!;
-                                e.stopPropagation();
-                                this.openDetails(e, target);
-                              }}
+                    const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.consumption!;
+                    e.stopPropagation();
+                    this.openDetails(e, target);
+                  }}
                               @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                                if (e.key === "Enter") {
-                                  const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.consumption!;
-                                  e.stopPropagation();
-                                  this.openDetails(e, target);
-                                }
-                              }}
+                    if (e.key === "Enter") {
+                      const target = typeof entities.battery!.entity === "string" ? entities.battery!.entity! : entities.battery!.entity!.consumption!;
+                      e.stopPropagation();
+                      this.openDetails(e, target);
+                    }
+                  }}
                             >
                               <ha-icon class="small" .icon=${"mdi:arrow-up"}></ha-icon>
                               ${this.displayValue(batteryFromBattery)}
                             </span>`
-                          : ""}
+                : ""}
                       </div>
                       <span class="label">${battery.name}</span>
                     </div>`
-                  : html`<div class="spacer"></div>`}
+            : html`<div class="spacer"></div>`}
                 ${individual2.isPresent && individual1.isPresent
-                  ? html`<div class="circle-container individual1 bottom">
+            ? html`<div class="circle-container individual1 bottom">
                       ${this.showLine(individual1.state || 0)
-                        ? html`<svg width="80" height="30">
+                ? html`<svg width="80" height="30">
                           <path d="M40 40 v-40" id="individual1" />
                             ${individual1.state
-                              ? svg`<circle r="2.4" class="individual1" vector-effect="non-scaling-stroke">
+                    ? svg`<circle r="2.4" class="individual1" vector-effect="non-scaling-stroke">
                                 <animateMotion
                                   dur="${this.additionalCircleRate(entities.individual1?.calculate_flow_rate, newDur.individual1)}s"
                                   repeatCount="indefinite"
@@ -1238,44 +1100,44 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                                   <mpath xlink:href="#individual1" />
                                 </animateMotion>
                               </circle>`
-                              : ""}
+                    : ""}
                             </svg>`
-                        : html` <svg width="80" height="30"></svg> `}
+                : html` <svg width="80" height="30"></svg> `}
                       <div
                         class="circle"
                         @click=${(e: { stopPropagation: () => void }) => {
-                          this.openDetails(e, individual1.mainEntity);
-                        }}
+                this.openDetails(e, individual1.mainEntity);
+              }}
                         @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
-                          if (e.key === "Enter") {
-                            this.openDetails(e, individual1.mainEntity);
-                          }
-                        }}
+                if (e.key === "Enter") {
+                  this.openDetails(e, individual1.mainEntity);
+                }
+              }}
                       >
-                        ${individualSecondarySpan(individual1, "individual1")}
+                        ${this.generalSecondarySpan(individual1.secondary, "individual1")}
                         <ha-icon
                           id="individual1-icon"
                           .icon=${individual1.icon}
                           style="${individual1.secondary.isPresent ? "padding-top: 2px;" : "padding-top: 0px;"}
                           ${this._config.display_zero_state || (individual1.state || 0) > 0
-                            ? "padding-bottom: 2px;"
-                            : "padding-bottom: 0px;"}"
+                ? "padding-bottom: 2px;"
+                : "padding-bottom: 0px;"}"
                         ></ha-icon>
                         ${this._config.display_zero_state || (individual1.state || 0) > 0
-                          ? html` <span class="individual1">${individual1DisplayState} </span>`
-                          : ""}
+                ? html` <span class="individual1">${individual1DisplayState} </span>`
+                : ""}
                       </div>
                       <span class="label">${individual1.name}</span>
                     </div>`
-                  : html`<div class="spacer"></div>`}
-              </div>`
             : html`<div class="spacer"></div>`}
+              </div>`
+        : html`<div class="spacer"></div>`}
           ${solar.isPresent && this.showLine(solarToHome || 0)
-            ? html`<div
+        ? html`<div
                 class="lines ${classMap({
-                  high: battery.isPresent,
-                  "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent,
-                })}"
+          high: battery.isPresent,
+          "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent,
+        })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="solar-home-flow">
                   <path
@@ -1285,7 +1147,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                     vector-effect="non-scaling-stroke"
                   ></path>
                   ${solarToHome
-                    ? svg`<circle
+            ? svg`<circle
                             r="1"
                             class="solar"
                             vector-effect="non-scaling-stroke"
@@ -1298,16 +1160,16 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               <mpath xlink:href="#solar" />
                             </animateMotion>
                           </circle>`
-                    : ""}
+            : ""}
                 </svg>
               </div>`
-            : ""}
+        : ""}
           ${grid.hasReturnToGrid && solar.isPresent && this.showLine(solarToGrid ?? 0)
-            ? html`<div
+        ? html`<div
                 class="lines ${classMap({
-                  high: battery.isPresent,
-                  "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
-                })}"
+          high: battery.isPresent,
+          "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
+        })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="solar-grid-flow">
                   <path
@@ -1317,7 +1179,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                     vector-effect="non-scaling-stroke"
                   ></path>
                   ${solarToGrid && solar.isPresent
-                    ? svg`<circle
+            ? svg`<circle
                         r="1"
                         class="return"
                         vector-effect="non-scaling-stroke"
@@ -1330,16 +1192,16 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           <mpath xlink:href="#return" />
                         </animateMotion>
                       </circle>`
-                    : ""}
+            : ""}
                 </svg>
               </div>`
-            : ""}
+        : ""}
           ${battery.isPresent && solar.isPresent && this.showLine(solarToBattery || 0)
-            ? html`<div
+        ? html`<div
                 class="lines ${classMap({
-                  high: battery.isPresent,
-                  "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
-                })}"
+          high: battery.isPresent,
+          "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
+        })}"
               >
                 <svg
                   viewBox="0 0 100 100"
@@ -1350,7 +1212,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 >
                   <path id="battery-solar" class="battery-solar" d="M50,0 V100" vector-effect="non-scaling-stroke"></path>
                   ${solarToBattery
-                    ? svg`<circle
+            ? svg`<circle
                             r="1"
                             class="battery-solar"
                             vector-effect="non-scaling-stroke"
@@ -1363,16 +1225,16 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                               <mpath xlink:href="#battery-solar" />
                             </animateMotion>
                           </circle>`
-                    : ""}
+            : ""}
                 </svg>
               </div>`
-            : ""}
+        : ""}
           ${grid.isPresent && this.showLine(gridFromGrid)
-            ? html`<div
+        ? html`<div
                 class="lines ${classMap({
-                  high: battery.isPresent,
-                  "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
-                })}"
+          high: battery.isPresent,
+          "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
+        })}"
               >
                 <svg
                   viewBox="0 0 100 100"
@@ -1383,7 +1245,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 >
                   <path class="grid" id="grid" d="M0,${battery.isPresent ? 50 : solar.isPresent ? 56 : 53} H100" vector-effect="non-scaling-stroke"></path>
                   ${gridToHome
-                    ? svg`<circle
+            ? svg`<circle
                     r="1"
                     class="grid"
                     vector-effect="non-scaling-stroke"
@@ -1396,16 +1258,16 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                       <mpath xlink:href="#grid" />
                     </animateMotion>
                   </circle>`
-                    : ""}
+            : ""}
                 </svg>
               </div>`
-            : null}
+        : null}
           ${battery.isPresent && this.showLine(batteryToHome)
-            ? html`<div
+        ? html`<div
                 class="lines ${classMap({
-                  high: battery.isPresent,
-                  "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
-                })}"
+          high: battery.isPresent,
+          "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
+        })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="battery-home-flow">
                   <path
@@ -1415,7 +1277,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                     vector-effect="non-scaling-stroke"
                   ></path>
                   ${batteryToHome
-                    ? svg`<circle
+            ? svg`<circle
                         r="1"
                         class="battery-home"
                         vector-effect="non-scaling-stroke"
@@ -1428,29 +1290,29 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           <mpath xlink:href="#battery-home" />
                         </animateMotion>
                       </circle>`
-                    : ""}
+            : ""}
                 </svg>
               </div>`
-            : ""}
+        : ""}
           ${grid.isPresent && battery.isPresent && this.showLine(Math.max(gridToBattery || 0, batteryToGrid || 0))
-            ? html`<div
+        ? html`<div
                 class="lines ${classMap({
-                  high: battery.isPresent,
-                  "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
-                })}"
+          high: battery.isPresent,
+          "individual1-individual2": !battery.isPresent && individual2.isPresent && individual1.isPresent
+        })}"
               >
                 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="battery-grid-flow">
                   <path
                     id="battery-grid"
                     class=${classMap({
-                      "battery-from-grid": Boolean(gridToBattery),
-                      "battery-to-grid": Boolean(batteryToGrid)
-                    })}
+          "battery-from-grid": Boolean(gridToBattery),
+          "battery-to-grid": Boolean(batteryToGrid)
+        })}
                     d="M45,100 v-15 c0,-30 -10,-30 -30,-30 h-20"
                     vector-effect="non-scaling-stroke"
                   ></path>
                   ${gridToBattery
-                    ? svg`<circle
+            ? svg`<circle
                     r="1"
                     class="battery-from-grid"
                     vector-effect="non-scaling-stroke"
@@ -1464,9 +1326,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                       <mpath xlink:href="#battery-grid" />
                     </animateMotion>
                   </circle>`
-                    : ""}
+            : ""}
                   ${batteryToGrid
-                    ? svg`<circle
+            ? svg`<circle
                         r="1"
                         class="battery-to-grid"
                         vector-effect="non-scaling-stroke"
@@ -1479,13 +1341,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                           <mpath xlink:href="#battery-grid" />
                         </animateMotion>
                       </circle>`
-                    : ""}
+            : ""}
                 </svg>
               </div>`
-            : ""}
+        : ""}
         </div>
         ${this._config.dashboard_link
-          ? html`
+        ? html`
               <div class="card-actions">
                 <a href=${this._config.dashboard_link}>
                   <mwc-button>
@@ -1494,7 +1356,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                 </a>
               </div>
             `
-          : ""}
+        : ""}
       </ha-card>
     `;
   }
@@ -1516,6 +1378,10 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     this._grid = new GridEntity(this.hass, entities.grid);
     this._solar = new SolarEntity(this.hass, entities.solar);
     this._battery = new BatteryEntity(this.hass, entities.battery);
+    this._home = new HomeEntity(this.hass, entities.home);
+    this._individual1 = new IndividualEntity(this.hass, entities.individual1, localize("card.label.car"), "mdi:car-electric");
+    this._individual2 = new IndividualEntity(this.hass, entities.individual2, localize("card.label.motorbike"), "mdi:motorbike-electric");
+    this._fossilFuel = new FossilFuelEntity(this.hass, entities.fossil_fuel_percentage);
   };
 
   private populateEntitiesArr = (): void => {
@@ -1591,13 +1457,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     const valueInNumber = new Decimal(value);
-    const isMWh = !unit && valueInNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config.kwh_mwh_threshold!));
-    const isKWh = !unit && valueInNumber.abs().greaterThanOrEqualTo(new Decimal(this._config.wh_kwh_threshold!));
+    const isMWh = (!unit || unit.toUpperCase().startsWith("MWH")) && valueInNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config.kwh_mwh_threshold!));
+    const isKWh = (!unit || unit.toUpperCase().startsWith("KWH")) && valueInNumber.abs().greaterThanOrEqualTo(new Decimal(this._config.wh_kwh_threshold!));
     const formattedValue = formatNumber(
       isMWh
-        ? valueInNumber.dividedBy(1000000).toDecimalPlaces(this._config.mwh_decimals).toString()
+        ? valueInNumber.dividedBy(1000000).toDecimalPlaces(decimals ?? this._config.mwh_decimals).toString()
         : isKWh
-          ? valueInNumber.dividedBy(1000).toDecimalPlaces(this._config.kwh_decimals).toString()
+          ? valueInNumber.dividedBy(1000).toDecimalPlaces(decimals ?? this._config.kwh_decimals).toString()
           : valueInNumber.toDecimalPlaces(decimals ?? this._config.wh_decimals).toString(),
       this.hass.locale
     );
@@ -1625,62 +1491,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     this.dispatchEvent(e);
   };
 
-  private hasField = (field?: any, acceptStringState?: boolean): boolean => {
-    if (!field) {
-      return false;
-    }
-
-    return (
-      field?.display_zero || (this.getEntityStateWattHours(field?.entity) > (field?.display_zero_tolerance ?? 0) && Array.isArray(field?.entity)
-        ? entityAvailable(this.hass, field?.mainEntity)
-        : entityAvailable(this.hass, field?.entity)) || acceptStringState
-          ? typeof this.hass.states[field?.entity]?.state === "string"
-          : false
-    );
-  };
-
   /**
    * Depending on if the user has decided to show inactive lines, decide if this line should be shown.
    * @param energy - energy value to check
    * @returns boolean to decide if line should be shown (true = show, false = don't show)
    */
   private showLine = (energy: number): boolean => this._config?.display_zero_lines || energy > 0;
-
-  /**
-   * Depending on if the user has defined the icon or wants to use the entity icon, return the icon to display.
-   * @param field - field object (eg: solar) OBJECT
-   * @param fallback - fallback icon (eg: mdi:solar-power)
-   * @returns icon to display in format mdi:icon
-   */
-  private computeFieldIcon = (field: any, fallback: string): string => {
-    if (field?.icon) {
-      return field.icon;
-    }
-
-    if (field?.use_metadata) {
-      return getEntityStateObj(this.hass, field.entity)?.attributes?.icon ?? "";
-    }
-
-    return fallback;
-  };
-
-  /**
-   * Depending on if the user has defined the name or wants to use the entity name, return the name to display.
-   * @param field - field object (eg: solar) OBJECT
-   * @param fallback - fallback name (eg: Solar)
-   * @returns name to display
-   */
-  private computeFieldName = (field: any, fallback: string): string => {
-    if (field?.name) {
-      return field.name;
-    }
-
-    if (field?.use_metadata) {
-      return getEntityStateObj(this.hass, field.entity)?.attributes?.friendly_name ?? "";
-    }
-
-    return fallback;
-  };
 
   /**
    * Convert a an array of values in the format [r, g, b] to a hex color.
@@ -1708,4 +1524,61 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     return null;
   };
+
+  private baseSecondarySpan = ({
+    className,
+    template,
+    value,
+    entityId,
+    icon,
+  }: {
+    className: string;
+    template?: string;
+    value?: string;
+    entityId?: string;
+    icon?: string;
+  }) => {
+    if (value || template) {
+      return html`<span
+          class="secondary-info ${className}"
+          @click=${(e: { stopPropagation: () => void }) => {
+          this.openDetails(e, entityId);
+        }}
+          @keyDown=${(e: { key: string; stopPropagation: () => void }) => {
+          if (e.key === "Enter") {
+            this.openDetails(e, entityId);
+          }
+        }}
+        >
+          ${icon ? html`<ha-icon class="secondary-info small" .icon=${icon}></ha-icon>` : ""}
+          ${template ?? value}</span
+        >`;
+    }
+
+    return "";
+  };
+
+  private generalSecondarySpan = (entity: SecondaryInfoEntity, key: string) => {
+    if (!entity.entity && !entity.template) {
+      return "";
+    }
+
+    const state: string | number | null =
+      isNumberValue(entity.state) && Math.abs(coerceNumber(entity.state)) < (entity.displayZeroTolerance ?? 0)
+        ? 0
+        : entity.state;
+
+    if (entity.displayZero || state) {
+      return html`${this.baseSecondarySpan({
+        className: key,
+        entityId: entity.entity,
+        icon: entity.icon,
+        value: this.displayValue(state, entity.unit, entity.decimals),
+        template: entity.template
+      })}`;
+    }
+
+    return "";
+  };
+
 }

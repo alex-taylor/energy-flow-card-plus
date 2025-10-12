@@ -136,10 +136,10 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
   }
 
   if (solar.isPresent) {
-    solar.state.toHome = clampStateValue(solarToHome, solar.displayZeroTolernace);
-    solar.state.toBattery = clampStateValue(solarToBattery, solar.displayZeroTolernace);
-    solar.state.toGrid = clampStateValue(solarToGrid, solar.displayZeroTolernace);
-    solar.state.total = clampStateValue(fromSolar, solar.displayZeroTolernace);
+    solar.state.toHome = clampStateValue(solarToHome, solar.displayZeroTolerance);
+    solar.state.toBattery = clampStateValue(solarToBattery, solar.displayZeroTolerance);
+    solar.state.toGrid = clampStateValue(solarToGrid, solar.displayZeroTolerance);
+    solar.state.total = clampStateValue(fromSolar, solar.displayZeroTolerance);
   }
 };
 

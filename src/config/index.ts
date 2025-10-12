@@ -46,11 +46,11 @@ interface EntitiesConfig {
   fossil_fuel_percentage?: FossilFuelConfigEntity;
   home?: HomeConfigEntity;
   solar?: SolarConfigEntity;
-  individual1?: IndividualDeviceType;
-  individual2?: IndividualDeviceType;
+  individual1?: IndividualConfigEntity;
+  individual2?: IndividualConfigEntity;
 }
 
-interface EntityConfigOptions {
+export interface EntityConfigOptions {
   name?: string;
   icon?: string;
   display_zero_tolerance?: number;
@@ -117,38 +117,7 @@ export interface HomeConfigEntity extends EntityConfigOptions {
   color_value?: any;
 };
 
-export interface SolarConfigEntity extends EntityConfigOptions {
-  entity?: BasicEntity;
-  color?: string | number[];
-  color_icon?: boolean;
-  color_value?: boolean;
-  color_label?: boolean;
-};
-
-type GridPowerOutage = {
-  entity: string;
-  state_alert?: string;
-  label_alert?: string;
-  icon_alert?: string;
-};
-
-type SecondaryInfoType = {
-  entity?: string;
-  unit_of_measurement?: string;
-  icon?: string;
-  display_zero?: boolean;
-  display_zero_tolerance?: number;
-  color_of_value?: ColorMode;
-  template?: string;
-  decimals?: number;
-
-  // @deprecated replaced by mainConfigOptions#unit_white_space
-  unit_white_space?: any;
-  // @deprecated replaced by color_of_value
-  color_value?: any;
-};
-
-type IndividualDeviceType = {
+export type IndividualConfigEntity = {
   entity: BasicEntity;
   name?: string;
   icon?: string;
@@ -168,4 +137,35 @@ type IndividualDeviceType = {
 
   // @deprecated replaced by mainConfigOptions#unit_white_space
   unit_white_space?: any;
+};
+
+export interface SolarConfigEntity extends EntityConfigOptions {
+  entity?: BasicEntity;
+  color?: string | number[];
+  color_icon?: boolean;
+  color_value?: boolean;
+  color_label?: boolean;
+};
+
+type GridPowerOutage = {
+  entity: string;
+  state_alert?: string;
+  label_alert?: string;
+  icon_alert?: string;
+};
+
+export type SecondaryInfoType = {
+  entity?: string;
+  unit_of_measurement?: string;
+  icon?: string;
+  display_zero?: boolean;
+  display_zero_tolerance?: number;
+  color_of_value?: ColorMode;
+  template?: string;
+  decimals?: number;
+
+  // @deprecated replaced by mainConfigOptions#unit_white_space
+  unit_white_space?: any;
+  // @deprecated replaced by color_of_value
+  color_value?: any;
 };

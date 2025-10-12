@@ -87,8 +87,20 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\entities\battery-entity.ts" />
+    <TypeScriptCompile Include="src\entities\entity.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\entities\fossil-fuel-entity.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\entities\grid-entity.ts" />
+    <TypeScriptCompile Include="src\entities\home-entity.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\entities\index.ts" />
+    <TypeScriptCompile Include="src\entities\individual-entity.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\entities\secondary-info-entity.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
