@@ -137,6 +137,7 @@ export async function getStatistics(hass: HomeAssistant, periodStart: Date, peri
           stat[idx].change = 0;
 
           // TODO: if this is a 'resetting' sensor, then 'state' also needs zeroing out
+          //stat[idx].state = 0;
 
           idx++;
         }

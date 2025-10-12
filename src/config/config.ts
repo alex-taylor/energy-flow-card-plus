@@ -28,7 +28,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
     return testStrings.some(str => entiyId.includes(str) || friendlyName?.includes(str));
   }
 
-  const powerEntities = Object.keys(hass.states).filter(entityId => {
+  const energyEntities = Object.keys(hass.states).filter(entityId => {
     const stateObj = hass.states[entityId];
     const isAvailable =
       (stateObj.state && stateObj.attributes && stateObj.attributes.device_class === 'energy') || stateObj.entity_id.includes('energy');
@@ -38,9 +38,9 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
   const gridEnergyTestString = ['grid', 'utility', 'net', 'meter'];
   const solarTests = ['solar', 'pv', 'photovoltaic', 'inverter'];
   const batteryTests = ['battery'];
-  const batteryEnergyEntities = powerEntities.filter(entityId => checkStrings(entityId, batteryTests));
-  const gridEnergyEntities = powerEntities.filter(entityId => checkStrings(entityId, gridEnergyTestString));
-  const firstSolarEnergyEntity = powerEntities.filter(entityId => checkStrings(entityId, solarTests))[0];
+  const batteryEnergyEntities = energyEntities.filter(entityId => checkStrings(entityId, batteryTests));
+  const gridEnergyEntities = energyEntities.filter(entityId => checkStrings(entityId, gridEnergyTestString));
+  const firstSolarEnergyEntity = energyEntities.filter(entityId => checkStrings(entityId, solarTests))[0];
 
   return {
     type: 'custom:energy-flow-card-plus',
