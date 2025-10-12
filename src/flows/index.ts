@@ -27,12 +27,6 @@ export const getLiveDeltas = (hass: HomeAssistant, periodStart: Date, periodEnd:
 };
 
 const getDelta = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, statistics: Statistics, entity: string): number => {
-  const entityStats: StatisticValue[] = statistics[entity];
-
-  if (!entityStats || entityStats.length == 0) {
-    return 0;
-  }
-
   const stateObj: HassEntity = hass.states[entity];
 
   if (!stateObj) {
@@ -42,7 +36,13 @@ const getDelta = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, stati
   const timestamp: number = Date.parse(stateObj.last_changed);
 
   if (timestamp >= periodStart.getTime() && timestamp <= periodEnd.getTime()) {
+    const entityStats: StatisticValue[] = statistics[entity];
     const state: number = coerceNumber(stateObj.state);
+
+    if (!entityStats || entityStats.length == 0) {
+      return state;
+    }
+
     const units = stateObj.attributes.unit_of_measurement?.toUpperCase();
     return toWattHours(units, state - (entityStats[entityStats.length - 1].state ?? 0));
   }

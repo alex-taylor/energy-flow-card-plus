@@ -7,6 +7,15 @@ Home icon/value colour calculation requires that we have a value for 'non-fossil
 
 DisplayZeroTolerance missing from 'Home'
 
+If no statistics are available (eg, at the start of the period before the first hour's have been produced) we are displaying zeroes in Live/Hybrid modes - this could be handled by using the sensor values, so long as they are 'today' and not 'total' or something...
+  - check again at midnight
+
+If the Home entity is displayed, it's showing the wrong value
+  - possibly a misconfigured sensor, check again on Monday
+
+Home Entity, Individual etc are not yet including live deltas
+  - probably fixable by updating getEntityStateWattHours() in the main class to do this
+  - can't be tested until Home Entity display is working again
 
 
 FEATURES
@@ -51,3 +60,5 @@ Remove the 'separated entities' accordion
 Add things like 'units' to the Entity classes, to save lookups each time they are needed (eg in getTotalEnergy)
 
 Test Non-Fossil
+
+Move 'display zero state' up to global config

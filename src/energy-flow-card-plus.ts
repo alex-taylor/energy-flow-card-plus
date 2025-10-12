@@ -1062,9 +1062,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                   }
                 }}
               >
-                ${generalSecondarySpan(home, "home")}
-                <ha-icon .icon=${homeIcon}></ha-icon>
-                ${homeUsageToDisplay}
                 <svg class="home-circle-sections">
                   ${homeSolarCircumference
                     ? svg`<circle
@@ -1109,6 +1106,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
                     shape-rendering="geometricPrecision"
                   />
                 </svg>
+                ${generalSecondarySpan(home, "home")}
+                <ha-icon .icon=${homeIcon}></ha-icon>
+                ${homeUsageToDisplay}
               </div>
               ${this.showLine(individual1.state || 0) && individual2.isPresent ? "" : html`<span class="label">${homeName}</span>`}
             </div>
