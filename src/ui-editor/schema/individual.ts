@@ -26,16 +26,6 @@ const mainSchema = {
       selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } },
     },
     {
-      name: 'unit_of_measurement',
-      label: 'Unit of Measurement',
-      selector: { text: {} },
-    },
-    {
-      name: 'calculate_flow_rate',
-      label: 'Calculate Flow Rate',
-      selector: { boolean: {} },
-    },
-    {
       name: 'decimals',
       label: 'Decimals',
       selector: { number: { mode: 'box', min: 0, max: 4, step: 1 } },

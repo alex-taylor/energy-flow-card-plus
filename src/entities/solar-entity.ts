@@ -1,5 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { SolarConfigEntity } from "../config";
+import { EntityType } from "../enums";
 import { Entity } from "./entity";
 
 export class SolarEntity extends Entity {
@@ -16,10 +17,11 @@ export class SolarEntity extends Entity {
     super(
       hass,
       solar,
+      EntityType.Solar,
       Array.isArray(solar?.entity)
         ? solar?.entity[0]
         : solar?.entity,
-      "ui.panel.lovelace.cards.energy.energy_distribution.solar",
+      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.solar"),
       "mdi:solar-power"
     );
 

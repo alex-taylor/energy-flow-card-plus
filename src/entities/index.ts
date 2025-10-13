@@ -17,8 +17,13 @@ export const getEntityStateObj = (hass: HomeAssistant, entity: string | undefine
   return hass.states[entity];
 };
 
-export const getEntityState = (hass: HomeAssistant, entity: string | undefined): number => {
-  return coerceNumber(getEntityStateObj(hass, entity)?.state || 0);
+export const getEntityState = (hass: HomeAssistant, entity: string | string[] | undefined): number => {
+  if (Array.isArray(entity)) {
+    // TODO: sort this out!
+    return 0;
+  }
+
+  return coerceNumber(getEntityStateObj(hass, entity as string)?.state || 0);
 };
 
 export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statistics | undefined, entity: BasicEntity | undefined): number => {

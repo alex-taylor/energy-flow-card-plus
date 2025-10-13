@@ -4,7 +4,7 @@ import type { BatteryEntity } from "../entities/battery-entity";
 import type { GridEntity } from "../entities/grid-entity";
 import type { SolarEntity } from "../entities/solar-entity";
 import { getEntityStatistics, toWattHours } from "../entities";
-import { coerceNumber } from "../utils";
+import { clampStateValue, coerceNumber } from "../utils";
 import { HassEntity } from "home-assistant-js-websocket";
 
 export interface Flows {
@@ -208,12 +208,3 @@ const addFlowStats = (hass: HomeAssistant, statistics: Statistics, combinedStats
     combinedStats.set(timestamp, entry);
   });
 };
-
-const clampStateValue = (value: number, tolerance: number | undefined): number => {
-  if (tolerance !== undefined && tolerance >= value) {
-    return 0;
-  }
-
-  return value;
-};
-

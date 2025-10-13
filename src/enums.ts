@@ -37,6 +37,8 @@ export namespace ColorMode {
 }
 
 export enum EntityType {
+  Home = "home",
+  HomeSecondary = "homeSecondary",
   Battery = "battery",
   Grid = "grid",
   Grid_Secondary = "gridSecondary",
@@ -46,8 +48,8 @@ export enum EntityType {
   Individual1_Secondary = "individual1Secondary",
   Individual2 = "individual2",
   Individual2_Secondary = "individual2Secondary",
-  HomeSecondary = "homeSecondary",
-  Non_Fossil_Secondary = "nonFossilSecondary"
+  LowCarbon = "low-carbon",
+  LowCarbon_Secondary = "nonFossilSecondary"
 };
 
 function getEnumValueName(type: any, value: any): string {

@@ -1,33 +1,36 @@
 BUGS
 ----
 
-'template' (in the Secondary Info entities) does not appear to have been implemented!
+Secondary value being mis-coloured, needs to take into account the relevant setting
+
+Display Zero State not working - zeroes are always hidden
+
+Home Entity, Individual and Low-Carbon are not yet including live deltas
+  - probably fixable by updating getEntityStateWattHours() in the main class to do this
+  - can't be tested until Home Entity display is working again
 
 Home icon/value colour calculation requires that we have a value for 'non-fossil' energy, which is never calculated
+  - and in fact the entire low-carbon code is stuffed...
 
 DisplayZeroTolerance missing from 'Home'
 
-The Fossil Fuel circle shows the 'hand' cursor but clicking doesn't work unless an entity is set
+The Fossil Fuel circle shows the 'hand' cursor when no entity is set
 
-Fossil Fuel only shows if 'Display Zero' is enabled
-  - possibly it's checking the entity, which isn't set
-  - the display in this case is 'from grid', but this isn't known by the 'display zero' logic
-
-Fossil Fuel line missing in some circumstances
-
-Secondary_info being created in the default config
+Secondary_info etc being created in the default config
   - possible due to upgradeConfig()?
+  - rework to check that the incoming config has the value before updating it
 
 If no statistics are available (eg, at the start of the period before the first hour's have been produced) we are displaying zeroes in Live/Hybrid modes - this could be handled by using the sensor values, so long as they are 'today' and not 'total' or something...
   - check again at midnight
+    - seems to have worked
   - we can handle 'total' sensors if the config tells us that's what they are: this would require a boolean property on each entity config
 
 If the Home entity is displayed, it's showing the wrong value
   - possibly a misconfigured sensor, check again on Monday
+    - need to check stats
+    - not good, change is still non-zero
+    - check Tuesday, expecting a large -ve change this time
 
-Home Entity, Individual etc are not yet including live deltas
-  - probably fixable by updating getEntityStateWattHours() in the main class to do this
-  - can't be tested until Home Entity display is working again
 
 
 FEATURES
@@ -55,8 +58,6 @@ GENERAL
 
 README and CHANGELOG updates
 
-Test the Individual entities, which likely have similar math errors
-
 Test multiple-entities for a single node
   And FossilFuel doesn't appear to support this yet
   Neither do Grid/Battery
@@ -68,3 +69,9 @@ Remove the 'separated entities' accordion
 Add things like 'units' to the Entity classes, to save lookups each time they are needed (eg in getTotalEnergy)
 
 Secondary Info could be supported for Battery as well?
+
+Rename 'Advanced' to 'Appearance', and move to top
+
+Rework the UI to match Power Flow card?
+
+'template' (in the Secondary Info entities) does not appear to have been implemented!

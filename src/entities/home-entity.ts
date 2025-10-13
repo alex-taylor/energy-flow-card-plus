@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { BasicEntity, HomeConfigEntity } from "../config";
-import { ColorMode } from "../enums";
+import { ColorMode, EntityType } from "../enums";
 import { Entity } from "./entity";
 
 export class HomeEntity extends Entity {
@@ -12,10 +12,11 @@ export class HomeEntity extends Entity {
     super(
       hass,
       home,
+      EntityType.Home,
       Array.isArray(home?.entity)
         ? home?.entity[0]
         : home?.entity,
-      "ui.panel.lovelace.cards.energy.energy_distribution.home",
+      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.home"),
       "mdi:home"
     );
 

@@ -1,7 +1,7 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { html, TemplateResult } from "lit";
 import { ComboEntity, GridConfigEntity } from "../config";
-import { ColorMode } from "../enums";
+import { ColorMode, EntityType } from "../enums";
 import { Entity } from "./entity";
 
 export class GridEntity extends Entity {
@@ -33,6 +33,7 @@ export class GridEntity extends Entity {
     super(
       hass,
       grid,
+      EntityType.Grid,
       Array.isArray(grid?.entity?.consumption)
         ? grid?.entity?.consumption[0]
         : typeof grid?.entity?.consumption === "string"
@@ -42,7 +43,7 @@ export class GridEntity extends Entity {
             : typeof grid?.entity?.production === "string"
               ? grid?.entity?.production
               : undefined,
-      "ui.panel.lovelace.cards.energy.energy_distribution.grid",
+      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.grid"),
       "mdi:transmission-tower"
     );
 

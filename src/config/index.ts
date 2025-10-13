@@ -58,7 +58,16 @@ export interface EntityConfigOptions {
   secondary_info?: SecondaryInfoType;
 }
 
-interface BidirectionalConfigOptions {
+export interface ExtraConfigOptions extends EntityConfigOptions {
+  entity?: BasicEntity;
+  color?: string | number[];
+  color_icon?: boolean;
+  display_zero?: boolean;
+  color_value?: boolean;
+  color_label?: boolean;
+};
+
+interface BidirectionalConfigOptions extends EntityConfigOptions {
   entity?: ComboEntity;
   invert_state?: boolean;
   // TODO: not valid here, should be an array of string|number[], separate for consumption/production
@@ -72,7 +81,7 @@ interface BidirectionalConfigOptions {
   color_circle?: any;
 };
 
-export interface BatteryConfigEntity extends EntityConfigOptions, BidirectionalConfigOptions {
+export interface BatteryConfigEntity extends BidirectionalConfigOptions {
   state_of_charge?: string;
   state_of_charge_unit?: string;
   state_of_charge_decimals?: number;
@@ -84,23 +93,14 @@ export interface BatteryConfigEntity extends EntityConfigOptions, BidirectionalC
   state_of_charge_unit_white_space?: any;
 };
 
-export interface FossilFuelConfigEntity extends EntityConfigOptions {
-  entity?: string;
-  show?: boolean;
-  color?: string | number[];
+export interface FossilFuelConfigEntity extends ExtraConfigOptions {
   state_type?: 'percentage' | 'energy';
-  color_icon?: boolean;
-  display_zero?: boolean;
-  color_value?: boolean;
-  color_label?: boolean;
-  decimals?: number;
-  calculate_flow_rate?: boolean | number;
 
   // @deprecated replaced by mainConfigOptions#unit_white_space
   unit_white_space?: any;
 };
 
-export interface GridConfigEntity extends EntityConfigOptions, BidirectionalConfigOptions {
+export interface GridConfigEntity extends BidirectionalConfigOptions {
   power_outage?: GridPowerOutage;
 };
 
@@ -117,22 +117,8 @@ export interface HomeConfigEntity extends EntityConfigOptions {
   color_value?: any;
 };
 
-export type IndividualConfigEntity = {
-  entity: BasicEntity;
-  name?: string;
-  icon?: string;
-  color?: string;
-  color_icon?: boolean;
+export interface IndividualConfigEntity extends ExtraConfigOptions {
   inverted_animation?: boolean;
-  unit_of_measurement?: string;
-  display_zero?: boolean;
-  display_zero_tolerance?: number;
-  secondary_info?: SecondaryInfoType;
-  color_value?: boolean;
-  color_label?: boolean;
-  calculate_flow_rate?: boolean;
-  use_metadata?: boolean;
-  decimals?: number;
   show_direction?: boolean;
 
   // @deprecated replaced by mainConfigOptions#unit_white_space

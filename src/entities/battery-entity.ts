@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { BatteryConfigEntity, ComboEntity } from "../config";
-import { ColorMode } from "../enums";
+import { ColorMode, EntityType } from "../enums";
 import { Entity } from "./entity";
 
 export class BatteryEntity extends Entity {
@@ -31,10 +31,11 @@ export class BatteryEntity extends Entity {
     super(
       hass,
       battery,
+      EntityType.Battery,
       typeof battery?.entity === "object"
         ? battery.entity.consumption
         : battery?.entity,
-      "ui.panel.lovelace.cards.energy.energy_distribution.battery",
+      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.battery"),
       "mdi:battery-high"
     );
 

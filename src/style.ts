@@ -91,15 +91,11 @@ export const styles = css`
     margin: 0 4px;
     height: 130px;
   }
-  .circle-container.individual2 {
-    margin-left: 4px;
-    height: 130px;
-  }
   .circle-container.individual1 {
     margin-left: 4px;
     height: 130px;
   }
-  .circle-container.individual1.bottom {
+  .circle-container.individual2 {
     position: relative;
     top: -20px;
     margin-bottom: -20px;
@@ -388,5 +384,10 @@ export const styles = css`
 
   .home-circle-sections {
     pointer-events: none;
+  }
+
+  .entity-icon {
+    padding-top: 2px;
+    padding-bottom: 2px;
   }
 `;

@@ -33,3 +33,11 @@ export const mapRange = (value: number, minOut: number, maxOut: number, minIn: n
 };
 
 export const unavailableOrMisconfiguredError = (entityId: string | undefined) => logError(`Entity "${entityId ?? "Unknown"}" is not available or misconfigured`);
+
+export const clampStateValue = (value: number, tolerance: number | undefined): number => {
+  if (tolerance !== undefined && tolerance >= value) {
+    return 0;
+  }
+
+  return value;
+};
