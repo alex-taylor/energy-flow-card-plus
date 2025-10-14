@@ -3,11 +3,10 @@ BUGS
 
 Secondary value being mis-coloured, needs to take into account the relevant setting
 
-Display Zero State not working - zeroes are always hidden
+Secondary value not using the entity's units
 
 Home Entity, Individual and Low-Carbon are not yet including live deltas
   - probably fixable by updating getEntityStateWattHours() in the main class to do this
-  - can't be tested until Home Entity display is working again
 
 Home icon/value colour calculation requires that we have a value for 'non-fossil' energy, which is never calculated
   - and in fact the entire low-carbon code is stuffed...
@@ -20,16 +19,6 @@ Secondary_info etc being created in the default config
   - possible due to upgradeConfig()?
   - rework to check that the incoming config has the value before updating it
 
-If no statistics are available (eg, at the start of the period before the first hour's have been produced) we are displaying zeroes in Live/Hybrid modes - this could be handled by using the sensor values, so long as they are 'today' and not 'total' or something...
-  - check again at midnight
-    - seems to have worked
-  - we can handle 'total' sensors if the config tells us that's what they are: this would require a boolean property on each entity config
-
-If the Home entity is displayed, it's showing the wrong value
-  - possibly a misconfigured sensor, check again on Monday
-    - need to check stats
-    - not good, change is still non-zero
-    - check Tuesday, expecting a large -ve change this time
 
 
 

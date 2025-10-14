@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { HomeAssistant } from 'custom-card-helpers';
-import { addHours } from 'date-fns';
+import { HomeAssistant, round } from 'custom-card-helpers';
+import { addDays, getHours } from 'date-fns';
 import { Collection } from 'home-assistant-js-websocket';
 
 interface StatisticsMetaData {
@@ -112,41 +112,69 @@ export const getEnergyDataCollection = (hass: HomeAssistant, key = '_energy'): E
   return null;
 };
 
-const fetchStatistics = (hass: HomeAssistant, startTime: Date, endTime?: Date, statistic_ids?: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month' = 'hour') => hass.callWS<Statistics>({
-  type: 'recorder/statistics_during_period',
-  start_time: startTime.toISOString(),
-  end_time: endTime?.toISOString(),
-  statistic_ids: statistic_ids,
-  period: period
-});
-
 export async function getStatistics(hass: HomeAssistant, periodStart: Date, periodEnd: Date, entities: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month'): Promise<Statistics> {
-  const data: Statistics = await fetchStatistics(hass, addHours(periodStart, -1), periodEnd, entities, period);
+  const previousData: Statistics = await fetchStatistics(hass, addDays(periodStart, -1), periodStart, entities, 'day');
+  const data: Statistics = await fetchStatistics(hass, periodStart, periodEnd, entities, period);
 
-  Object.values(data).forEach(stat => {
-    if (stat.length != 0) {
-      let idx: number = 0;
+  Object.keys(data).forEach(entity => {
+    const statsForEntity: StatisticValue[] = data[entity];
+    let idx: number = 0;
 
-      if (stat[idx].start < periodStart.getTime()) {
-        // This entry is the final stat priod to the period we are interested in.  It is only needed for the case where we need to calculate the
+    if (statsForEntity.length == 0 || statsForEntity[0].start > periodStart.getTime()) {
+      if (previousData && previousData[entity] && previousData[entity].length != 0) {
+        // This entry is the final stat prior to the period we are interested in.  It is only needed for the case where we need to calculate the
         // Live/Hybrid-mode state-delta at midnight on the current date (ie, before the first stat of the new day has been generated) so we do
         // not want to include its values in the stats calculations.
-        if (stat.length > 1) {
-          stat.splice(idx, 1);
+        const previousStat: StatisticValue = previousData[entity][0];
+
+        statsForEntity.unshift({
+          ...previousStat,
+          change: 0,
+          state: isTotalisingSensor(previousStat) ? previousStat.state : 0
+        });
+
+        idx++;
+      } else {
+        statsForEntity.unshift({
+          change: 0,
+          state: 0,
+          sum: 0,
+          start: periodStart.getTime(),
+          end: periodEnd.getTime(),
+          min: 0,
+          mean: 0,
+          max: 0,
+          last_reset: null,
+          statistic_id: entity
+        });
+
+        idx++;
+      }
+    }
+
+    if (statsForEntity.length > idx) {
+      let lastState: number = 0;
+
+      statsForEntity.forEach(stat => {
+        if (getHours(stat.start) == 0) {
+          if (isMisconfiguredResettingSensor(stat)) {
+            // this is a 'resetting' sensor which has been misconfigured such that the first 'change' value following the reset is out of range
+            console.log("Entity " + entity + " is a misconfigured resetting sensor - change=" + stat.change + ", state=" + stat.state);
+            stat.change = stat.state;
+          } else if (isTotalisingSensor(stat)) {
+            //console.log("Entity " + entity + " is a totalising sensor - change=" + stat[idx].change + ", state=" + stat[idx].state);
+          } else {
+            //console.log("Entity " + entity + " is a valid resetting sensor - change=" + stat[idx].change + ", state=" + stat[idx].state);
+          }
+
+          lastState = stat.state || 0;
         } else {
-          stat[idx].change = 0;
-
-          // TODO: if this is a 'resetting' sensor, then 'state' also needs zeroing out
-          //stat[idx].state = 0;
-
-          idx++;
+          // the 'change' values coming back from statistics are not always correct, so recalculate them from the state-diffs
+          const state: number = stat.state || 0;
+          stat.change = state - lastState;
+          lastState = state;
         }
-      }
-
-      if (stat.length > idx) {
-        // TODO: if this is a 'resetting' sensor, then set 'change' to 'state' on stat[idx] - this works around the case where the sensor is incorrectly
-        //       configured as 'Total' rather than 'Total Increasing', which causes a negative 'change' value in the first reading following the reset
-      }
+      });
     }
   });
 
@@ -164,3 +192,23 @@ export function getEnergySourceColor(type: string) {
 
   return undefined;
 }
+
+const isMisconfiguredResettingSensor = (stat: StatisticValue): boolean => {
+  const change: number = round(stat.change || 0, 6);
+  let state: number = round(stat.state || 0, 6);
+  return change > state || change < 0;
+};
+
+const isTotalisingSensor = (stat: StatisticValue): boolean => {
+  const change: number = round(stat.change || 0, 6);
+  let state: number = round(stat.state || 0, 6);
+  return change >= 0 && change < state;
+};
+
+const fetchStatistics = (hass: HomeAssistant, startTime: Date, endTime?: Date, statistic_ids?: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month' = 'hour') => hass.callWS<Statistics>({
+  type: 'recorder/statistics_during_period',
+  start_time: startTime.toISOString(),
+  end_time: endTime?.toISOString(),
+  statistic_ids: statistic_ids,
+  period: period
+});
