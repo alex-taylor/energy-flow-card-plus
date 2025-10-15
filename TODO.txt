@@ -7,12 +7,9 @@ The 'loading...' flag doesn't seem to be getting cleared reliably
 Secondary value being mis-coloured, needs to take into account the relevant setting
 
 Secondary value not using the entity's units
+  - this is because they are not being passed in
 
-Home Entity, Individual and Low-Carbon are not yet including live deltas
-  - probably fixable by updating getEntityStateWattHours() in the main class to do this
-
-Home icon/value colour calculation requires that we have a value for 'non-fossil' energy, which is never calculated
-  - and in fact the entire low-carbon code is stuffed...
+Home, Individual are not yet including live deltas
 
 
 
@@ -28,7 +25,7 @@ Display the flow rates as hover-overs on the lines
 
 See if it's possible to pick up the built-in energy config for the sensors?
   - this works with a new card with its default config, but as soon as you set and then remove an entity you lose it
-  - so what we might want here is a toggle to switch between built-in config and explicit?
+  - if an entity is set, it overrides the built-in one, if present
 
 Might need to support a vertical layout
   - either dynamic, based on available width and the number of Nodes to draw, or user-controlled
@@ -50,11 +47,12 @@ GENERAL
   - display mode (enum, today, history, hybrid)
   - Appearance
   - Grid
+  - Gas
   - Low-carbon
   - Solar
   - Battery
   - Home
-  - devices (array of Device, possibly limited to four?)
+  - devices (array of Device)
 
 'Appearance'
   - dashboard link (string)
@@ -75,14 +73,14 @@ GENERAL
   - kilowatt to megawatt threshold (number, defaults to 1000)
 
 'Flows':
-  - min flow rate (number, defaults to 1)       -- check these two against the built-in card, there's no real need to allow them to be overridden here
+  - min flow rate (number, defaults to 1)       -- there's no real need to allow these to be set, they're the values from the built-in card; but they are also used by the new calculations
   - max flow rate (number, defaults to 6)
   - min expected energy (number, defaults to 10)    -- only used by the 'new flow' calculations
   - max expected energy (number, defaults to 2000)
 
 'Node'
-  - name (string, optional, overrides the built-in name for the Grid/Solar/Battery/Home/Low-carbon nodes or the entity's own name for the Devices)
-  - icon (string, optional, overrides the built-in icon for the Grid/Solar/Battery/Home/Low-carbon nodes or the entity's own icon for the Devices)
+  - name (string, optional, overrides the built-in name for the Grid/Gas/Solar/Battery/Home/Low-carbon nodes or the entity's own name for the Devices)
+  - icon (string, optional, overrides the built-in icon for the Grid/Gas/Solar/Battery/Home/Low-carbon nodes or the entity's own icon for the Devices)
   - SecondaryInfo
 
 'UniNode':'Node'
@@ -101,7 +99,7 @@ GENERAL
   - colour values (boolean)
 
 'Entity'
-  - id
+  - id (optional, overrides the HASS config for the Grid/Solar/Battery/Gas/Low-carbon nodes, for all others controls whether the node is shown)
   - units (optional, overrides the entity's own units)
   - display zero threshold (optional, defaults to 0)
   - decimals (optional, defaults to no value)
@@ -129,7 +127,7 @@ GENERAL
   - sum (boolean, defaults to false)
 
 'Low-Carbon':'UniNode'
-  - type (enum, energy, percentage, defaults to energy)     -- although this could be derived from the entity itself?
+  - display (enum, energy, percentage, defaults to energy)
 
 'PowerOutage'
   - entity (Entity)

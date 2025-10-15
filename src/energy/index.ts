@@ -117,39 +117,46 @@ export async function getStatistics(hass: HomeAssistant, periodStart: Date, peri
   const data: Statistics = await fetchStatistics(hass, periodStart, periodEnd, entities, period);
 
   entities.forEach(entity => {
-    const statsForEntity: StatisticValue[] = data[entity];
+    let statsForEntity: StatisticValue[] = data[entity];
     let idx: number = 0;
 
     if (!statsForEntity || statsForEntity.length == 0 || statsForEntity[0].start > periodStart.getTime()) {
+      let dummyStat: StatisticValue;
+
       if (previousData && previousData[entity] && previousData[entity].length != 0) {
         // This entry is the final stat prior to the period we are interested in.  It is only needed for the case where we need to calculate the
         // Live/Hybrid-mode state-delta at midnight on the current date (ie, before the first stat of the new day has been generated) so we do
         // not want to include its values in the stats calculations.
         const previousStat: StatisticValue = previousData[entity][0];
 
-        statsForEntity.unshift({
+        dummyStat = {
           ...previousStat,
           change: 0,
-          state: isTotalisingSensor(previousStat) ? previousStat.state : 0
-        });
-
-        idx++;
+          state: isTotalisingSensor(previousStat) ? previousStat.state : 0,
+          mean: 100
+        };
       } else {
-        statsForEntity.unshift({
+        dummyStat = {
           change: 0,
           state: 0,
           sum: 0,
           start: periodStart.getTime(),
           end: periodEnd.getTime(),
           min: 0,
-          mean: 0,
+          mean: 100,
           max: 0,
           last_reset: null,
           statistic_id: entity
-        });
-
-        idx++;
+        };
       }
+
+      if (statsForEntity) {
+        statsForEntity.unshift(dummyStat);
+      } else {
+        statsForEntity = new Array(dummyStat);
+      }
+
+      idx++;
     }
 
     if (statsForEntity.length > idx) {

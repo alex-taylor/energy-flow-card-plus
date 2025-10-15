@@ -43,7 +43,7 @@ const getDelta = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, stati
       return state;
     }
 
-    const units = stateObj.attributes.unit_of_measurement?.toUpperCase();
+    const units = stateObj.attributes.unit_of_measurement;
     return toWattHours(units, state - (entityStats[entityStats.length - 1].state ?? 0));
   }
 

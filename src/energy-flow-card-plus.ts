@@ -5,7 +5,7 @@ import { formatNumber, HomeAssistant, LovelaceCardEditor } from "custom-card-hel
 import { Decimal } from "decimal.js";
 import { customElement, property, state } from "lit/decorators.js";
 import { upgradeConfig, getDefaultConfig } from "./config/config";
-import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics } from "./energy";
+import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics, StatisticValue } from "./energy";
 import { SubscribeMixin } from "./energy/subscribe-mixin";
 import { HomeAssistantReal } from "./hass";
 import localize from "./localize/localize";
@@ -18,7 +18,7 @@ import { SecondaryInfoEntity } from "./entities/secondary-info-entity";
 import { clampStateValue, coerceNumber, isNumberValue, mapRange } from "./utils";
 import { registerCustomCard } from "./utils/register-custom-card";
 import { Flows, calculateStatisticsFlows, getLiveDeltas } from "./flows";
-import { entityExists, getEntityState, getEntityStateWattHours } from "./entities";
+import { entityExists, getEntityState, getEntityStateWattHours, toWattHours } from "./entities";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { differenceInDays, startOfDay } from 'date-fns';
 import { ColorMode, DisplayMode, EntityType } from "./enums";
@@ -121,9 +121,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
               periodEnd = data.end ?? new Date();
             }
 
-            const dayDifference: number = differenceInDays(periodEnd, periodStart);
-            const period = this._config.use_hourly_stats || dayDifference <= 2 ? 'hour' : 'day';
-            this._statistics = await getStatistics(this.hass, periodStart, periodEnd, this._entitiesArr, period);
+            const entities: string[] = data.co2SignalEntity ? this._entitiesArr.concat(data.co2SignalEntity) : this._entitiesArr;
+            const period = this._config.use_hourly_stats || differenceInDays(periodEnd, periodStart) <= 2 ? 'hour' : 'day';
+            this._statistics = await getStatistics(this.hass, periodStart, periodEnd, entities, period);
             calculateStatisticsFlows(this.hass, this._statistics, this._solar, this._battery, this._grid);
           }
 
@@ -171,7 +171,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     const grid: GridEntity = this._grid;
     const solar: SolarEntity = this._solar;
     const battery: BatteryEntity = this._battery;
-    const home: HomeEntity = this._home;
     const individual1: IndividualEntity = this._individual1;
     const individual2: IndividualEntity = this._individual2;
     const fossilFuel: FossilFuelEntity = this._fossilFuel;
@@ -266,13 +265,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     this.style.setProperty("--icon-individualone-color", entities.individual1?.color_icon ? "var(--individualone-color)" : "var(--primary-text-color)");
     this.style.setProperty("--icon-individualtwo-color", entities.individual2?.color_icon ? "var(--individualtwo-color)" : "var(--primary-text-color)");
 
-    //individual1.secondary.state = this.getSecondaryState(individual1.secondary, EntityType.Individual1_Secondary);
-    //individual2.secondary.state = this.getSecondaryState(individual2.secondary, EntityType.Individual2_Secondary);
-    //solar.secondary.state = this.getSecondaryState(solar.secondary, EntityType.Solar_Secondary);
-    //home.secondary.state = this.getSecondaryState(home.secondary, EntityType.HomeSecondary);
-    //fossilFuel.secondary.state = this.getSecondaryState(fossilFuel.secondary, EntityType.Non_Fossil_Secondary);
-    //grid.secondary.state = this.getSecondaryState(grid.secondary, EntityType.Grid_Secondary);
-
     // Update and Set Color of Solar
     if (entities.solar?.color !== undefined) {
       let solarColor = entities.solar?.color;
@@ -298,8 +290,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     let batteryToHome: number = battery.state.toHome;
     let batteryToBattery: number = battery.state.toBattery;
     let batteryFromBattery: number = battery.state.fromBattery;
+    let highCarbonEnergy: number = 0;
+    let lowCarbonEnergy: number = 0;
+    let lowCarbonPercentage: number = 0;
 
     // unless we're in 'history' mode, we need to bring the stats right up to date by taking the current values of the sensors
+    let gridFromGridDelta: number = 0;
+
     if (this._config?.display_mode !== DisplayMode.History && this._statistics) {
       let start: Date;
       let end: Date;
@@ -313,6 +310,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       }
 
       const deltas: Flows = getLiveDeltas(this.hass, start, end, this._statistics, solar, battery, grid);
+      gridFromGridDelta = deltas.gridToBattery + deltas.gridToHome;
 
       solarToHome += deltas.solarToHome;
       solarToGrid += deltas.solarToGrid;
@@ -321,13 +319,54 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
       gridToBattery += deltas.gridToBattery;
       gridToHome += deltas.gridToHome;
-      gridFromGrid += deltas.gridToBattery + deltas.gridToHome;
+      gridFromGrid += gridFromGridDelta;
       gridToGrid += deltas.solarToGrid + deltas.batteryToGrid;
 
       batteryToGrid += deltas.batteryToGrid;
       batteryToHome += deltas.batteryToHome;
       batteryFromBattery += deltas.batteryToGrid + deltas.batteryToHome;
       batteryToBattery += deltas.solarToBattery + deltas.gridToBattery;
+    }
+
+    if (this._statistics && this._energyData && this._energyData.co2SignalEntity && this._energyData.fossilEnergyConsumption && this._statistics[grid.entity.consumption]) {
+      const highCarbonPercentageStats: StatisticValue[] = this._statistics[this._energyData!.co2SignalEntity];
+      const stateObj = this.hass.states[grid.entity.consumption];
+      const units = stateObj.attributes.unit_of_measurement;
+      let idx = 0;
+
+      this._statistics[grid.entity.consumption].forEach(gridStat => {
+        const change: number = toWattHours(units, gridStat.change || 0);
+
+        if (highCarbonPercentageStats && highCarbonPercentageStats.length !== 0) {
+          while (idx < highCarbonPercentageStats.length) {
+            const percentageStart = highCarbonPercentageStats[idx].start;
+
+            if (percentageStart == gridStat.start) {
+              highCarbonEnergy += change * (highCarbonPercentageStats[idx].mean || 0) / 100;
+              idx++;
+              break;
+            }
+
+            if (percentageStart > gridStat.start) {
+              // the grid started first
+              highCarbonEnergy += change;
+              break;
+            }
+
+            // the percentage started first
+            idx++;
+          }
+        } else {
+          highCarbonEnergy += change;
+        }
+      });
+
+      if (this._config.display_mode !== DisplayMode.History) {
+        highCarbonEnergy += gridFromGridDelta * coerceNumber(this.hass.states[this._energyData.co2SignalEntity].state) / 100;
+      }
+
+      lowCarbonEnergy = gridFromGrid - highCarbonEnergy;
+      lowCarbonPercentage = (lowCarbonEnergy / gridFromGrid) * 100;
     }
 
     // Calculate Sum of All Sources to get Total Home Consumption
@@ -410,21 +449,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     const totalIndividualConsumption = coerceNumber(individual1.state, 0) + coerceNumber(individual2.state, 0);
 
     // Calculate Circumference of Semi-Circles
-    let homeBatteryCircumference: number = 0;
-
-    if (batteryToHome) {
-      homeBatteryCircumference = CIRCLE_CIRCUMFERENCE * (batteryToHome / totalHomeConsumption);
-    }
-
-    let homeSolarCircumference: number = 0;
-
-    if (solar.isPresent) {
-      homeSolarCircumference = CIRCLE_CIRCUMFERENCE * (solarToHome / totalHomeConsumption);
-    }
-
-    let homeGridCircumference: number | undefined;
-    let fossilFuelEnergy: number | undefined;
-    let homeFossilCircumference: number | undefined;
+    // TODO: totalHomeConsumption may be zero by this point
+    const homeBatteryCircumference: number = CIRCLE_CIRCUMFERENCE * (batteryToHome / totalHomeConsumption);
+    const homeSolarCircumference: number = CIRCLE_CIRCUMFERENCE * (solarToHome / totalHomeConsumption);
+    const highCarbonConsumption: number = highCarbonEnergy * (gridToHome / gridFromGrid);
+    const homeHighCarbonCircumference: number = CIRCLE_CIRCUMFERENCE * (highCarbonConsumption / totalHomeConsumption);
+    const homeLowCarbonCircumference: number = CIRCLE_CIRCUMFERENCE - homeSolarCircumference - homeBatteryCircumference - homeHighCarbonCircumference;
 
     const totalLines = solarToHome + solarToGrid + solarToBattery + gridToHome + gridToBattery + batteryToHome + batteryToGrid;
 
@@ -438,7 +468,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       solarToHome: this.circleRate(solarToHome ?? 0, totalLines),
       individual1: this.circleRate(individual1.state ?? 0, totalIndividualConsumption),
       individual2: this.circleRate(individual2.state ?? 0, totalIndividualConsumption),
-      lowCarbon: this.circleRate(fossilFuelEnergy ?? 0, totalLines),
+      lowCarbon: this.circleRate(lowCarbonEnergy ?? 0, totalLines),
     };
 
     ["batteryGrid", "batteryToHome", "gridToHome", "solarToBattery", "solarToGrid", "solarToHome"].forEach((flowName) => {
@@ -480,7 +510,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       },
       gridNonFossil: {
         // TODO: doesn't work and never has
-        value: fossilFuelEnergy ?? 0,
+        value: highCarbonEnergy ?? 0,
         color: "var(--energy-non-fossil-color)",
       }
     };
@@ -570,30 +600,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       homeUsageToDisplay = homeUsageState != 0 || this._config.display_zero_state ? this.displayValue(homeUsageState) : "";
     }
 
-    let lowCarbonPercentage: number = 0;
-    let lowCarbonEnergy: number = 0;
-
-    if (this._energyData && this._energyData.co2SignalEntity && this._energyData.fossilEnergyConsumption) {
-      // Calculate high carbon consumption
-      const highCarbonEnergy: number = Object.values(this._energyData.fossilEnergyConsumption).reduce((sum, a) => sum + a, 0) * 1000;
-      lowCarbonEnergy = gridFromGrid - highCarbonEnergy;
-
-      // TODO: what the hell?!
-      const highCarbonConsumption = highCarbonEnergy * (gridFromGrid / gridFromGrid);
-
-      homeGridCircumference = CIRCLE_CIRCUMFERENCE * (highCarbonConsumption / totalHomeConsumption);
-      homeFossilCircumference = CIRCLE_CIRCUMFERENCE - homeSolarCircumference - homeBatteryCircumference - homeGridCircumference;
-      lowCarbonPercentage = (lowCarbonEnergy / gridFromGrid) * 100;
-    }
-
-    if (this._config.display_mode === DisplayMode.Live) {
-      lowCarbonPercentage = 100 - getEntityState(this.hass, entities.fossil_fuel_percentage?.entity);
-      lowCarbonEnergy = (lowCarbonPercentage * gridFromGrid) / 100;
-    }
-
-    // TODO: check why *1000
-    lowCarbonEnergy = clampStateValue(lowCarbonEnergy, ((entities.fossil_fuel_percentage?.display_zero_tolerance ?? 0) * 1000 || 0));
-
     // Adjust Curved Lines
     const isCardWideEnough = this._width > 420;
 
@@ -612,8 +618,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       }
     }
 
-    //    const lowCarbonValue = this.displayValue(, entities.fossil_fuel_percentage?.state_type === "percentage" ? "%" : undefined, entities.fossil_fuel_percentage?.decimals);
-
     return html`
       <ha-card .header=${this._config.title}>
         <div class="card-content" id="energy-flow-card-plus">
@@ -624,7 +628,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           <div class="row">
 
             <!-- top left -->
-            ${!fossilFuel.isPresent || (lowCarbonEnergy == 0 && !entities.fossil_fuel_percentage?.display_zero)
+            ${lowCarbonEnergy == 0 && !entities.fossil_fuel_percentage?.display_zero
             ? html`<div class="spacer"></div>`
             : html`${this.renderIndividualCircleAtTop(EntityType.LowCarbon, fossilFuel, entities.fossil_fuel_percentage?.state_type === "percentage" ? lowCarbonPercentage : lowCarbonEnergy, -newDur.lowCarbon)}`}
 
@@ -654,8 +658,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           ${this.renderHomeCircle(
           homeSolarCircumference,
           homeBatteryCircumference,
-          homeFossilCircumference,
-          homeGridCircumference,
+          homeLowCarbonCircumference,
+          homeHighCarbonCircumference,
           homeConsumptionError,
           homeValueIsZero,
           homeUsageToDisplay)}
@@ -891,14 +895,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   private renderHomeCircle = (
     homeSolarCircumference: number,
     homeBatteryCircumference: number,
-    homeFossilCircumference: number | undefined,
-    homeGridCircumference: number | undefined,
+    homeLowCarbonCircumference: number,
+    homeHighCarbonCircumference: number,
     homeConsumptionError: boolean,
     homeValueIsZero: boolean,
     homeUsageToDisplay: string
   ): TemplateResult => {
     const home: HomeEntity = this._home;
-
     return html`
       <div class="circle-container home">
         <div class="circle" id = "home-circle" @click=${this.handleClick(home.mainEntity)} @keyDown=${this.handleKeyDown(home.mainEntity)}>
@@ -931,15 +934,15 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             `
         : ""}
 
-          ${homeFossilCircumference
+          ${homeLowCarbonCircumference
         ? svg`
             <circle
               class="low-carbon"
               cx="40"
               cy="40"
               r="38"
-              stroke-dasharray="${homeFossilCircumference} ${CIRCLE_CIRCUMFERENCE - homeFossilCircumference}"
-              stroke-dashoffset="-${CIRCLE_CIRCUMFERENCE - homeFossilCircumference - homeBatteryCircumference - homeSolarCircumference}"
+              stroke-dasharray="${homeLowCarbonCircumference} ${CIRCLE_CIRCUMFERENCE - homeLowCarbonCircumference}"
+              stroke-dashoffset="-${CIRCLE_CIRCUMFERENCE - homeLowCarbonCircumference - homeBatteryCircumference - homeSolarCircumference}"
               shape-rendering="geometricPrecision"
             />
             `
@@ -950,7 +953,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
               cx = "40"
               cy = "40"
               r = "38"
-              stroke-dasharray="${homeGridCircumference ?? CIRCLE_CIRCUMFERENCE - homeSolarCircumference - homeBatteryCircumference} ${homeGridCircumference ? CIRCLE_CIRCUMFERENCE - homeGridCircumference : homeSolarCircumference + homeBatteryCircumference}"
+              stroke-dasharray="${homeHighCarbonCircumference ?? CIRCLE_CIRCUMFERENCE - homeSolarCircumference - homeBatteryCircumference - homeLowCarbonCircumference} ${homeSolarCircumference + homeBatteryCircumference + homeLowCarbonCircumference}"
               stroke-dashoffset="0"
               shape-rendering="geometricPrecision"
             />

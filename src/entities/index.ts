@@ -59,7 +59,7 @@ export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics,
     const stateObj = hass.states[entity];
 
     if (stateObj) {
-      const units = stateObj.attributes.unit_of_measurement?.toUpperCase();
+      const units = stateObj.attributes.unit_of_measurement;
       const statisticsForEntity: StatisticValue[] = statistics[entity];
 
       if (statisticsForEntity && statisticsForEntity.length != 0) {
@@ -80,11 +80,11 @@ export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics,
 };
 
 export const toWattHours = (units: string | undefined, value: number): number => {
-  if (units?.startsWith("KWH")) {
+  if (units?.toUpperCase().startsWith("KWH")) {
     return value * 1000;
   }
 
-  if (units?.startsWith("MWH")) {
+  if (units?.toUpperCase().startsWith("MWH")) {
     return value * 1000000;
   }
 
