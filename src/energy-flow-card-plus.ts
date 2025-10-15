@@ -105,9 +105,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     return [
       energyPromise.then(async (collection: EnergyCollection) => {
-        this._loading = true;
-
         return collection.subscribe(async (data: EnergyData) => {
+          this._loading = true;
           this._energyData = data;
 
           if (this._entitiesArr) {
@@ -126,8 +125,9 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             const period = this._config.use_hourly_stats || dayDifference <= 2 ? 'hour' : 'day';
             this._statistics = await getStatistics(this.hass, periodStart, periodEnd, this._entitiesArr, period);
             calculateStatisticsFlows(this.hass, this._statistics, this._solar, this._battery, this._grid);
-            this._loading = false;
           }
+
+          this._loading = false;
         });
       }),
     ];
@@ -764,8 +764,6 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     this._entitiesArr = this._entitiesArr.filter((entity) => entity);
   };
-
-  private entityInverted = (entityType: EntityType) => !!this._config.entities[entityType]?.invert_state;
 
   private getEntityStateWattHours = (entity: BasicEntity | undefined): number => getEntityStateWattHours(this.hass, this._statistics, entity);
 
