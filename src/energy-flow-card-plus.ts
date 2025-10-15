@@ -509,8 +509,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         color: "var(--energy-grid-consumption-color)",
       },
       gridNonFossil: {
-        // TODO: doesn't work and never has
-        value: highCarbonEnergy ?? 0,
+        value: lowCarbonEnergy,
         color: "var(--energy-non-fossil-color)",
       }
     };
@@ -1087,7 +1086,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         <span class="label">${entity.name}</span>
         <div class="circle" @click=${this.handleClick(entity.mainEntity)} @keyDown=${this.handleKeyDown(entity.mainEntity)}>
           ${this.renderSecondarySpan(entity.secondary, type)}
-          <ha-icon class="${type} entity-icon" .icon=${entity.icon}></ha-icon>
+          <ha-icon class="entity-icon" .icon=${entity.icon}></ha-icon>
           ${this._config.display_zero_state || state != 0 ? html`<span class=" ${type}">${this.displayValue(state)}</span>` : ""}
         </div>
         ${this.showLine(state)
@@ -1102,7 +1101,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     `;
   };
 
-  private renderIndividualCircleAtBottom = (type: EntityType, entity: IndividualEntity, state: number, animDuration: number): TemplateResult => {
+  private renderIndividualCircleAtBottom = (type: EntityType, entity: Entity, state: number, animDuration: number): TemplateResult => {
     return html`
       <div class="circle-container ${type}">
         ${this.showLine(state)
@@ -1115,7 +1114,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         : ""}
         <div class="circle" @click=${this.handleClick(entity.mainEntity)} @keyDown=${this.handleKeyDown(entity.mainEntity)}>
           ${this.renderSecondarySpan(entity.secondary, type)}
-          <ha-icon  class="entity-icon" .icon=${entity.icon}></ha-icon>
+          <ha-icon class="entity-icon" .icon=${entity.icon}></ha-icon>
           ${this._config.display_zero_state || state != 0 ? html`<span class=" ${type}">${this.displayValue(state)}</span>` : ""}
         </div>
         <span class="label">${entity.name}</span>

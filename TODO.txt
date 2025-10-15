@@ -11,6 +11,10 @@ Secondary value not using the entity's units
 
 Home, Individual are not yet including live deltas
 
+Individual icon also coloured when the 'colour value' flag is set
+  - 'colour icon' flags not working at all
+  - oddly, doesn't affect low-carbon
+
 
 
 
@@ -86,6 +90,7 @@ GENERAL
 'UniNode':'Node'
   - entities (array of Entity)
   - colour (rgb, optional, overrides the built-in colour)
+      - need a means to remove it again
   - colour icon (boolean, defaults to false)
   - colour value (boolean, defaults to false)
 
@@ -93,7 +98,9 @@ GENERAL
   - consumption (array of Entity)
   - production (array of Entity)
   - colour of consumption (rgb, optional, overrides the built-in colour)
+      - need a means to remove it again
   - colour of production (rgb, optional, overrides the built-in colour)
+      - need a means to remove it again
   - colour of icon (enum, none, dynamic, consumption, production, consumption sources, defaults to none)
   - colour of circle (enum, dynamic, consumption, production, consumption sources, defaults to dynamic)
   - colour values (boolean)
