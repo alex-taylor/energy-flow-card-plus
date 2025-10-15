@@ -118,66 +118,63 @@ export async function getStatistics(hass: HomeAssistant, periodStart: Date, peri
 
   entities.forEach(entity => {
     const statsForEntity: StatisticValue[] = data[entity];
+    let idx: number = 0;
 
-    if (statsForEntity) {
-      let idx: number = 0;
+    if (!statsForEntity || statsForEntity.length == 0 || statsForEntity[0].start > periodStart.getTime()) {
+      if (previousData && previousData[entity] && previousData[entity].length != 0) {
+        // This entry is the final stat prior to the period we are interested in.  It is only needed for the case where we need to calculate the
+        // Live/Hybrid-mode state-delta at midnight on the current date (ie, before the first stat of the new day has been generated) so we do
+        // not want to include its values in the stats calculations.
+        const previousStat: StatisticValue = previousData[entity][0];
 
-      if (statsForEntity.length == 0 || statsForEntity[0].start > periodStart.getTime()) {
-        if (previousData && previousData[entity] && previousData[entity].length != 0) {
-          // This entry is the final stat prior to the period we are interested in.  It is only needed for the case where we need to calculate the
-          // Live/Hybrid-mode state-delta at midnight on the current date (ie, before the first stat of the new day has been generated) so we do
-          // not want to include its values in the stats calculations.
-          const previousStat: StatisticValue = previousData[entity][0];
-
-          statsForEntity.unshift({
-            ...previousStat,
-            change: 0,
-            state: isTotalisingSensor(previousStat) ? previousStat.state : 0
-          });
-
-          idx++;
-        } else {
-          statsForEntity.unshift({
-            change: 0,
-            state: 0,
-            sum: 0,
-            start: periodStart.getTime(),
-            end: periodEnd.getTime(),
-            min: 0,
-            mean: 0,
-            max: 0,
-            last_reset: null,
-            statistic_id: entity
-          });
-
-          idx++;
-        }
-      }
-
-      if (statsForEntity.length > idx) {
-        let lastState: number = 0;
-
-        statsForEntity.forEach(stat => {
-          if (getHours(stat.start) == 0) {
-            if (isMisconfiguredResettingSensor(stat)) {
-              // this is a 'resetting' sensor which has been misconfigured such that the first 'change' value following the reset is out of range
-              console.log("Entity " + entity + " is a misconfigured resetting sensor - change=" + stat.change + ", state=" + stat.state);
-              stat.change = stat.state;
-            } else if (isTotalisingSensor(stat)) {
-              //console.log("Entity " + entity + " is a totalising sensor - change=" + stat[idx].change + ", state=" + stat[idx].state);
-            } else {
-              //console.log("Entity " + entity + " is a valid resetting sensor - change=" + stat[idx].change + ", state=" + stat[idx].state);
-            }
-
-            lastState = stat.state || 0;
-          } else {
-            // the 'change' values coming back from statistics are not always correct, so recalculate them from the state-diffs
-            const state: number = stat.state || 0;
-            stat.change = state - lastState;
-            lastState = state;
-          }
+        statsForEntity.unshift({
+          ...previousStat,
+          change: 0,
+          state: isTotalisingSensor(previousStat) ? previousStat.state : 0
         });
+
+        idx++;
+      } else {
+        statsForEntity.unshift({
+          change: 0,
+          state: 0,
+          sum: 0,
+          start: periodStart.getTime(),
+          end: periodEnd.getTime(),
+          min: 0,
+          mean: 0,
+          max: 0,
+          last_reset: null,
+          statistic_id: entity
+        });
+
+        idx++;
       }
+    }
+
+    if (statsForEntity.length > idx) {
+      let lastState: number = 0;
+
+      statsForEntity.forEach(stat => {
+        if (getHours(stat.start) == 0) {
+          if (isMisconfiguredResettingSensor(stat)) {
+            // this is a 'resetting' sensor which has been misconfigured such that the first 'change' value following the reset is out of range
+            console.log("Entity " + entity + " is a misconfigured resetting sensor - change=" + stat.change + ", state=" + stat.state);
+            stat.change = stat.state;
+          } else if (isTotalisingSensor(stat)) {
+            //console.log("Entity " + entity + " is a totalising sensor - change=" + stat[idx].change + ", state=" + stat[idx].state);
+          } else {
+            //console.log("Entity " + entity + " is a valid resetting sensor - change=" + stat[idx].change + ", state=" + stat[idx].state);
+          }
+
+          lastState = stat.state || 0;
+        } else {
+          // the 'change' values coming back from statistics are not always correct, so recalculate them from the state-diffs
+          const state: number = stat.state || 0;
+          stat.change = state - lastState;
+          lastState = state;
+        }
+      });
     }
   });
 
