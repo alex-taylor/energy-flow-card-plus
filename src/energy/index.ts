@@ -154,6 +154,7 @@ export async function getStatistics(hass: HomeAssistant, periodStart: Date, peri
         statsForEntity.unshift(dummyStat);
       } else {
         statsForEntity = new Array(dummyStat);
+        data[entity] = statsForEntity;
       }
 
       idx++;
