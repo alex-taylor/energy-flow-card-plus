@@ -10,7 +10,7 @@ import { SubscribeMixin } from "./energy/subscribe-mixin";
 import { HomeAssistantReal } from "./hass";
 import localize from "./localize/localize";
 import { styles } from "./style";
-import type { EnergyFlowCardPlusConfig, EntityConfig } from "./config";
+import type { EnergyFlowCardExtConfig, EntityConfig } from "./config";
 import { BatteryState } from "./states/battery";
 import { GridState } from "./states/grid";
 import { SolarState } from "./states/solar";
@@ -27,8 +27,8 @@ import { LowCarbonState } from "./states/low-carbon";
 import { State } from "./states/state";
 
 registerCustomCard({
-  type: "energy-flow-card-plus",
-  name: "Energy Flow Card Plus",
+  type: "energy-flow-card-ext",
+  name: "Energy Flow Card Extended",
   description: "A custom card for displaying energy flow in Home Assistant. Inspired by the official Energy Distribution Card.",
 });
 
@@ -37,7 +37,7 @@ const CIRCLE_CIRCUMFERENCE: number = 238.76104;
 const DOT_SIZE_STANDARD: number = 1;
 const DOT_SIZE_INDIVIDUAL: number = 2.4;
 
-@customElement("energy-flow-card-plus")
+@customElement("energy-flow-card-ext")
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   static styles = styles;
@@ -48,13 +48,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   public static async getConfigElement(): Promise<LovelaceCardEditor> {
     await import("./ui-editor/ui-editor");
-    return document.createElement("energy-flow-card-plus-editor");
+    return document.createElement("energy-flow-card-ext-editor");
   }
 
   // https://lit.dev/docs/components/properties/
   @property({ attribute: false }) public hass!: HomeAssistantReal;
 
-  @state() private _config!: EnergyFlowCardPlusConfig;
+  @state() private _config!: EnergyFlowCardExtConfig;
   @state() private _entitiesArr: string[] = [];
   @state() private _error?: Error;
   @state() private _energyData?: EnergyData;
@@ -130,12 +130,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     ];
   }
 
-  public setConfig(config: EnergyFlowCardPlusConfig): void {
+  public setConfig(config: EnergyFlowCardExtConfig): void {
     if (typeof config !== "object") {
       throw new Error(localize("common.invalid_configuration"));
     }
 
-    if (!config.entities || (!config.entities?.battery?.entity && !config.entities?.grid?.entity && !config.entities?.solar?.entity)) {
+    if (!config.battery?.consumption_entities?.entity_ids?.length && !config.battery?.production_entities?.entity_ids?.length && !config.grid?.consumption_entities?.entity_ids?.length && !config.grid?.production_entities?.entity_ids?.length && !config.solar?.entities?.entity_ids?.length) {
       throw new Error("At least one entity for battery, grid or solar must be defined");
     }
 
@@ -579,7 +579,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     return html`
       <ha-card .header=${this._config.title}>
-        <div class="card-content" id="energy-flow-card-plus">
+        <div class="card-content" id="energy-flow-card-ext">
 
         <!-- top row -->
         ${fossilFuel.isPresent || solar.isPresent// || individual1.isPresent
@@ -676,20 +676,19 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       return;
     }
 
-    const elem = this?.shadowRoot?.querySelector("#energy-flow-card-plus");
+    const elem = this?.shadowRoot?.querySelector("#energy-flow-card-ext");
     const widthStr = elem ? getComputedStyle(elem).getPropertyValue("width") : "0px";
     this._width = parseInt(widthStr.replace("px", ""), 10);
   }
 
-  private initEntities = (config: EnergyFlowCardPlusConfig): void => {
-    const entities = config.entities;
-    this._grid = new GridState(this.hass, entities.grid);
-    this._solar = new SolarState(this.hass, entities.solar);
-    this._battery = new BatteryState(this.hass, entities.battery);
-    this._home = new HomeState(this.hass, entities.home);
+  private initEntities = (config: EnergyFlowCardExtConfig): void => {
+    this._grid = new GridState(this.hass, config.grid);
+    this._solar = new SolarState(this.hass, config.solar);
+    this._battery = new BatteryState(this.hass, config.battery);
+    this._home = new HomeState(this.hass, config.home);
     //this._individual1 = new DeviceState(this.hass, entities.individual1, EntityType.Individual1, localize("card.label.car"), "mdi:car-electric");
     //this._individual2 = new DeviceState(this.hass, entities.individual2, EntityType.Individual2, localize("card.label.motorbike"), "mdi:motorbike-electric");
-    this._lowCarbon = new LowCarbonState(this.hass, entities.low_carbon);
+    this._lowCarbon = new LowCarbonState(this.hass, config.low_carbon);
   };
 
   private populateEntitiesArr = (): void => {
@@ -811,7 +810,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
    * @param energy - energy value to check
    * @returns boolean to decide if line should be shown (true = show, false = don't show)
    */
-  private showLine = (energy: number): boolean => this._config?.appearance?.display_zero_lines?.mode === ZeroLinesMode.Show || energy > 0;
+  private showLine = (energy: number): boolean => this._config?.appearance?.display_zero_lines?.mode === ZeroLinesMode.Solid || energy > 0;
 
   /**
    * Convert a an array of values in the format [r, g, b] to a hex color.

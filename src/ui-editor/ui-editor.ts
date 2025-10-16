@@ -1,16 +1,72 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable no-use-before-define */
 
-import { LitElement, css, html, nothing } from 'lit';
+import { LitElement, css, html, nothing, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { EnergyFlowCardPlusConfig } from '../config';
-import { cardConfigStruct, generalConfigSchema, nodesSchema, appearanceOptionsSchema } from './schema/_schema-all';
+import { EnergyFlowCardExtConfig } from '../config';
+import { cardConfigStruct } from './schema';
+import { appearanceOptionsSchema, generalConfigSchema} from './schema/_schemas';
 import localize from '../localize/localize';
+import { gridSchema } from './schema/grid';
+import { solarSchema } from './schema/solar';
+import { batterySchema } from './schema/battery';
+import { lowCarbonSchema } from './schema/low-carbon';
+import { homeSchema } from './schema/home';
+import { gasSchema } from './schema/gas';
+
+const CONFIG_PAGES: {
+  page: string;
+  icon?: string;
+  schema?: any[];
+}[] = [
+    {
+      page: "appearance",
+      icon: "mdi:cog",
+      schema: appearanceOptionsSchema,
+    },
+    {
+      page: "grid",
+      icon: "mdi:transmission-tower",
+      schema: gridSchema,
+    },
+    {
+      page: "gas",
+      icon: "mdi:fire",
+      schema: gasSchema,
+    },
+    {
+      page: "solar",
+      icon: "mdi:solar-power",
+      schema: solarSchema,
+    },
+    {
+      page: "battery",
+      icon: "mdi:battery-high",
+      schema: batterySchema,
+    },
+    {
+      page: "low_carbon",
+      icon: "mdi:leaf",
+      schema: lowCarbonSchema,
+    },
+    {
+      page: "home",
+      icon: "mdi:home",
+      schema: homeSchema,
+    },
+    {
+      page: "devices",
+      icon: "mdi:dots-horizontal-circle-outline",
+    }
+  ];
+
 
 export const loadHaForm = async () => {
-  if (customElements.get('ha-form')) return;
+  if (customElements.get('ha-form')) {
+    return;
+  }
 
   const helpers = await (window as any).loadCardHelpers?.();
 
@@ -27,12 +83,13 @@ export const loadHaForm = async () => {
   await card.getConfigElement();
 };
 
-@customElement('energy-flow-card-plus-editor')
-export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCardEditor {
+@customElement('energy-flow-card-ext-editor')
+export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
-  @state() private _config?: EnergyFlowCardPlusConfig;
+  @state() private _config?: EnergyFlowCardExtConfig;
+  @state() private _currentConfigPage: string | null = null;
 
-  public async setConfig(config: EnergyFlowCardPlusConfig): Promise<void> {
+  public async setConfig(config: EnergyFlowCardExtConfig): Promise<void> {
     assert(config, cardConfigStruct);
     this._config = config;
   }
@@ -42,34 +99,71 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
     loadHaForm();
   }
 
-  protected render() {
+  private _editDetailElement(pageClicked: string): void {
+    this._currentConfigPage = pageClicked;
+  }
+
+  private _goBack(): void {
+    this._currentConfigPage = null;
+  }
+
+  protected render(): TemplateResult | typeof nothing {
     if (!this.hass || !this._config) {
       return nothing;
     }
 
-    const data: EnergyFlowCardPlusConfig = this._config;
+    const config: EnergyFlowCardExtConfig = this._config;
+
+    if (this._currentConfigPage) {
+      const currentPage: string = this._currentConfigPage;
+      const schema: any[] | undefined = CONFIG_PAGES.find((page) => page.page === currentPage)?.schema;
+      const dataForForm: any = config[currentPage];
+
+      return html`
+        <subpage-header @go-back=${this._goBack} page=${currentPage}></subpage-header>
+        <ha-form
+          .hass=${this.hass}
+          .data=${dataForForm}
+          .schema=${schema}
+          .computeLabel=${this._computeLabelCallback}
+          @value-changed=${this._valueChanged}
+        ></ha-form>
+      `;
+    }
 
     return html`
       <div class="card-config">
         <ha-form
           .hass=${this.hass}
-          .data=${data}
-          .schema=${generalConfigSchema}
+          .data=${config}
+          .schema=${generalConfigSchema()}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
         ></ha-form>
-        <div style="height: 24px"></div>
-        <ha-form
-          .hass=${this.hass}
-          .data=${data}
-          .schema=${nodesSchema(localize)}
-          .computeLabel=${this._computeLabelCallback}
-          @value-changed=${this._valueChanged}
-          class="entities-section"
-        ></ha-form>
+        ${this.renderLinkSubPages()}
       </div>
     `;
   }
+
+  private renderLinkSubPages = (): TemplateResult[] => {
+    return CONFIG_PAGES.map((page) => this.renderLinkSubpage(page.page, page.icon));
+  };
+
+  private renderLinkSubpage = (page: string, icon: string | undefined = "mdi:dots-horizontal-circle-outline"): TemplateResult => {
+    if (!page) {
+      return html``;
+    }
+
+    return html`
+        <link-subpage
+          path=${page}
+          header="${localize(`editor.${page}`)}"
+          @open-sub-element-editor=${() => this._editDetailElement(page)}
+          icon=${icon}
+        >
+        </link-subpage>
+      `;
+  };
 
   private _valueChanged(ev: any): void {
     const config = ev.detail.value || '';
@@ -81,7 +175,7 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
     fireEvent(this, 'config-changed', { config });
   }
 
-  private _computeLabelCallback = (schema: any) => this.hass!.localize(`ui.panel.lovelace.editor.card.generic.${schema?.name}`) || localize(`editor.${schema?.name}`);
+  private _computeLabelCallback = (schema: any): string => this.hass!.localize(`ui.panel.lovelace.editor.card.generic.${schema?.name}`) || localize(`editor.${schema?.name}`);
 
   static get styles() {
     return css`
@@ -100,8 +194,7 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
       .card-config {
         display: flex;
         flex-direction: column;
-        justify-content: space-between;
-        align-items: center;
+        gap: 1.5rem;
         margin-bottom: 10px;
       }
 
@@ -129,6 +222,6 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
 
 declare global {
   interface HTMLElementTagNameMap {
-    'energy-flow-card-plus-editor': EnergyFlowCardPlusEditor;
+    'energy-flow-card-ext-editor': EnergyFlowCardExtEditor;
   }
 }

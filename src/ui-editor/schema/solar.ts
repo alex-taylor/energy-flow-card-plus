@@ -1,8 +1,3 @@
-import { secondaryInfoSchema, baseMainConfigSchema, singleValueColourConfigSchema, singleEntitySelectionSchema } from './_schema-base';
+import { nodeConfigSchema, singleValueNodeSchema } from './_schemas';
 
-export const solarSchema = [
-  singleEntitySelectionSchema,
-  baseMainConfigSchema,
-  singleValueColourConfigSchema,
-  secondaryInfoSchema
-] as const;
+export const solarSchema = nodeConfigSchema(singleValueNodeSchema());

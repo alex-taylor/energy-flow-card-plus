@@ -34,7 +34,7 @@
     <None Include="jest.config.ts" />
     <None Include="src\const.ts" />
     <None Include="src\config\config.ts" />
-    <None Include="src\energy-flow-card-plus.ts" />
+    <None Include="src\energy-flow-card-ext.ts" />
     <None Include="src\hass.ts" />
     <None Include="src\logging.ts" />
     <None Include="src\style.ts" />
@@ -68,8 +68,8 @@
     <None Include="src\ui-editor\schema\home.ts" />
     <None Include="src\ui-editor\schema\device.ts" />
     <None Include="src\ui-editor\schema\solar.ts" />
-    <None Include="src\ui-editor\schema\_schema-all.ts" />
-    <None Include="src\ui-editor\schema\_schema-base.ts" />
+    <None Include="src\ui-editor\schema\_schemas.ts" />
+    <None Include="src\ui-editor\schema\index.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\states\" />
@@ -109,6 +109,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\flows\index.ts" />
+    <TypeScriptCompile Include="src\ui-editor\schema\gas.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <Import Project="$(VSToolsPath)\Node.js Tools\Microsoft.NodejsToolsV2.targets" />

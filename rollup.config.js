@@ -21,7 +21,7 @@ const serveOptions = {
 
 export default [
   {
-    input: ["src/energy-flow-card-plus.ts"],
+    input: ["src/energy-flow-card-ext.ts"],
     output: [
       {
         dir: "dist",

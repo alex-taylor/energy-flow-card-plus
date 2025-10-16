@@ -1,7 +1,7 @@
 {
-  "name": "energy-flow-card-plus",
+  "name": "energy-flow-card-ext",
   "version": "0.1.3-alpha",
-  "description": "Energy Flow Card Plus",
+  "description": "Energy Flow Card Extended",
   "keywords": [
     "home-assistant",
     "homeassistant",
@@ -11,7 +11,7 @@
     "custom-cards",
     "dashboard"
   ],
-  "module": "energy-flow-card-plus.js",
+  "module": "energy-flow-card-ext.js",
   "repository": "git@github.com:alex-taylor/energy-flow-card-plus.git",
   "author": "Luca Félix <luca.ziegler.felix@gmail.com>",
   "dependencies": {

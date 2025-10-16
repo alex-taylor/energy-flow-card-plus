@@ -1,54 +1,42 @@
-import { getBaseMainConfigSchema, secondaryInfoSchema } from './_schema-base';
-import localize from '../../localize/localize';
+import { nodeConfigSchema } from './_schemas';
 import { ColourMode } from '../../enums';
 
-const mainSchema = {
-  ...getBaseMainConfigSchema(),
-  schema: [
-    ...getBaseMainConfigSchema().schema,
-    {
-      name: 'color_of_value',
-      label: 'Color of Value',
-      selector: {
-        select: {
-          options: [
-            ColourMode.getItem(ColourMode.Do_Not_Colour),
-            ColourMode.getItem(ColourMode.Colour_Dynamically),
-            ColourMode.getItem(ColourMode.Solar),
-            ColourMode.getItem(ColourMode.High_Carbon),
-            ColourMode.getItem(ColourMode.Low_Carbon),
-            ColourMode.getItem(ColourMode.Battery),
-          ],
-          mode: 'dropdown'
-        },
-      },
-    },
-    {
-      name: 'color_of_icon',
-      label: 'Color of Icon',
-      selector: {
-        select: {
-          options: [
-            ColourMode.getItem(ColourMode.Do_Not_Colour),
-            ColourMode.getItem(ColourMode.Colour_Dynamically),
-            ColourMode.getItem(ColourMode.Solar),
-            ColourMode.getItem(ColourMode.High_Carbon),
-            ColourMode.getItem(ColourMode.Low_Carbon),
-            ColourMode.getItem(ColourMode.Battery),
-          ],
-          mode: 'dropdown'
-        },
-      },
-    }
-  ],
-};
-
-export const homeSchema = [
-  mainSchema,
+export const homeSchema = nodeConfigSchema(undefined).concat(
   {
-    title: localize('editor.secondary_info'),
-    name: 'secondary_info',
-    type: 'expandable',
-    schema: secondaryInfoSchema,
-  },
-] as const;
+    type: 'grid',
+    column_min_width: '200px',
+    schema: [
+      {
+        name: 'colour_of_value',
+        selector: {
+          select: {
+            options: [
+              ColourMode.getItem(ColourMode.Do_Not_Colour),
+              ColourMode.getItem(ColourMode.Colour_Dynamically),
+              ColourMode.getItem(ColourMode.Solar),
+              ColourMode.getItem(ColourMode.High_Carbon),
+              ColourMode.getItem(ColourMode.Low_Carbon),
+              ColourMode.getItem(ColourMode.Battery)
+            ],
+            mode: 'dropdown'
+          },
+        },
+      },
+      {
+        name: 'colour_of_icon',
+        selector: {
+          select: {
+            options: [
+              ColourMode.getItem(ColourMode.Do_Not_Colour),
+              ColourMode.getItem(ColourMode.Colour_Dynamically),
+              ColourMode.getItem(ColourMode.Solar),
+              ColourMode.getItem(ColourMode.High_Carbon),
+              ColourMode.getItem(ColourMode.Low_Carbon),
+              ColourMode.getItem(ColourMode.Battery)
+            ],
+            mode: 'dropdown'
+          },
+        }
+      }
+    ]
+  });

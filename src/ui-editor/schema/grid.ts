@@ -1,17 +1,4 @@
-import {
-  getDualEntitySelectionSchema,
-  secondaryInfoSchema,
-  getBaseMainConfigSchema,
-  dualCustomColoursSchema,
-} from './_schema-base';
-import localize from '../../localize/localize';
-
-const mainSchema = {
-  ...getBaseMainConfigSchema('grid'),
-  schema: [
-    ...getBaseMainConfigSchema('grid').schema
-  ],
-};
+import { dualValueNodeSchema, nodeConfigSchema } from './_schemas';
 
 const powerOutageGridSchema = [
   {
@@ -24,25 +11,14 @@ const powerOutageGridSchema = [
     schema: [
       { name: 'label_alert', label: 'Outage Label', selector: { text: {} } },
       { name: 'icon_alert', label: 'Outage Icon', selector: { icon: {} } },
-      { name: 'state_alert', label: 'Outage State', selector: { text: {} } },
+      { name: 'state_alert', label: 'Outage State', selector: { text: {} } }
     ],
   },
 ];
 
-export const gridSchema = [
-  getDualEntitySelectionSchema(),
-  mainSchema,
-  dualCustomColoursSchema,
+export const gridSchema = nodeConfigSchema(dualValueNodeSchema()).concat(
   {
-    title: localize('editor.secondary_info'),
-    name: 'secondary_info',
-    type: 'expandable',
-    schema: secondaryInfoSchema,
-  },
-  {
-    title: localize('editor.power_outage'),
     name: 'power_outage',
     type: 'expandable',
-    schema: powerOutageGridSchema,
-  },
-] as const;
+    schema: powerOutageGridSchema
+  });

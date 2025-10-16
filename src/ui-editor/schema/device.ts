@@ -1,58 +1,22 @@
-import { getBaseMainConfigSchema, secondaryInfoSchema } from './_schema-base';
-import localize from '../../localize/localize';
+import { DeviceType } from '../../enums';
+import { nodeConfigSchema, singleValueNodeSchema } from './_schemas';
 
-const mainSchema = {
-  ...getBaseMainConfigSchema(),
-  schema: [
-    ...getBaseMainConfigSchema().schema,
-    {
-      name: 'color_value',
-      label: 'Color Value',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'color_icon',
-      label: 'Color Icon',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'display_zero',
-      label: 'Display Zero',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'display_zero_tolerance',
-      label: 'Display Zero Tolerance',
-      selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } },
-    },
-    {
-      name: 'decimals',
-      label: 'Decimals',
-      selector: { number: { mode: 'box', min: 0, max: 4, step: 1 } },
-    },
-    {
-      name: 'inverted_animation',
-      label: 'Invert Animation',
-      selector: { boolean: {} },
+export const deviceSchema = [
+  nodeConfigSchema(singleValueNodeSchema()),
+  {
+    name: 'device_type',
+    selector: {
+      select: {
+        options: [
+          DeviceType.getItem(DeviceType.Consumption),
+          DeviceType.getItem(DeviceType.Production)
+        ],
+        mode: 'dropdown'
+      }
     }
-  ],
-};
-
-export const individualSchema = [
-  {
-    name: 'entity',
-    selector: { entity: {} },
-  },
-  mainSchema,
-  {
-    name: 'color',
-    label: 'Color',
-    selector: { color_rgb: {} },
   },
   {
-    title: localize('editor.secondary_info'),
-    name: 'secondary_info',
-    type: 'expandable',
-    schema: secondaryInfoSchema,
-  },
+    name: 'sum',
+    selector: { boolean: {} }
+  }
 ] as const;

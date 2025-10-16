@@ -1,12 +1,12 @@
 import { ColourMode, DisplayMode, DotsMode, LowCarbonType, ZeroLinesMode } from "../enums";
 import { HomeAssistant } from 'custom-card-helpers';
-import { EnergyFlowCardPlusConfig } from ".";
+import { EnergyFlowCardExtConfig } from ".";
 
 const defaultValues = {
   displayMode: DisplayMode.Today,
 
   // Appearance
-  displayZeroLines: ZeroLinesMode.Show,
+  displayZeroLines: ZeroLinesMode.Solid,
   displayZeroState: true,
   clickableEntities: true,
   useHourlyStats: false,
@@ -27,7 +27,7 @@ const defaultValues = {
   dotsMode: DotsMode.Dynamic
 };
 
-export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig {
+export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   function checkStrings(entiyId: string, testStrings: string[]): boolean {
     const friendlyName = hass.states[entiyId].attributes.friendly_name;
     return testStrings.some(str => entiyId.includes(str) || friendlyName?.includes(str));
@@ -46,7 +46,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
   const firstSolarEnergyEntity = energyEntities.filter(entityId => checkStrings(entityId, solarTests))[0];
 
   return {
-    type: 'custom:energy-flow-card-plus',
+    type: 'custom:energy-flow-card-ext',
     display_mode: defaultValues.displayMode,
 
     appearance: {
@@ -61,6 +61,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
       energy_units: {
         wh_decimals: defaultValues.watthourDecimals,
         kwh_decimals: defaultValues.kilowatthourDecimals,
+        mwh_decimals: defaultValues.megawatthourDecimals,
         wh_kwh_threshold: defaultValues.whkWhThreshold,
         kwh_mwh_threshold: defaultValues.kwhMwhThreshold
       },
@@ -76,12 +77,12 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
 
     grid: {
       // TODO: this is clearly not correct!
-      consumption_entities: {
-        entity_ids: gridEnergyEntities
-      },
-      production_entities: {
-        entity_ids: gridEnergyEntities
-      },
+      //consumption_entities: {
+        //entity_ids: gridEnergyEntities
+      //},
+      //production_entities: {
+        //entity_ids: gridEnergyEntities
+      //},
       colour_of_icon: ColourMode.Do_Not_Colour,
       colour_of_circle: ColourMode.Colour_Dynamically,
       colour_values: true
@@ -101,22 +102,22 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardPlusConfig 
     },
 
     solar: {
-      entities: {
+      //entities: {
         // TODO: handle multiple entities
-        entity_ids: [firstSolarEnergyEntity]
-      },
+        //entity_ids: [firstSolarEnergyEntity]
+      //},
       colour_icon: false,
       colour_value: false
     },
 
     battery: {
       // TODO: this is clearly not correct!
-      consumption_entities: {
-        entity_ids: batteryEnergyEntities
-      },
-      production_entities: {
-        entity_ids: batteryEnergyEntities
-      },
+      //consumption_entities: {
+        //entity_ids: batteryEnergyEntities
+      //},
+      //production_entities: {
+        //entity_ids: batteryEnergyEntities
+      //},
       colour_of_icon: ColourMode.Do_Not_Colour,
       colour_of_circle: ColourMode.Colour_Dynamically,
       colour_values: true

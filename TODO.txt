@@ -1,6 +1,9 @@
 BUGS
 ----
 
+Reinstate the -ve coords for the lines, they are required so that the dots don't just vanish!
+  - and presumably they should extend at both ends?
+
 Home value still getting the wrong colour - usually 'low-carbon'
 
 The 'loading...' flag doesn't seem to be getting cleared reliably
@@ -22,6 +25,8 @@ Individual icon also coloured when the 'colour value' flag is set
 
 FEATURES
 --------
+
+If data is still loading when we render, go ahead and render the circles/lines anyway, just put 'loading' for the values
 
 Bigger circles!
   - possibly dynamic if something can be figured out?
@@ -135,7 +140,7 @@ GENERAL
   - display (enum, energy, percentage, defaults to energy)
 
 'PowerOutage'
-  - entity (Entity)
+  - entity (string)
   - label for alert (string)
   - icon for alert (icon)
   - state of alert (string)

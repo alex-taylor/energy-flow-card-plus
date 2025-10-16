@@ -1,62 +1,16 @@
-import { secondaryInfoSchema, getBaseMainConfigSchema } from './_schema-base';
-import localize from '../../localize/localize';
+import { LowCarbonType } from '../../enums';
+import {  nodeConfigSchema, singleValueNodeSchema } from './_schemas';
 
-const mainSchema = {
-  ...getBaseMainConfigSchema(),
-  schema: [
-    ...getBaseMainConfigSchema().schema,
-    {
-      name: 'state_type',
-      label: 'State Type',
-      selector: {
-        select: {
-          options: [
-            { value: 'power', label: 'Power' },
-            { value: 'percentage', label: 'Percentage' },
-          ],
-          mode: 'dropdown'
-       },
-      },
-    },
-    {
-      name: 'color_value',
-      label: 'Color Value',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'color_icon',
-      label: 'Color Icon',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'display_zero',
-      label: 'Display Zero',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'display_zero_tolerance',
-      label: 'Display Zero Tolerance',
-      selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.1 } },
-    },
-    {
-      name: 'decimals',
-      label: 'Decimals',
-      selector: { number: { mode: 'box', min: 0, max: 4, step: 1 } },
-    },
-  ],
-};
-
-export const lowCarbonSchema = [
-  mainSchema,
+export const lowCarbonSchema = nodeConfigSchema(singleValueNodeSchema()).concat(
   {
-    name: 'color',
-    label: 'Color',
-    selector: { color_rgb: {} },
-  },
-  {
-    title: localize('editor.secondary_info'),
-    name: 'secondary_info',
-    type: 'expandable',
-    schema: secondaryInfoSchema,
-  },
-] as const;
+    name: 'low_carbon_show_as',
+    selector: {
+      select: {
+        options: [
+          LowCarbonType.getItem(LowCarbonType.Energy),
+          LowCarbonType.getItem(LowCarbonType.Percentage)
+        ],
+        mode: 'dropdown'
+      }
+    }
+  });

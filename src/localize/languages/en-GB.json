@@ -1,21 +1,16 @@
 {
-  "card": {
-    "label": {
-      "car": "Car",
-      "motorbike": "Motorbike"
-    }
-  },
   "editor": {
-    "custom_colors": "Custom Colours",
-    "color_icon": "Colour Icon",
-    "color_value": "Colour Value",
-    "color_of_icon": "Colour of Icon",
-    "color_of_circle": "Colour of Circle",
-    "color_of_value": "Colour of Value",
-    "color_state_of_charge_value": "Colour",
-    "color": "Colour",
-    "grey_color": "Grey Colour",
-    "dynamic": "Colour Dynamically",
-    "no_color": "Do Not Colour"
+    "custom_colour": "Custom Colour",
+    "custom_colours": "Custom Colours",
+    "colour_icon": "Colour Icon",
+    "colour_value": "Colour Value",
+    "colour_values": "Colour Values",
+    "colour_of_icon": "Colour of Icon",
+    "colour_of_circle": "Colour of Circle",
+    "colour_of_value": "Colour of Value"
+  },
+  "ColourMode": {
+    "none": "Do not colour",
+    "dynamic": "Colour dynamically"
   }
 }

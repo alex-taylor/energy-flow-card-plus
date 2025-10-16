@@ -1,15 +1,3 @@
-import { getDualEntitySelectionSchema, getBaseMainConfigSchema, dualCustomColoursSchema } from './_schema-base';
+import {  dualValueNodeSchema, nodeConfigSchema } from './_schemas';
 
-const mainSchema = {
-  ...getBaseMainConfigSchema('battery'),
-
-  schema: [
-    ...getBaseMainConfigSchema('battery').schema,
-  ],
-};
-
-export const batterySchema = [
-  getDualEntitySelectionSchema(),
-  mainSchema,
-  dualCustomColoursSchema,
-] as const;
+export const batterySchema = nodeConfigSchema(dualValueNodeSchema());

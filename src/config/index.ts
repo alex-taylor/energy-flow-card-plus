@@ -7,7 +7,7 @@ declare global {
   }
 }
 
-export interface EnergyFlowCardPlusConfig extends LovelaceCardConfig {
+export interface EnergyFlowCardExtConfig extends LovelaceCardConfig {
   title?: string;
   display_mode?: DisplayMode;
   appearance?: AppearanceConfig;

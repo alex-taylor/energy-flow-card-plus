@@ -8,7 +8,7 @@ export enum DisplayMode {
 
 export namespace DisplayMode {
   export function getName(value: DisplayMode): string {
-    return getEnumValueName(DisplayMode, value);
+    return getEditorLabel("DisplayMode", value);
   }
 
   export function getItem(value: DisplayMode): { label: string, value: string } {
@@ -17,21 +17,21 @@ export namespace DisplayMode {
 }
 
 export enum ColourMode {
-  Do_Not_Colour = 'no_colour',
+  Do_Not_Colour = 'none',
   Colour_Dynamically = 'dynamic',
   Consumption = 'consumption',
   Consumption_Sources = 'consumption_sources',
   Production = 'production',
   Production_Sources = 'production_sources',
   Solar = 'solar',
-  High_Carbon = 'high-carbon',
-  Low_Carbon = 'low-carbon',
+  High_Carbon = 'high_carbon',
+  Low_Carbon = 'low_carbon',
   Battery = 'battery'
 };
 
 export namespace ColourMode {
   export function getName(value: ColourMode): string {
-    return getEnumValueName(ColourMode, value);
+    return getEditorLabel("ColourMode", value);
   }
 
   export function getItem(value: ColourMode): { label: string, value: string } {
@@ -47,10 +47,6 @@ export enum EntityType {
   Grid_Secondary = "gridSecondary",
   Solar = "solar",
   Solar_Secondary = "solarSecondary",
-  Individual1 = "individual1",
-  Individual1_Secondary = "individual1Secondary",
-  Individual2 = "individual2",
-  Individual2_Secondary = "individual2Secondary",
   LowCarbon = "low-carbon",
   LowCarbon_Secondary = "nonFossilSecondary"
 };
@@ -62,7 +58,7 @@ export enum LowCarbonType {
 
 export namespace LowCarbonType {
   export function getName(value: LowCarbonType): string {
-    return getEnumValueName(LowCarbonType, value);
+    return getEditorLabel("LowCarbonType", value);
   }
 
   export function getItem(value: LowCarbonType): { label: string, value: string } {
@@ -76,19 +72,17 @@ export enum DeviceType {
 };
 
 export namespace DeviceType {
-  export namespace DeviceType {
-    export function getName(value: DeviceType): string {
-      return getEnumValueName(DeviceType, value);
-    }
+  export function getName(value: DeviceType): string {
+    return getEditorLabel("DeviceType", value);
+  }
 
-    export function getItem(value: DeviceType): { label: string, value: string } {
-      return { label: getName(value), value: value };
-    }
+  export function getItem(value: DeviceType): { label: string, value: string } {
+    return { label: getName(value), value: value };
   }
 };
 
 export enum ZeroLinesMode {
-  Show = "show",
+  Solid = "solid",
   Hide = "hide",
   Transparent = "transparent",
   Greyed_Out = "greyed_out",
@@ -96,14 +90,12 @@ export enum ZeroLinesMode {
 };
 
 export namespace ZeroLinesMode {
-  export namespace ZeroLinesMode {
-    export function getName(value: ZeroLinesMode): string {
-      return getEnumValueName(ZeroLinesMode, value);
-    }
+  export function getName(value: ZeroLinesMode): string {
+    return getEditorLabel("ZeroLinesMode", value);
+  }
 
-    export function getItem(value: ZeroLinesMode): { label: string, value: string } {
-      return { label: getName(value), value: value };
-    }
+  export function getItem(value: ZeroLinesMode): { label: string, value: string } {
+    return { label: getName(value), value: value };
   }
 };
 
@@ -115,7 +107,7 @@ export enum DotsMode {
 
 export namespace DotsMode {
   export function getName(value: DotsMode): string {
-    return getEnumValueName(DotsMode, value);
+    return getEditorLabel("DotsMode", value);
   }
 
   export function getItem(value: DotsMode): { label: string, value: string } {
@@ -123,6 +115,6 @@ export namespace DotsMode {
   }
 };
 
-function getEnumValueName(type: any, value: any): string {
-  return localize("editor." + value);
+function getEditorLabel(type: string, value: any): string {
+  return localize(type + "." + value);
 }

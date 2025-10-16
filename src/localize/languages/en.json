@@ -1,92 +1,112 @@
 {
-  "card": {
-    "label": {
-      "car": "Car",
-      "motorbike": "Motorbike"
-    }
-  },
   "common": {
     "invalid_configuration": "Invalid Configuration",
     "unknown": "Unknown"
   },
   "editor": {
-    "entity_generator": "Generator",
-    "separated": "Separated Entities (One entity for consumption and one for production)",
-    "custom_colors": "Custom Colors",
-    "secondary_info": "Secondary Info",
-    "power_outage": "Power Outage",
-    "grid": "Grid",
-    "solar": "Solar",
-    "battery": "Battery",
-    "fossil_fuel_percentage": "Fossil Fuel",
-    "home": "Home",
-    "individual": "Individual",
-    "accept_negative": "Accept Negative",
-    "advanced": "Advanced Options",
-    "decimals": "Decimals",
-    "consumption": "Consumption",
-    "production": "Production",
-    "color_icon": "Color Icon",
-    "color_value": "Color Value",
-    "color_of_icon": "Color of Icon",
-    "color_of_circle": "Color of Circle",
-    "color_of_value": "Color of Value",
-    "color_state_of_charge_value": "Color",
-    "display_zero": "Display Zero",
-    "display_zero_tolerance": "Display Zero Tolerance",
-    "display_state": "Display State",
-    "display_zero_state": "Display Zero State",
-    "invert_state": "Invert State",
-    "template": "Template",
-    "unit_of_measurement": "Unit",
+    "display_mode": "Display Mode",
+    "today": "Today",
+    "history": "History",
+    "hybrid": "Hybrid",
+
+    "appearance": "Appearance",
+    "dashboard_link": "Dashboard Link",
+    "dashboard_link_label": "Dashboard Link Name",
+    "display_zero_state": "Display Zero States",
+    "clickable_entities": "Clickable Entities",
+    "use_hourly_stats": "Use Hourly Stats",
     "unit_white_space": "Unit White Space",
+
+    "display_zero_lines": "Display Zero Lines",
+    "zero_lines_display_as": "Display As",
+
+    "flows": "Flows",
+    "animation": "Animation",
+    "min_flow_rate": "Min Flow Rate",
+    "max_flow_rate": "Max Flow Rate",
+    "min_expected_energy": "Min Expected Energy",
+    "max_expected_energy": "Max Expected Energy",
+
+    "energy_units": "Energy Units",
+    "wh_kwh_threshold": "Wh/kWh Threshold",
+    "kwh_mwh_threshold": "kWh/MWh Threshold",
+    "wh_decimals": "Wh Decimals",
+    "kwh_decimals": "kWh Decimals",
+    "mwh_decimals": "MWh Decimals",
+
+    "grid": "Grid",
+    "consumption_entities": "Consumption",
+    "production_entities": "Production",
+    "consumption_colour": "Consumption",
+    "production_colour": "Production",
+
+    "power_outage": "Power Outage",
     "label_alert": "Label for Alert",
     "icon_alert": "Icon for Alert",
     "state_alert": "State of Alert",
-    "state_of_charge": "State of Charge",
-    "state_of_charge_unit": "Unit",
-    "state_of_charge_decimals": "Decimals",
-    "state_of_charge_icon": "Icon",
-    "show_state_of_charge": "Show State of Charge",
-    "state_type": "Type of State",
-    "subtract_individual": "Subtract Individual",
-    "override_state": "Override State",
-    "calculate_flow_rate": "Calculate Flow Rate",
-    "inverted_animation": "Invert Animation",
-    "show_direction": "Show Direction",
-    "circle_animation": "Circle Animation",
-    "color": "Color",
-    "dashboard_link": "Dashboard Link",
-    "dashboard_link_label": "Dashboard Link Name",
-    "max_flow_rate": "Max Flow Rate",
-    "min_flow_rate": "Min Flow Rate",
-    "display_zero_lines": "Display Zero Lines",
-    "clickable_entities": "Clickable Entities",
-    "disable_dots": "Disable Dots",
-    "use_new_flow_rate_model": "New Flow Rate Model",
-    "use_metadata": "Use Metadata",
-    "mode": "Mode",
-    "show": "Show",
-    "hide": "Hide",
-    "custom": "Custom",
-    "grey_out": "Grey Out",
-    "transparency": "Transparency",
-    "grey_color": "Grey Color",
-    "tap_action": "Tap Action",
-    "navigation_path": "Navigation Path",
-    "display_mode": "Display Mode",
-    "live": "Live",
+
+    "gas": "Gas",
+    "sum": "Sum",
+
+    "solar": "Solar",
+
+    "battery": "Battery",
+
+    "low_carbon": "Low-Carbon Energy",
+    "low_carbon_show_as": "Show As",
+
+    "home": "Home",
+
+    "devices": "Devices",
+
+    "custom_colour": "Custom Color",
+    "custom_colours": "Custom Colors",
+
+    "colour_icon": "Color Icon",
+    "colour_value": "Color Value",
+    "colour_values": "Color Values",
+    "colour_of_value": "Color of Value",
+    "colour_of_icon": "Color of Icon",
+    "colour_of_circle": "Color of Circle",
+
+    "secondary_info": "Secondary Info",
+    "template": "Template"
+  },
+  "DisplayMode": {
+    "today": "Today",
     "history": "History",
-    "hybrid": "Hybrid",
-    "use_hourly_stats": "Use Hourly Stats",
-    "wh_decimals": "Watt Decimals",
-    "kwh_decimals": "Kilowatt Decimals",
-    "mwh_decimals": "Megawatt Decimals",
-    "max_expected_energy": "Max Expected Energy",
-    "min_expected_energy": "Min Expected Energy",
-    "wh_kwh_threshold": "Watt to Kilowatt Threshold (Wh)",
-    "kwh_mwh_threshold": "Kilowatt to Megawatt Threshold (kWh)",
-    "dynamic": "Color Dynamically",
-    "no_color": "Do Not Color"
+    "hybrid": "Hybrid"
+  },
+  "ColourMode": {
+    "none": "Do not color",
+    "dynamic": "Color dynamically",
+    "consumption": "Consumption",
+    "consumption_sources": "Consumption sources",
+    "production": "Production",
+    "production_sources": "Production sources",
+    "solar": "Solar",
+    "high_carbon": "High-carbon",
+    "low_carbon": "Low-carbon",
+    "battery": "Battery"
+  },
+  "LowCarbonType": {
+    "energy": "Energy",
+    "percentage": "Percentage"
+  },
+  "DeviceType": {
+    "consumption": "Consumption",
+    "production": "Production"
+  },
+  "ZeroLinesMode": {
+    "solid": "Solid",
+    "hide": "Hide",
+    "transparent": "Transparent",
+    "greyed_out": "Greyed-out",
+    "custom": "Custom"
+  },
+  "DotsMode": {
+    "off": "Off",
+    "hass": "HASS",
+    "dynamic": "Dynamic"
   }
 }
