@@ -63,16 +63,16 @@
     <Content Include="src\localize\languages\sk.json" />
     <Content Include="src\localize\languages\sv.json" />
     <None Include="src\ui-editor\schema\battery.ts" />
-    <None Include="src\ui-editor\schema\fossil_fuel_percentage.ts" />
+    <None Include="src\ui-editor\schema\low-carbon.ts" />
     <None Include="src\ui-editor\schema\grid.ts" />
     <None Include="src\ui-editor\schema\home.ts" />
-    <None Include="src\ui-editor\schema\individual.ts" />
+    <None Include="src\ui-editor\schema\device.ts" />
     <None Include="src\ui-editor\schema\solar.ts" />
     <None Include="src\ui-editor\schema\_schema-all.ts" />
     <None Include="src\ui-editor\schema\_schema-base.ts" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="src\entities\" />
+    <Folder Include="src\states\" />
     <Folder Include="src\flows\" />
     <Folder Include="src\config\" />
     <Folder Include="__tests__" />
@@ -86,25 +86,25 @@
     <Folder Include="src\utils" />
   </ItemGroup>
   <ItemGroup>
-    <TypeScriptCompile Include="src\entities\battery-entity.ts" />
-    <TypeScriptCompile Include="src\entities\entity.ts">
+    <TypeScriptCompile Include="src\states\battery.ts" />
+    <TypeScriptCompile Include="src\states\state.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\entities\fossil-fuel-entity.ts">
+    <TypeScriptCompile Include="src\states\low-carbon.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\entities\grid-entity.ts" />
-    <TypeScriptCompile Include="src\entities\home-entity.ts">
+    <TypeScriptCompile Include="src\states\grid.ts" />
+    <TypeScriptCompile Include="src\states\home.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\entities\index.ts" />
-    <TypeScriptCompile Include="src\entities\individual-entity.ts">
+    <TypeScriptCompile Include="src\states\index.ts" />
+    <TypeScriptCompile Include="src\states\device.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\entities\secondary-info-entity.ts">
+    <TypeScriptCompile Include="src\states\secondary-info.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\entities\solar-entity.ts" />
+    <TypeScriptCompile Include="src\states\solar.ts" />
     <TypeScriptCompile Include="src\enums.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

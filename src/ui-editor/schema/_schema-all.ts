@@ -2,11 +2,10 @@ import { any, assign, boolean, integer, number, object, optional, string } from 
 import { gridSchema } from './grid';
 import { batterySchema } from './battery';
 import { solarSchema } from './solar';
-import { individualSchema } from './individual';
-import { nonFossilSchema } from './fossil_fuel_percentage';
+import { lowCarbonSchema } from './low-carbon';
 import { homeSchema } from './home';
 import memoizeOne from 'memoize-one';
-import { DisplayMode } from '../../enums';
+import { DisplayMode, DotsMode } from '../../enums';
 
 const baseLovelaceCardConfig = object({
   type: string(),
@@ -17,37 +16,44 @@ export const cardConfigStruct = assign(
   baseLovelaceCardConfig,
   object({
     title: optional(string()),
-    theme: optional(string()),
     display_mode: optional(string()),
-    dashboard_link: optional(string()),
-    dashboard_link_label: optional(string()),
-    wh_decimals: optional(integer()),
-    kwh_decimals: optional(integer()),
-    mwh_decimals: optional(integer()),
-    min_flow_rate: optional(number()),
-    max_flow_rate: optional(number()),
-    min_expected_energy: optional(number()),
-    max_expected_energy: optional(number()),
-    wh_kwh_threshold: optional(number()),
-    kwh_mwh_threshold: optional(number()),
-    clickable_entities: optional(boolean()),
-    display_zero_lines: optional(boolean()),
-    use_new_flow_rate_model: optional(boolean()),
-    use_hourly_stats: optional(boolean()),
-    unit_white_space: optional(boolean()),
-    display_zero_state: optional(boolean()),
-    entities: object({
-      battery: optional(any()),
-      grid: optional(any()),
-      solar: optional(any()),
-      home: optional(any()),
-      fossil_fuel_percentage: optional(any()),
-      individual1: optional(any()),
-      individual2: optional(any()),
+
+    appearance: object({
+      dashboard_link: optional(string()),
+      dashboard_link_label: optional(string()),
+      display_zero_lines: optional(boolean()),
+      display_zero_state: optional(boolean()),
+      clickable_entities: optional(boolean()),
+      use_hourly_stats: optional(boolean()),
+      unit_white_space: optional(boolean()),
+
+      energy_units: object({
+        wh_decimals: optional(integer()),
+        kwh_decimals: optional(integer()),
+        mwh_decimals: optional(integer()),
+        wh_kwh_threshold: optional(number()),
+        kwh_mwh_threshold: optional(number())
+      }),
+
+      flows: object({
+        min_flow_rate: optional(number()),
+        max_flow_rate: optional(number()),
+        min_expected_energy: optional(number()),
+        max_expected_energy: optional(number()),
+        mode: optional(string())
+      })
     }),
 
-    // @deprecated redundant, but can't be removed as this would break existing configs
-    energy_date_selection: optional(boolean()),
+    grid: optional(any()),
+    gas: optional(any()),
+    low_carbon: optional(any()),
+    solar: optional(any()),
+    battery: optional(any()),
+    home: optional(any()),
+
+    devices: object({
+      // TODO
+    })
   }),
 );
 
@@ -57,11 +63,25 @@ export const generalConfigSchema = [
     label: 'Title',
     selector: { text: {} },
   },
+  {
+    name: 'display_mode',
+    label: 'Display Mode',
+    selector: {
+      select: {
+        options: [
+          DisplayMode.getItem(DisplayMode.Today),
+          DisplayMode.getItem(DisplayMode.History),
+          DisplayMode.getItem(DisplayMode.Hybrid)
+        ],
+        mode: 'dropdown'
+      },
+    }
+  },
 ] as const;
 
-export const entitiesSchema = memoizeOne(localize => [
+export const nodesSchema = memoizeOne(localize => [
   {
-    name: 'entities',
+    name: 'nodes',
     type: 'grid',
     column_min_width: '400px',
     schema: [
@@ -70,6 +90,12 @@ export const entitiesSchema = memoizeOne(localize => [
         name: 'grid',
         type: 'expandable',
         schema: gridSchema,
+      },
+      {
+        title: localize('editor.gas'),
+        name: 'gas',
+        type: 'expandable',
+        schema: gasSchema,
       },
       {
         title: localize('editor.solar'),
@@ -84,10 +110,10 @@ export const entitiesSchema = memoizeOne(localize => [
         schema: batterySchema,
       },
       {
-        title: localize('editor.fossil_fuel_percentage'),
-        name: 'fossil_fuel_percentage',
+        title: localize('editor.low_carbon'),
+        name: 'low_carbon',
         type: 'expandable',
-        schema: nonFossilSchema,
+        schema: lowCarbonSchema,
       },
       {
         title: localize('editor.home'),
@@ -95,45 +121,20 @@ export const entitiesSchema = memoizeOne(localize => [
         type: 'expandable',
         schema: homeSchema,
       },
-      {
-        title: `${localize('editor.individual')} 1`,
-        name: 'individual1',
-        type: 'expandable',
-        schema: individualSchema,
-      },
-      {
-        title: `${localize('editor.individual')} 2`,
-        name: 'individual2',
-        type: 'expandable',
-        schema: individualSchema,
-      },
+      // TODO add devices
     ],
   },
 ]);
 
-export const advancedOptionsSchema = memoizeOne(localize => [
+export const appearanceOptionsSchema = memoizeOne(localize => [
   {
-    title: localize('editor.advanced'),
+    title: localize('editor.appearance'),
     type: 'expandable',
     schema: [
       {
         type: 'grid',
         column_min_width: '200px',
         schema: [
-          {
-            name: 'display_mode',
-            label: 'Display Mode',
-            selector: {
-              select: {
-                options: [
-                  DisplayMode.getItem(DisplayMode.Live),
-                  DisplayMode.getItem(DisplayMode.History),
-                  DisplayMode.getItem(DisplayMode.Hybrid)
-                ],
-                mode: 'dropdown'
-              },
-            }
-          },
           {
             name: 'dashboard_link',
             label: 'Dashboard Link',
@@ -144,6 +145,56 @@ export const advancedOptionsSchema = memoizeOne(localize => [
             label: 'Dashboard Link Label',
             selector: { text: {} },
           },
+          {
+            name: 'display_zero_lines',
+            label: 'Display Zero Lines',
+            selector: { boolean: {} },
+          },
+          {
+            name: 'display_zero_state',
+            label: 'Display Zero State',
+            selector: { boolean: {} }
+          },
+          {
+            name: 'clickable_entities',
+            label: 'Clickable Entities',
+            selector: { boolean: {} },
+          },
+          {
+            name: 'use_hourly_stats',
+            label: 'Use Hourly Stats',
+            selector: { boolean: {} },
+          },
+          {
+            name: 'unit_white_space',
+            label: 'Unit White Space',
+            selector: { boolean: {} }
+          },
+          {
+            name: 'energy_units',
+            type: 'expandable',
+            schema: energyUnitsOptionsSchema
+          },
+          {
+            name: 'flows',
+            type: 'expandable',
+            schema: flowsOptionsSchema
+          }
+        ],
+      },
+    ],
+  },
+]);
+
+export const energyUnitsOptionsSchema = memoizeOne(localize => [
+  {
+    title: localize('editor.energy_units'),
+    type: 'expandable',
+    schema: [
+      {
+        type: 'grid',
+        column_min_width: '200px',
+        schema: [
           {
             name: 'wh_decimals',
             label: 'Wh Decimals',
@@ -160,13 +211,50 @@ export const advancedOptionsSchema = memoizeOne(localize => [
             selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } },
           },
           {
+            name: 'wh_kwh_threshold',
+            label: 'Wh/kWh Threshold',
+            selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } },
+          },
+          {
+            name: 'kwh_mwh_threshold',
+            label: 'kWh/MWh Threshold',
+            selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } },
+          }
+        ],
+      },
+    ],
+  },
+]);
+
+export const flowsOptionsSchema = memoizeOne(localize => [
+  {
+    title: localize('editor.flows'),
+    type: 'expandable',
+    schema: [
+      {
+        type: 'grid',
+        column_min_width: '200px',
+        schema: [
+          {
+            name: 'dots_mode',
+            label: 'Mode',
+            selector: {
+              options: [
+                DotsMode.getItem(DotsMode.Dynamic),
+                DotsMode.getItem(DotsMode.HASS),
+                DotsMode.getItem(DotsMode.Off)
+              ],
+              mode: 'dropdown'
+            }
+          },
+          {
             name: 'max_flow_rate',
-            label: 'Max Flow Rate (Sec/Dot)',
+            label: 'Max Flow Rate (Seconds/Dot)',
             selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } },
           },
           {
             name: 'min_flow_rate',
-            label: 'Min Flow Rate (Sec/Dot)',
+            label: 'Min Flow Rate (Seconds/Dot)',
             selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } },
           },
           {
@@ -178,46 +266,6 @@ export const advancedOptionsSchema = memoizeOne(localize => [
             name: 'min_expected_energy',
             label: 'Min Expected Power (in Watts)',
             selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } },
-          },
-          {
-            name: 'wh_kwh_threshold',
-            label: 'Wh/kWh Threshold',
-            selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } },
-          },
-          {
-            name: 'kwh_mwh_threshold',
-            label: 'kWh/MWh Threshold',
-            selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } },
-          },
-          {
-            name: 'display_zero_lines',
-            label: 'Display Zero Lines',
-            selector: { boolean: {} },
-          },
-          {
-            name: 'clickable_entities',
-            label: 'Clickable Entities',
-            selector: { boolean: {} },
-          },
-          {
-            name: 'use_new_flow_rate_model',
-            label: 'Use New Flow Model',
-            selector: { boolean: {} },
-          },
-          {
-            name: 'use_hourly_stats',
-            label: 'Use Hourly Stats',
-            selector: { boolean: {} },
-          },
-          {
-            name: 'unit_white_space',
-            label: 'Unit White Space',
-            selector: { boolean: {} }
-          },
-          {
-            name: 'display_zero_state',
-            label: 'Display Zero State',
-            selector: { boolean: {} }
           }
         ],
       },

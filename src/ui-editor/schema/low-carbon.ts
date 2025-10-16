@@ -46,12 +46,7 @@ const mainSchema = {
   ],
 };
 
-export const nonFossilSchema = [
-  {
-    name: 'entity',
-    label: 'Entity (Only used for click action)',
-    selector: { entity: {} },
-  },
+export const lowCarbonSchema = [
   mainSchema,
   {
     name: 'color',

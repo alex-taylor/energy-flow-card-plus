@@ -1,20 +1,15 @@
 import {
-  getEntitySeparatedSelectionSchema,
+  getDualEntitySelectionSchema,
   secondaryInfoSchema,
   getBaseMainConfigSchema,
-  customColorsSchema,
+  dualCustomColoursSchema,
 } from './_schema-base';
 import localize from '../../localize/localize';
 
 const mainSchema = {
   ...getBaseMainConfigSchema('grid'),
   schema: [
-    ...getBaseMainConfigSchema('grid').schema,
-    {
-      name: 'invert_state',
-      label: 'Invert State',
-      selector: { boolean: {} },
-    }
+    ...getBaseMainConfigSchema('grid').schema
   ],
 };
 
@@ -35,9 +30,9 @@ const powerOutageGridSchema = [
 ];
 
 export const gridSchema = [
-  getEntitySeparatedSelectionSchema(),
+  getDualEntitySelectionSchema(),
   mainSchema,
-  customColorsSchema,
+  dualCustomColoursSchema,
   {
     title: localize('editor.secondary_info'),
     name: 'secondary_info',

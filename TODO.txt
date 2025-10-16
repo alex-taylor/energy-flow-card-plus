@@ -1,6 +1,8 @@
 BUGS
 ----
 
+Home value still getting the wrong colour - usually 'low-carbon'
+
 The 'loading...' flag doesn't seem to be getting cleared reliably
   - possibly now fixed
 
@@ -9,7 +11,7 @@ Secondary value being mis-coloured, needs to take into account the relevant sett
 Secondary value not using the entity's units
   - this is because they are not being passed in
 
-Home, Individual are not yet including live deltas
+Home Entity, Individual are not yet including live deltas
 
 Individual icon also coloured when the 'colour value' flag is set
   - 'colour icon' flags not working at all
@@ -48,7 +50,7 @@ GENERAL
 
 'Config'
   - title (string, optional)
-  - display mode (enum, today, history, hybrid)
+  - display mode (enum, today, history, hybrid, defaults to today)
   - Appearance
   - Grid
   - Gas
@@ -87,14 +89,14 @@ GENERAL
   - icon (string, optional, overrides the built-in icon for the Grid/Gas/Solar/Battery/Home/Low-carbon nodes or the entity's own icon for the Devices)
   - SecondaryInfo
 
-'UniNode':'Node'
+'SingleValueNode':'Node'
   - entities (array of Entity)
   - colour (rgb, optional, overrides the built-in colour)
       - need a means to remove it again
   - colour icon (boolean, defaults to false)
   - colour value (boolean, defaults to false)
 
-'BiNode':'Node'
+'DualValueNode':'Node'
   - consumption (array of Entity)
   - production (array of Entity)
   - colour of consumption (rgb, optional, overrides the built-in colour)
@@ -103,37 +105,33 @@ GENERAL
       - need a means to remove it again
   - colour of icon (enum, none, dynamic, consumption, production, consumption sources, defaults to none)
   - colour of circle (enum, dynamic, consumption, production, consumption sources, defaults to dynamic)
-  - colour values (boolean)
+  - colour values (boolean, it will follow 'colour of circle' when true, defaults to false)
 
 'Entity'
-  - id (optional, overrides the HASS config for the Grid/Solar/Battery/Gas/Low-carbon nodes, for all others controls whether the node is shown)
+  - id (optional, overrides the HASS config for the Grid/Solar/Battery/Gas/Low-carbon nodes, for Device it controls whether the node is shown)
   - units (optional, overrides the entity's own units)
   - display zero threshold (optional, defaults to 0)
   - decimals (optional, defaults to no value)
 
 'Home':'Node'
-  - colour of icon (enum, none, dynamic, solar, grid, battery, defaults to none)
-  - colour of value (enum, none, dynamic, solar, grid, battery, defaults to none)
+  - colour of icon (enum, none, dynamic, solar, high-carbon, battery, low-carbon, defaults to none)
+  - colour of value (enum, none, dynamic, solar, high-carbon, battery, low-carbon, defaults to none)
 
-'Grid':'BiNode'
+'Grid':'DualValueNode'
   - PowerOutage
 
-'Solar':'UniNode'
+'Solar':'SingleValueNode'
 
-'Battery':'BiNode'
-  - state of charge (Entity)
-    - if set, this provides a dynamic icon plus value
-    - the value would need to be displayed next to the icon, to allow for secondary info above it
-  - SoC colour value (boolean, it will follow 'colour of circle' when true, defaults to false)
+'Battery':'DualValueNode'
 
-'Gas':'UniNode'
+'Gas':'SingleValueNode'
   - sum (boolean, defaults to false)
 
-'Device':'UniNode'
+'Device':'SingleValueNode'
   - type (enum, consumption, production, defaults to consumption)
   - sum (boolean, defaults to false)
 
-'Low-Carbon':'UniNode'
+'Low-Carbon':'SingleValueNode'
   - display (enum, energy, percentage, defaults to energy)
 
 'PowerOutage'
@@ -147,8 +145,7 @@ GENERAL
   - template (string)
     - is this worth it?
     - how to implement?
-  - icon (string, optional)
-  - colour value (boolean, for a BiNode it will follow 'colour of circle' when true, defaults to false)
+  - icon (string, optional, overrides the entity's own icon?)
 
 
 

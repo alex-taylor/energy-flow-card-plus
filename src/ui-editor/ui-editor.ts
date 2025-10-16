@@ -5,9 +5,8 @@ import { LitElement, css, html, nothing } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { upgradeConfig } from '../config/config';
 import { EnergyFlowCardPlusConfig } from '../config';
-import { cardConfigStruct, generalConfigSchema, entitiesSchema, advancedOptionsSchema } from './schema/_schema-all';
+import { cardConfigStruct, generalConfigSchema, nodesSchema, appearanceOptionsSchema } from './schema/_schema-all';
 import localize from '../localize/localize';
 
 export const loadHaForm = async () => {
@@ -48,7 +47,7 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
       return nothing;
     }
 
-    const data: EnergyFlowCardPlusConfig = upgradeConfig(this._config);
+    const data: EnergyFlowCardPlusConfig = this._config;
 
     return html`
       <div class="card-config">
@@ -63,18 +62,10 @@ export class EnergyFlowCardPlusEditor extends LitElement implements LovelaceCard
         <ha-form
           .hass=${this.hass}
           .data=${data}
-          .schema=${entitiesSchema(localize)}
+          .schema=${nodesSchema(localize)}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._valueChanged}
           class="entities-section"
-        ></ha-form>
-        <div style="height: 24px"></div>
-        <ha-form
-          .hass=${this.hass}
-          .data=${data}
-          .schema=${advancedOptionsSchema(localize)}
-          .computeLabel=${this._computeLabelCallback}
-          @value-changed=${this._valueChanged}
         ></ha-form>
       </div>
     `;

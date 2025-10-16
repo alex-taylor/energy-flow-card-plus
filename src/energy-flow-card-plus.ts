@@ -4,28 +4,27 @@ import { html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
 import { formatNumber, HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
 import { Decimal } from "decimal.js";
 import { customElement, property, state } from "lit/decorators.js";
-import { upgradeConfig, getDefaultConfig } from "./config/config";
+import { getDefaultConfig } from "./config/config";
 import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics, StatisticValue } from "./energy";
 import { SubscribeMixin } from "./energy/subscribe-mixin";
 import { HomeAssistantReal } from "./hass";
 import localize from "./localize/localize";
 import { styles } from "./style";
-import type { BasicEntity, EnergyFlowCardPlusConfig } from "./config";
-import { BatteryEntity } from "./entities/battery-entity";
-import { GridEntity } from "./entities/grid-entity";
-import { SolarEntity } from "./entities/solar-entity";
-import { SecondaryInfoEntity } from "./entities/secondary-info-entity";
-import { clampStateValue, coerceNumber, isNumberValue, mapRange } from "./utils";
+import type { EnergyFlowCardPlusConfig, EntityConfig } from "./config";
+import { BatteryState } from "./states/battery";
+import { GridState } from "./states/grid";
+import { SolarState } from "./states/solar";
+import { SecondaryInfoEntity } from "./states/secondary-info";
+import { coerceNumber, isNumberValue, mapRange } from "./utils";
 import { registerCustomCard } from "./utils/register-custom-card";
 import { Flows, calculateStatisticsFlows, getLiveDeltas } from "./flows";
-import { entityExists, getEntityState, getEntityStateWattHours, toWattHours } from "./entities";
+import { entityExists, getEntityStateWattHours, toWattHours } from "./states";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { differenceInDays, startOfDay } from 'date-fns';
-import { ColorMode, DisplayMode, EntityType } from "./enums";
-import { HomeEntity } from "./entities/home-entity";
-import { IndividualEntity } from "./entities/individual-entity";
-import { FossilFuelEntity } from "./entities/fossil-fuel-entity";
-import { Entity } from "./entities/entity";
+import { ColourMode, DisplayMode, DotsMode, EntityType, LowCarbonType, ZeroLinesMode } from "./enums";
+import { HomeState } from "./states/home";
+import { LowCarbonState } from "./states/low-carbon";
+import { State } from "./states/state";
 
 registerCustomCard({
   type: "energy-flow-card-plus",
@@ -33,7 +32,7 @@ registerCustomCard({
   description: "A custom card for displaying energy flow in Home Assistant. Inspired by the official Energy Distribution Card.",
 });
 
-const energyDataTimeout: number = 10000;
+const ENERGY_DATA_TIMEOUT: number = 10000;
 const CIRCLE_CIRCUMFERENCE: number = 238.76104;
 const DOT_SIZE_STANDARD: number = 1;
 const DOT_SIZE_INDIVIDUAL: number = 2.4;
@@ -63,18 +62,16 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   @state() private _statistics?: Statistics;
   @state() private _loading: boolean = false;
 
-  private _grid!: GridEntity;
-  private _solar!: SolarEntity;
-  private _battery!: BatteryEntity;
-  private _home!: HomeEntity;
-  private _individual1!: IndividualEntity;
-  private _individual2!: IndividualEntity;
-  private _fossilFuel!: FossilFuelEntity;
+  private _grid!: GridState;
+  private _solar!: SolarState;
+  private _battery!: BatteryState;
+  private _home!: HomeState;
+  private _lowCarbon!: LowCarbonState;
   private _previousDur: { [name: string]: number } = {};
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
     this.initEntities(this._config);
-    const start = Date.now();
+    const start: number = Date.now();
 
     const getEnergyDataCollectionPoll = (
       resolve: (value: EnergyCollection | PromiseLike<EnergyCollection>) => void,
@@ -84,7 +81,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
       if (energyCollection) {
         resolve(energyCollection);
-      } else if (Date.now() - start > energyDataTimeout) {
+      } else if (Date.now() - start > ENERGY_DATA_TIMEOUT) {
         console.debug(getEnergyDataCollection(this.hass));
         reject(new Error("No energy data received."));
       } else {
@@ -99,7 +96,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         this._error = new Error("No energy data received.");
         console.debug(getEnergyDataCollection(this.hass));
       }
-    }, energyDataTimeout * 2);
+    }, ENERGY_DATA_TIMEOUT * 2);
 
     energyPromise.catch((err) => this._error = err);
 
@@ -113,7 +110,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             let periodStart: Date;
             let periodEnd: Date;
 
-            if (this._config.display_mode === DisplayMode.Live) {
+            if (this._config.display_mode === DisplayMode.Today) {
               periodEnd = new Date();
               periodStart = startOfDay(periodEnd);
             } else {
@@ -122,7 +119,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             }
 
             const entities: string[] = data.co2SignalEntity ? this._entitiesArr.concat(data.co2SignalEntity) : this._entitiesArr;
-            const period = this._config.use_hourly_stats || differenceInDays(periodEnd, periodStart) <= 2 ? 'hour' : 'day';
+            const period = this._config.appearance?.use_hourly_stats || differenceInDays(periodEnd, periodStart) <= 2 ? 'hour' : 'day';
             this._statistics = await getStatistics(this.hass, periodStart, periodEnd, entities, period);
             calculateStatisticsFlows(this.hass, this._statistics, this._solar, this._battery, this._grid);
           }
@@ -142,7 +139,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       throw new Error("At least one entity for battery, grid or solar must be defined");
     }
 
-    this._config = upgradeConfig(config);
+    this._config = config;
     this.populateEntitiesArr();
     this.resetSubscriptions();
   }
@@ -156,24 +153,22 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       return html`<ha-card style="padding: 2rem">${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}</ha-card>`;
     }
 
-    if (!this._energyData && this._config.display_mode !== DisplayMode.Live) {
+    if (!this._energyData && this._config.display_mode !== DisplayMode.Today) {
       return html`<ha-card style="padding: 2rem">
         ${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}<br />Make sure you have the Energy Integration setup and a Date Selector in this View or set
         <pre>display_mode: live</pre>
         </ha-card>`;
     }
 
-    const entities = this._config.entities;
-
     // show pointer if clickable entities is enabled
-    this.style.setProperty("--clickable-cursor", this._config.clickable_entities ? "pointer" : "default");
+    this.style.setProperty("--clickable-cursor", this._config.appearance?.clickable_entities ? "pointer" : "default");
 
-    const grid: GridEntity = this._grid;
-    const solar: SolarEntity = this._solar;
-    const battery: BatteryEntity = this._battery;
-    const individual1: IndividualEntity = this._individual1;
-    const individual2: IndividualEntity = this._individual2;
-    const fossilFuel: FossilFuelEntity = this._fossilFuel;
+    const grid: GridState = this._grid;
+    const solar: SolarState = this._solar;
+    const battery: BatteryState = this._battery;
+    //const individual1: DeviceState = this._individual1;
+    //const individual2: DeviceState = this._individual2;
+    const fossilFuel: LowCarbonState = this._lowCarbon;
 
     // Override in case of Power Outage
     if (grid.powerOutage.isOutage && grid.powerOutage.icon) {
@@ -181,59 +176,53 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     // Update Color of Grid Consumption
-    if (grid.color.fromGrid) {
-      if (typeof grid.color.fromGrid === "object") {
-        grid.color.fromGrid = this.convertColorListToHex(grid.color.fromGrid);
-      }
-
-      this.style.setProperty("--energy-grid-consumption-color", grid.color.fromGrid || "var(--energy-grid-consumption-color)" || "#488fc2");
+    if (grid.config?.consumption_colour) {
+      this.style.setProperty("--energy-grid-consumption-color", this.convertColorListToHex(grid.config?.consumption_colour) || "var(--energy-grid-consumption-color)" || "#488fc2");
     }
 
     // Update Color of Grid Production
-    if (grid.color.toGrid) {
-      if (typeof grid.color.toGrid === "object") {
-        grid.color.toGrid = this.convertColorListToHex(grid.color.toGrid);
-      }
-
-      this.style.setProperty("--energy-grid-return-color", grid.color.toGrid || "#a280db");
+    if (grid.config?.production_colour) {
+      this.style.setProperty("--energy-grid-return-color", this.convertColorListToHex(grid.config?.production_colour) || "#a280db");
     }
 
     // Update and Set Color of Grid Icon
     this.style.setProperty(
       "--icon-grid-color",
-      grid.color.colorIcon === ColorMode.Consumption
+      grid.config?.colour_of_icon === ColourMode.Consumption
         ? "var(--energy-grid-consumption-color)"
-        : grid.color.colorIcon === ColorMode.Production
+        : grid.config?.colour_of_icon === ColourMode.Production
           ? "var(--energy-grid-return-color)"
-          : grid.color.colorIcon === ColorMode.Color_Dynamically
+          : grid.config?.colour_of_icon === ColourMode.Colour_Dynamically
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
             : "var(--primary-text-color)"
     );
 
-    // Update and Set Color of Grid Name
+    // Update and Set Color of Grid Secondary
     this.style.setProperty(
       "--secondary-text-grid-color",
-      grid.secondary.colorType === ColorMode.Consumption
-        ? "var(--energy-grid-consumption-color)"
-        : grid.secondary.colorType === ColorMode.Production
-          ? "var(--energy-grid-return-color)"
-          : grid.secondary.colorType === ColorMode.Color_Dynamically
-            ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
-              ? "var(--energy-grid-consumption-color)"
-              : "var(--energy-grid-return-color)"
-            : "var(--primary-text-color)"
+      grid.config?.colour_values
+        ? grid.config?.colour_of_circle === ColourMode.Consumption
+          ? "var(--energy-grid-consumption-color)"
+          : grid.config?.colour_of_circle === ColourMode.Production
+            ? "var(--energy-grid-return-color)"
+            : grid.config?.colour_of_circle === ColourMode.Colour_Dynamically
+              ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
+                ? "var(--energy-grid-consumption-color)"
+                : "var(--energy-grid-return-color)"
+              : "var(--primary-text-color)"
+        : "var(--primary-text-color)"
     );
 
     // Update and Set Color of Grid Circle
     this.style.setProperty(
       "--circle-grid-color",
-      grid.color.colorCircle === ColorMode.Consumption
+      grid.config?.colour_of_circle === ColourMode.Consumption
         ? "var(--energy-grid-consumption-color)"
-        : grid.color.colorCircle === ColorMode.Production
+        : grid.config?.colour_of_circle === ColourMode.Production
           ? "var(--energy-grid-return-color)"
-          : grid.color.colorCircle === ColorMode.Color_Dynamically
+          : grid.config?.colour_of_circle === ColourMode.Colour_Dynamically
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -241,42 +230,36 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     );
 
     // Update States Values of Individuals
-    individual1.state = individual1.isPresent ? this.getEntityStateWattHours(entities.individual1?.entity) : 0;
-    individual2.state = individual2.isPresent ? this.getEntityStateWattHours(entities.individual2?.entity) : 0;
+    //individual1.state = individual1.isPresent ? this.getEntityStateWattHours(entities.individual1?.entity) : 0;
+    //individual2.state = individual2.isPresent ? this.getEntityStateWattHours(entities.individual2?.entity) : 0;
 
     // Update and Set Color of Individuals
-    if (individual1.color) {
-      if (typeof individual1.color === "object") {
-        individual1.color = this.convertColorListToHex(individual1.color);
-      }
+    //if (individual1.color) {
+    //  if (typeof individual1.color === "object") {
+    //    individual1.color = this.convertColorListToHex(individual1.color);
+    //  }
 
-      this.style.setProperty("--individualone-color", individual1.color); // dynamically update color of entity depending on user's input
-    }
+    //  this.style.setProperty("--individualone-color", individual1.color); // dynamically update color of entity depending on user's input
+    //}
 
-    if (individual2.color) {
-      if (typeof individual2.color === "object") {
-        individual2.color = this.convertColorListToHex(individual2.color);
-      }
+    //if (individual2.color) {
+    //  if (typeof individual2.color === "object") {
+    //    individual2.color = this.convertColorListToHex(individual2.color);
+    //  }
 
-      this.style.setProperty("--individualtwo-color", individual2.color); // dynamically update color of entity depending on user's input
-    }
+    //  this.style.setProperty("--individualtwo-color", individual2.color); // dynamically update color of entity depending on user's input
+    //}
 
     // Update and Set Color of Individuals Icon
-    this.style.setProperty("--icon-individualone-color", entities.individual1?.color_icon ? "var(--individualone-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--icon-individualtwo-color", entities.individual2?.color_icon ? "var(--individualtwo-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--icon-individualone-color", entities.individual1?.color_icon ? "var(--individualone-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--icon-individualtwo-color", entities.individual2?.color_icon ? "var(--individualtwo-color)" : "var(--primary-text-color)");
 
     // Update and Set Color of Solar
-    if (entities.solar?.color !== undefined) {
-      let solarColor = entities.solar?.color;
-
-      if (typeof solarColor === "object") {
-        solarColor = this.convertColorListToHex(solarColor);
-      }
-
-      this.style.setProperty("--energy-solar-color", solarColor || "#ff9800");
+    if (solar?.config?.colour) {
+      this.style.setProperty("--energy-solar-color", this.convertColorListToHex(solar.config.colour) || "#ff9800");
     }
 
-    this.style.setProperty("--icon-solar-color", entities.solar?.color_icon ? "var(--energy-solar-color)" : "var(--primary-text-color)");
+    this.style.setProperty("--icon-solar-color", solar?.config?.colour_icon ? "var(--energy-solar-color)" : "var(--primary-text-color)");
 
     let solarToHome: number = solar.state.toHome;
     let solarToGrid: number = solar.state.toGrid;
@@ -328,13 +311,16 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       batteryToBattery += deltas.solarToBattery + deltas.gridToBattery;
     }
 
-    if (this._statistics && this._energyData && this._energyData.co2SignalEntity && this._energyData.fossilEnergyConsumption && this._statistics[grid.entity.consumption]) {
+    // TODO support multiple entities
+    const entity: string | undefined = grid?.config?.consumption_entities?.entity_ids ? grid.config.consumption_entities.entity_ids[0] : undefined;
+
+    if (entity && this._statistics && this._energyData && this._energyData.co2SignalEntity && this._energyData.fossilEnergyConsumption && this._statistics[entity]) {
       const highCarbonPercentageStats: StatisticValue[] = this._statistics[this._energyData!.co2SignalEntity];
-      const stateObj = this.hass.states[grid.entity.consumption];
+      const stateObj = this.hass.states[entity];
       const units = stateObj.attributes.unit_of_measurement;
       let idx = 0;
 
-      this._statistics[grid.entity.consumption].forEach(gridStat => {
+      this._statistics[entity].forEach(gridStat => {
         const change: number = toWattHours(units, gridStat.change || 0);
 
         if (highCarbonPercentageStats && highCarbonPercentageStats.length !== 0) {
@@ -386,45 +372,23 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     gridToHome *= scale;
 
     // Update and Set Color of Battery Consumption
-    if (battery.color.fromBattery !== undefined) {
-      if (typeof battery.color.fromBattery === "object") {
-        battery.color.fromBattery = this.convertColorListToHex(battery.color.fromBattery);
-      }
-
-      this.style.setProperty("--energy-battery-out-color", battery.color.fromBattery || "#4db6ac");
+    if (battery.config?.consumption_colour !== undefined) {
+      this.style.setProperty("--energy-battery-out-color", this.convertColorListToHex(battery.config?.consumption_colour) || "#4db6ac");
     }
 
     // Update and Set Color of Battery Production
-    if (battery.color.toBattery !== undefined) {
-      if (typeof battery.color.toBattery === "object") {
-        battery.color.toBattery = this.convertColorListToHex(battery.color.toBattery);
-      }
-
-      this.style.setProperty("--energy-battery-in-color", battery.color.toBattery || "#a280db");
+    if (battery.config?.production_colour !== undefined) {
+      this.style.setProperty("--energy-battery-in-color", this.convertColorListToHex(battery.config?.production_colour) || "#a280db");
     }
 
     // Update and Set Color of Battery Icon
     this.style.setProperty(
       "--icon-battery-color",
-      battery.color.iconType === ColorMode.Consumption
+      battery.config?.colour_of_icon === ColourMode.Consumption
         ? "var(--energy-battery-in-color)"
-        : battery.color.iconType === ColorMode.Production
+        : battery.config?.colour_of_icon === ColourMode.Production
           ? "var(--energy-battery-out-color)"
-          : battery.color.iconType === ColorMode.Color_Dynamically
-            ? batteryFromBattery >= batteryToBattery
-              ? "var(--energy-battery-out-color)"
-              : "var(--energy-battery-in-color)"
-            : "var(--primary-text-color)"
-    );
-
-    // Update and Set Color of Battery State of Charge
-    this.style.setProperty(
-      "--text-battery-state-of-charge-color",
-      battery.color.stateOfChargeType === ColorMode.Consumption
-        ? "var(--energy-battery-in-color)"
-        : battery.color.stateOfChargeType === ColorMode.Production
-          ? "var(--energy-battery-out-color)"
-          : battery.color.stateOfChargeType === ColorMode.Color_Dynamically
+          : battery.config?.colour_of_icon === ColourMode.Colour_Dynamically
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -434,11 +398,11 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     // Update and Set Color of Battery Circle
     this.style.setProperty(
       "--circle-battery-color",
-      battery.color.circleType === ColorMode.Consumption
+      battery.config?.colour_of_circle === ColourMode.Consumption
         ? "var(--energy-battery-in-color)"
-        : battery.color.circleType === ColorMode.Production
+        : battery.config?.colour_of_circle === ColourMode.Production
           ? "var(--energy-battery-out-color)"
-          : battery.color.circleType === ColorMode.Color_Dynamically
+          : battery.config?.colour_of_circle === ColourMode.Colour_Dynamically
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -446,7 +410,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     );
 
     // Calculate Sum of Both Individual Devices's State Values
-    const totalIndividualConsumption = coerceNumber(individual1.state, 0) + coerceNumber(individual2.state, 0);
+    //const totalIndividualConsumption = coerceNumber(individual1.state, 0) + coerceNumber(individual2.state, 0);
 
     // Calculate Circumference of Semi-Circles
     // TODO: totalHomeConsumption may be zero by this point
@@ -466,8 +430,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       solarToBattery: this.circleRate(solarToBattery ?? 0, totalLines),
       solarToGrid: this.circleRate(solarToGrid ?? 0, totalLines),
       solarToHome: this.circleRate(solarToHome ?? 0, totalLines),
-      individual1: this.circleRate(individual1.state ?? 0, totalIndividualConsumption),
-      individual2: this.circleRate(individual2.state ?? 0, totalIndividualConsumption),
+      //individual1: this.circleRate(individual1.state ?? 0, totalIndividualConsumption),
+      //individual2: this.circleRate(individual2.state ?? 0, totalIndividualConsumption),
       lowCarbon: this.circleRate(lowCarbonEnergy ?? 0, totalLines),
     };
 
@@ -483,17 +447,13 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       this._previousDur[flowName] = newDur[flowName];
     });
 
-    let nonFossilColor = entities.fossil_fuel_percentage?.color;
+    let nonFossilColour = this._config.low_carbon?.colour;
 
-    if (nonFossilColor !== undefined) {
-      if (typeof nonFossilColor === "object") {
-        nonFossilColor = this.convertColorListToHex(nonFossilColor);
-      }
-
-      this.style.setProperty("--non-fossil-color", nonFossilColor ?? "var(--energy-non-fossil-color)");
+    if (nonFossilColour !== undefined) {
+      this.style.setProperty("--non-fossil-color", this.convertColorListToHex(nonFossilColour) ?? "var(--energy-non-fossil-color)");
     }
 
-    this.style.setProperty("--icon-non-fossil-color", entities.fossil_fuel_percentage?.color_icon ? "var(--non-fossil-color)" : "var(--primary-text-color)" ?? "var(--non-fossil-color)");
+    this.style.setProperty("--icon-non-fossil-color", this._config.low_carbon?.colour_icon ? "var(--non-fossil-color)" : "var(--primary-text-color)" ?? "var(--non-fossil-color)");
 
     const homeSources = {
       battery: {
@@ -525,20 +485,24 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       iconHomeColor = "var(--primary-text-color)";
       textHomeColor = "var(--primary-text-color)";
     } else {
-      switch (entities.home?.color_of_icon) {
-        case ColorMode.Solar:
+      switch (this._config.home?.color_of_icon) {
+        case ColourMode.Solar:
           iconHomeColor = "var(--energy-solar-color)";
           break;
 
-        case ColorMode.Battery:
+        case ColourMode.Battery:
           iconHomeColor = "var(--energy-battery-out-color)";
           break;
 
-        case ColorMode.Grid:
+        case ColourMode.High_Carbon:
           iconHomeColor = "var(--energy-grid-consumption-color)";
           break;
 
-        case ColorMode.Color_Dynamically:
+        case ColourMode.Low_Carbon:
+          iconHomeColor = "var(--energy-non-fossilcolor)";
+          break;
+
+        case ColourMode.Colour_Dynamically:
           iconHomeColor = homeSources[homeLargestSource].color;
           break;
 
@@ -547,20 +511,24 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           break;
       }
 
-      switch (entities.home?.color_of_value) {
-        case ColorMode.Solar:
+      switch (this._config.home?.color_of_value) {
+        case ColourMode.Solar:
           textHomeColor = "var(--energy-solar-color)";
           break;
 
-        case ColorMode.Battery:
+        case ColourMode.Battery:
           textHomeColor = "var(--energy-battery-out-color)";
           break;
 
-        case ColorMode.Grid:
+        case ColourMode.High_Carbon:
           textHomeColor = "var(--energy-grid-consumption-color)";
           break;
 
-        case ColorMode.Color_Dynamically:
+        case ColourMode.Low_Carbon:
+          iconHomeColor = "var(--energy-non-fossilcolor)";
+          break;
+
+        case ColourMode.Colour_Dynamically:
           textHomeColor = homeSources[homeLargestSource].color;
           break;
 
@@ -572,31 +540,23 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     this.style.setProperty("--icon-home-color", iconHomeColor);
     this.style.setProperty("--text-home-color", textHomeColor);
-    this.style.setProperty("--text-solar-color", entities.solar?.color_value ? "var(--energy-solar-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--text-non-fossil-color", entities.fossil_fuel_percentage?.color_value ? "var(--non-fossil-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--secondary-text-non-fossil-color", entities.fossil_fuel_percentage?.secondary_info?.color_of_value ? "var(--non-fossil-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--text-individualone-color", entities.individual1?.color_value ? "var(--individualone-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--text-individualtwo-color", entities.individual2?.color_value ? "var(--individualtwo-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--secondary-text-individualone-color", entities.individual1?.secondary_info?.color_of_value ? "var(--individualone-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--secondary-text-individualtwo-color", entities.individual2?.secondary_info?.color_of_value ? "var(--individualtwo-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--secondary-text-solar-color", entities.solar?.secondary_info?.color_of_value ? "var(--energy-solar-color)" : "var(--primary-text-color)");
-    this.style.setProperty("--secondary-text-home-color", entities.home?.secondary_info?.color_of_value ? "var(--text-home-color)" : "var(--primary-text-color)");
+    this.style.setProperty("--text-solar-color", this._config.solar?.colour_value ? "var(--energy-solar-color)" : "var(--primary-text-color)");
+    this.style.setProperty("--text-non-fossil-color", this._config.low_carbon?.colour_value ? "var(--non-fossil-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--secondary-text-non-fossil-color", this._config.low_carbon?.secondary_info?.colour_of_value ? "var(--non-fossil-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--text-individualone-color", this._config.individual1?.color_value ? "var(--individualone-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--text-individualtwo-color", this._config.individual2?.color_value ? "var(--individualtwo-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--secondary-text-individualone-color", this._config.individual1?.secondary_info?.color_of_value ? "var(--individualone-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--secondary-text-individualtwo-color", this._config.individual2?.secondary_info?.color_of_value ? "var(--individualtwo-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--secondary-text-solar-color", this._config.solar?.secondary_info?.colour_of_value ? "var(--energy-solar-color)" : "var(--primary-text-color)");
+    //this.style.setProperty("--secondary-text-home-color", this._config.home?.secondary_info?.colour_of_value ? "var(--text-home-color)" : "var(--primary-text-color)");
 
     let homeUsageToDisplay: string;
 
     if (homeConsumptionError) {
       homeUsageToDisplay = localize("common.unknown");
     } else {
-      const homeUsageState: number =
-        entities.home?.override_state && entities.home.entity
-          ? entities.home?.subtract_individual
-            ? this.getEntityStateWattHours(entities.home.entity) - totalIndividualConsumption
-            : this.getEntityStateWattHours(entities.home.entity)
-          : entities.home?.subtract_individual
-            ? totalHomeConsumption - totalIndividualConsumption || 0
-            : totalHomeConsumption
-
-      homeUsageToDisplay = homeUsageState != 0 || this._config.display_zero_state ? this.displayValue(homeUsageState) : "";
+      // TODO: handle device math in here
+      homeUsageToDisplay = totalHomeConsumption != 0 || this._config.appearance?.display_zero_state ? this.displayValue(totalHomeConsumption) : "";
     }
 
     // Adjust Curved Lines
@@ -622,26 +582,24 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         <div class="card-content" id="energy-flow-card-plus">
 
         <!-- top row -->
-        ${fossilFuel.isPresent || solar.isPresent || individual1.isPresent
+        ${fossilFuel.isPresent || solar.isPresent// || individual1.isPresent
         ? html`
           <div class="row">
 
             <!-- top left -->
-            ${lowCarbonEnergy == 0 && !entities.fossil_fuel_percentage?.display_zero
-            ? html`<div class="spacer"></div>`
-            : html`${this.renderIndividualCircleAtTop(EntityType.LowCarbon, fossilFuel, entities.fossil_fuel_percentage?.state_type === "percentage" ? lowCarbonPercentage : lowCarbonEnergy, -newDur.lowCarbon)}`}
+            ${lowCarbonEnergy == 0
+        ? html`<div class="spacer"></div>`
+        : html`${this.renderIndividualCircleAtTop(EntityType.LowCarbon, fossilFuel, this._config.low_carbon?.display === LowCarbonType.Percentage ? lowCarbonPercentage : lowCarbonEnergy, -newDur.lowCarbon)}`}
 
             <!-- top middle -->
             ${solar.isPresent
             ? html`${this.renderSolarCircle(solarTotal)}`
-            : individual1.isPresent
+            : false //individual1.isPresent
               ? html`<div class="spacer"></div>`
               : ""}
 
             <!-- top right -->
-            ${individual1.isPresent
-            ? html`${this.renderIndividualCircleAtTop(EntityType.Individual1, individual1, individual1.state, newDur.individual1 * (entities?.individual1?.inverted_animation ? -1 : 1))}`
-            : html`<div class="spacer"></div>`}
+            <div class="spacer"></div>
 
         </div>
         `
@@ -666,7 +624,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         </div>
 
         <!-- bottom row -->
-        ${battery.isPresent || individual2.isPresent
+        ${battery.isPresent //|| individual2.isPresent
         ? html`
           <div class="row">
 
@@ -679,9 +637,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             : html`<div class="spacer"></div>`}
 
             <!-- bottom right -->
-            ${individual2.isPresent
-            ? html`${this.renderIndividualCircleAtBottom(EntityType.Individual2, individual2, individual2.state, newDur.individual2 * (entities?.individual2?.inverted_animation ? -1 : 1))}`
-            : html`<div class="spacer"></div>`}
+            <div class="spacer"></div>
 
           </div>
         `
@@ -698,12 +654,12 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       </div>
 
       <!-- dashboard link -->
-      ${this._config.dashboard_link
+      ${this._config.appearance?.dashboard_link
         ? html`
           <div class="card-actions">
-            <a href=${this._config.dashboard_link}>
+            <a href=${this._config.appearance?.dashboard_link}>
               <mwc-button>
-                ${this._config.dashboard_link_label || this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.go_to_energy_dashboard")}
+                ${this._config.appearance?.dashboard_link_label || this.hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.go_to_energy_dashboard")}
               </mwc-button>
             </a>
           </div>
@@ -727,56 +683,72 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   private initEntities = (config: EnergyFlowCardPlusConfig): void => {
     const entities = config.entities;
-    this._grid = new GridEntity(this.hass, entities.grid);
-    this._solar = new SolarEntity(this.hass, entities.solar);
-    this._battery = new BatteryEntity(this.hass, entities.battery);
-    this._home = new HomeEntity(this.hass, entities.home);
-    this._individual1 = new IndividualEntity(this.hass, entities.individual1, EntityType.Individual1, localize("card.label.car"), "mdi:car-electric");
-    this._individual2 = new IndividualEntity(this.hass, entities.individual2, EntityType.Individual2, localize("card.label.motorbike"), "mdi:motorbike-electric");
-    this._fossilFuel = new FossilFuelEntity(this.hass, entities.fossil_fuel_percentage);
+    this._grid = new GridState(this.hass, entities.grid);
+    this._solar = new SolarState(this.hass, entities.solar);
+    this._battery = new BatteryState(this.hass, entities.battery);
+    this._home = new HomeState(this.hass, entities.home);
+    //this._individual1 = new DeviceState(this.hass, entities.individual1, EntityType.Individual1, localize("card.label.car"), "mdi:car-electric");
+    //this._individual2 = new DeviceState(this.hass, entities.individual2, EntityType.Individual2, localize("card.label.motorbike"), "mdi:motorbike-electric");
+    this._lowCarbon = new LowCarbonState(this.hass, entities.low_carbon);
   };
 
   private populateEntitiesArr = (): void => {
     this._entitiesArr = [];
 
-    Object.keys(this._config?.entities).forEach((entity) => {
-      if (typeof this._config.entities[entity].entity === "string" || Array.isArray(this._config.entities[entity].entity)) {
-        if (Array.isArray(this._config.entities[entity].entity)) {
-          this._config.entities[entity].entity.forEach((entityId: string) => this._entitiesArr.push(entityId));
-        } else {
-          this._entitiesArr.push(this._config.entities[entity].entity);
-        }
-      } else if (typeof this._config.entities[entity].entity === "object") {
-        if (Array.isArray(this._config.entities[entity].entity?.consumption)) {
-          this._config.entities[entity].entity?.consumption.forEach((entityId: string) => this._entitiesArr.push(entityId));
-        } else {
-          this._entitiesArr.push(this._config.entities[entity].entity?.consumption);
-        }
+    if (this._config?.battery?.consumption_entities?.entity_ids?.length) {
+      this._config.battery.consumption_entities.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
 
-        if (Array.isArray(this._config.entities[entity].entity?.production)) {
-          this._config.entities[entity].entity?.production.forEach((entityId: string) => this._entitiesArr.push(entityId));
-        } else {
-          this._entitiesArr.push(this._config.entities[entity].entity?.production);
-        }
-      }
+    if (this._config?.battery?.secondary_info?.entity?.entity_ids?.length) {
+      this._config.battery.secondary_info.entity.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
 
-      if (this._config.entities[entity].secondary_info?.entity) {
-        this._entitiesArr.push(this._config.entities[entity].secondary_info?.entity);
-      }
-    });
+    if (this._config?.battery?.production_entities?.entity_ids?.length) {
+      this._config.battery.production_entities.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.grid?.consumption_entities?.entity_ids?.length) {
+      this._config.grid.consumption_entities.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.grid?.production_entities?.entity_ids?.length) {
+      this._config.grid.production_entities.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.grid?.secondary_info?.entity?.entity_ids?.length) {
+      this._config.grid.secondary_info.entity.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.low_carbon?.entities?.entity_ids?.length) {
+      this._config.low_carbon.entities.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.low_carbon?.secondary_info?.entity?.entity_ids?.length) {
+      this._config.low_carbon.secondary_info.entity.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.solar?.entities?.entity_ids?.length) {
+      this._config.solar.entities.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    if (this._config?.solar?.secondary_info?.entity?.entity_ids?.length) {
+      this._config.solar.secondary_info.entity.entity_ids.forEach(id => this._entitiesArr.push(id));
+    }
+
+    // TODO: add the Devices
 
     this._entitiesArr = this._entitiesArr.filter((entity) => entity);
   };
 
-  private getEntityStateWattHours = (entity: BasicEntity | undefined): number => getEntityStateWattHours(this.hass, this._statistics, entity);
+  private getEntityStateWattHours = (entities: EntityConfig | undefined): number => getEntityStateWattHours(this.hass, this._statistics, entities);
 
   private circleRate = (value: number, total: number): number => {
-    const maxRate = this._config.max_flow_rate!;
-    const minRate = this._config.min_flow_rate!;
+    const maxRate = this._config.appearance?.flows?.max_flow_rate!;
+    const minRate = this._config.appearance?.flows?.min_flow_rate!;
 
-    if (this._config.use_new_flow_rate_model) {
-      const maxEnergy = this._config.max_expected_energy!;
-      const minEnergy = this._config.min_expected_energy!;
+    if (this._config?.appearance?.flows?.mode === DotsMode.Dynamic) {
+      const maxEnergy = this._config.appearance?.flows?.max_expected_energy!;
+      const minEnergy = this._config.appearance?.flows?.min_expected_energy!;
       return mapRange(value, maxRate, minRate, minEnergy, maxEnergy);
     }
 
@@ -800,24 +772,24 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
     const valueAsNumber = new Decimal(value);
     // TODO: this is wrong, we can't apply this unless a unit is supplied
-    const isMWh = (!unit || unit.toUpperCase().startsWith("MWH")) && valueAsNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config.kwh_mwh_threshold!));
-    const isKWh = (!unit || unit.toUpperCase().startsWith("KWH")) && valueAsNumber.abs().greaterThanOrEqualTo(new Decimal(this._config.wh_kwh_threshold!));
+    const isMWh = (!unit || unit.toUpperCase().startsWith("MWH")) && valueAsNumber.abs().dividedBy(1000).greaterThanOrEqualTo(new Decimal(this._config.appearance?.energy_units?.kwh_mwh_threshold!));
+    const isKWh = (!unit || unit.toUpperCase().startsWith("KWH")) && valueAsNumber.abs().greaterThanOrEqualTo(new Decimal(this._config.appearance?.energy_units ?.wh_kwh_threshold!));
     const formattedValue = formatNumber(
       isMWh
-        ? valueAsNumber.dividedBy(1000000).toDecimalPlaces(decimals ?? this._config.mwh_decimals).toString()
+        ? valueAsNumber.dividedBy(1000000).toDecimalPlaces(decimals ?? this._config.appearance?.energy_units?.mwh_decimals).toString()
         : isKWh
-          ? valueAsNumber.dividedBy(1000).toDecimalPlaces(decimals ?? this._config.kwh_decimals).toString()
-          : valueAsNumber.toDecimalPlaces(decimals ?? this._config.wh_decimals).toString(),
+          ? valueAsNumber.dividedBy(1000).toDecimalPlaces(decimals ?? this._config.appearance?.energy_units?.kwh_decimals).toString()
+          : valueAsNumber.toDecimalPlaces(decimals ?? this._config.appearance?.energy_units?.wh_decimals).toString(),
       this.hass.locale
     );
 
-    return `${formattedValue}${this._config.unit_white_space ? " " : ""}${unit ?? (isMWh ? "MWh" : isKWh ? "kWh" : "Wh")}`;
+    return `${formattedValue}${this._config.appearance?.unit_white_space ? " " : ""}${unit ?? (isMWh ? "MWh" : isKWh ? "kWh" : "Wh")}`;
   };
 
   private openDetails = (event: { stopPropagation: any; key?: string }, entityId?: string | undefined): void => {
     event.stopPropagation();
 
-    if (!entityId || !this._config.clickable_entities) {
+    if (!entityId || !this._config.appearance?.clickable_entities) {
       return;
     }
 
@@ -839,7 +811,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
    * @param energy - energy value to check
    * @returns boolean to decide if line should be shown (true = show, false = don't show)
    */
-  private showLine = (energy: number): boolean => this._config?.display_zero_lines || energy > 0;
+  private showLine = (energy: number): boolean => this._config?.appearance?.display_zero_lines?.mode === ZeroLinesMode.Show || energy > 0;
 
   /**
    * Convert a an array of values in the format [r, g, b] to a hex color.
@@ -853,7 +825,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   private getSecondaryState = (entity: SecondaryInfoEntity, type: EntityType): string | number | null => {
     if (entity.isPresent) {
-      const secondaryEntity = entity?.entity;
+      const secondaryEntity: EntityConfig = entity?.config?.entity!;
       const secondaryState = this.getEntityStateWattHours(secondaryEntity);
 
       if (typeof secondaryState === "number") {
@@ -868,22 +840,23 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     return null;
   };
 
-  private renderSecondarySpan = (entity: SecondaryInfoEntity, type: EntityType): TemplateResult => {
-    if (!entity.isPresent && !entity.template) {
+  private renderSecondarySpan = (secondary: SecondaryInfoEntity, type: EntityType): TemplateResult => {
+    if (!secondary.isPresent || !secondary.config?.entity?.entity_ids?.length) {
       return html``;
     }
 
-    let state: string | number | null = this.getSecondaryState(entity, type);
+    const entity: string = secondary.config?.entity.entity_ids[0];
+    let state: string | number | null = this.getSecondaryState(secondary, type);
 
-    state = isNumberValue(state) && Math.abs(coerceNumber(state)) < (entity.displayZeroTolerance ?? 0)
+    state = isNumberValue(secondary) && Math.abs(coerceNumber(state)) < (secondary.config.entity.zero_threshold ?? 0)
       ? 0
       : state;
 
-    if (entity.displayZero || state) {
+    if (secondary) {
       return html`
-        <span class="secondary-info ${type}" @click=${this.handleClick(entity.entity)} @keyDown=${(this.handleKeyDown(entity.entity))}>
-          ${entity.icon ? html`<ha-icon class="secondary-info small" .icon=${entity.icon}></ha-icon>` : ""}
-          ${entity.template ?? this.displayValue(state, entity.unit, entity.decimals)}
+        <span class="secondary-info ${type}" @click=${this.handleClick(entity)} @keyDown=${(this.handleKeyDown(entity))}>
+          ${secondary.icon ? html`<ha-icon class="secondary-info small" .icon=${secondary.icon}></ha-icon>` : ""}
+          ${secondary.config.template ?? this.displayValue(state, secondary.config.entity.units, secondary.config.entity.decimals)}
         </span>
       `;
     }
@@ -900,7 +873,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     homeValueIsZero: boolean,
     homeUsageToDisplay: string
   ): TemplateResult => {
-    const home: HomeEntity = this._home;
+    const home: HomeState = this._home;
     return html`
       <div class="circle-container home">
         <div class="circle" id = "home-circle" @click=${this.handleClick(home.mainEntity)} @keyDown=${this.handleKeyDown(home.mainEntity)}>
@@ -962,7 +935,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           ${homeUsageToDisplay}
         </div>
 
-        ${this._individual2.isPresent ? "" : html`<span class="label">${home.name}</span>`}
+        <span class="label">${home.name}</span>
       </div>
     `;
   };
@@ -970,10 +943,10 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   private renderGridCircle = (gridToGrid: number, gridFromGrid: number): TemplateResult => {
     const gridIcon: string =
       this._grid.powerOutage.isOutage
-        ? this._config.entities?.grid?.power_outage?.icon_alert ?? "mdi:transmission-tower-off"
+        ? this._config.grid?.power_outage?.icon_alert ?? "mdi:transmission-tower-off"
         : this._grid.icon;
 
-    const productionEntity: string = Array.isArray(this._grid.entity?.production) ? this._grid.entity?.production[0] : this._grid.entity?.production;
+    const productionEntity: string | undefined = this._grid.config?.production_entities?.entity_ids?.length ? this._grid.config.production_entities.entity_ids[0] : undefined;
 
     return html`
       ${this._grid.isPresent
@@ -982,7 +955,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           <div class="circle" @click=${this.handleClick(this._grid.mainEntity)} @keyDown=${this.handleKeyDown(this._grid.mainEntity)}>
           ${this.renderSecondarySpan(this._grid.secondary, EntityType.Grid_Secondary)}
           <ha-icon class="entity-icon" .icon=${gridIcon}></ha-icon>
-          ${!this._grid.powerOutage.isOutage && (this._config.display_zero_state || gridToGrid != 0)
+          ${!this._grid.powerOutage.isOutage && (this._config.appearance?.display_zero_state || gridToGrid != 0)
             ? html`
             <span class="return" @click=${this.handleClick(productionEntity)} @keyDown=${this.handleKeyDown(productionEntity)}>
               <ha-icon class="small" .icon=${"mdi:arrow-left"}></ha-icon>
@@ -990,7 +963,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             </span>
             `
             : null}
-            ${!this._grid.powerOutage.isOutage && (this._config.display_zero_state || gridFromGrid != 0)
+            ${!this._grid.powerOutage.isOutage && (this._config.appearance?.display_zero_state || gridFromGrid != 0)
             ? html`
             <span class="consumption">
               <ha-icon class="small" .icon=${"mdi:arrow-right"}></ha-icon>
@@ -999,7 +972,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             : ""}
             ${this._grid.powerOutage.isOutage
             ? html`
-            <span style="padding-top: 2px;" class="grid power-outage">${this._config.entities.grid?.power_outage?.label_alert || html`Power<br/>Outage`}</span>`
+            <span style="padding-top: 2px;" class="grid power-outage">${this._config.grid?.power_outage?.label_alert || html`Power<br/>Outage`}</span>`
             : ""}
           </div>
           <span class="label">${this._grid.name}</span>
@@ -1019,56 +992,36 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         <div class="circle" @click=${this.handleClick(this._solar.mainEntity)} @keyDown=${this.handleKeyDown(this._solar.mainEntity)}}>
           ${this.renderSecondarySpan(this._solar.secondary, EntityType.Solar_Secondary)}
           <ha-icon class="entity-icon" id="solar-icon" .icon=${this._solar.icon}></ha-icon>
-          ${this._config.display_zero_state || solarTotal != 0 ? html`<span class="solar">${this.displayValue(solarTotal)}</span>` : ""}
+          ${this._config.appearance?.display_zero_state || solarTotal != 0 ? html`<span class="solar">${this.displayValue(solarTotal)}</span>` : ""}
         </div>
       </div>
     `;
   };
 
   private renderBatteryCircle = (batteryToBattery: number, batteryFromBattery: number): TemplateResult => {
-    const battery = this._config.entities.battery;
-    const batteryChargeState = battery?.state_of_charge ? getEntityState(this.hass, battery?.state_of_charge) : null;
-
+    const battery = this._config.battery;
     let batteryIcon = "mdi:battery-high";
 
     if (battery?.icon) {
       batteryIcon = battery?.icon;
-    } else {
-      if (!batteryChargeState) {
-        batteryIcon = "mdi:battery-high";
-      } else if (batteryChargeState <= 72 && batteryChargeState > 44) {
-        batteryIcon = "mdi:battery-medium";
-      } else if (batteryChargeState <= 44 && batteryChargeState > 16) {
-        batteryIcon = "mdi:battery-low";
-      } else if (batteryChargeState <= 16) {
-        batteryIcon = "mdi:battery-outline";
-      }
     }
 
     return html`
       <div class="circle-container battery">
-        <div class="circle" @click=${this.handleClick(battery?.state_of_charge || battery?.entity?.production)} @keyDown=${this.handleKeyDown(battery?.state_of_charge || battery?.entity?.production)}>
-          ${batteryChargeState
-        ? html`
-          <span @click=${this.handleClick(battery?.state_of_charge)} @keyDown=${this.handleKeyDown(battery?.state_of_charge)} id="battery-state-of-charge-text">
-            ${this.displayValue(batteryChargeState, battery?.state_of_charge_unit || "%", battery?.state_of_charge_decimals || 0)}
-          </span>
-          `
-        : ""}
-
-          <ha-icon class="entity-icon" .icon=${batteryIcon} @click=${this.handleClick(battery?.state_of_charge)} @keyDown=${this.handleKeyDown(battery?.state_of_charge)}></ha-icon>
-          ${this._config.display_zero_state || batteryToBattery != 0
-        ? html`
-            <span class="battery-in" style="padding-top: 2px;" @click=${this.handleClick(battery?.entity?.production)} @keyDown=${this.handleKeyDown(battery?.entity?.production)}>
+        <div class="circle" @click=${this.handleClick(this._battery.mainEntity)} @keyDown=${this.handleKeyDown(this._battery.mainEntity)}>
+          <ha-icon class="entity-icon" .icon=${batteryIcon}></ha-icon>
+          ${this._config.appearance?.display_zero_state || batteryToBattery != 0
+      ? html`
+            <span class="battery-in" style="padding-top: 2px;" @click=${this.handleClick(this._battery.returnEntity)} @keyDown=${this.handleKeyDown(this._battery.returnEntity)}>
               <ha-icon class="small" .icon=${"mdi:arrow-down"}></ha-icon>
               ${this.displayValue(batteryToBattery)}
             </span>
             `
         : ""}
 
-          ${this._config.display_zero_state || batteryFromBattery != 0
+          ${this._config.appearance?.display_zero_state || batteryFromBattery != 0
         ? html`
-            <span class="battery-out" style="padding-top: 2px;" @click=${this.handleClick(battery?.entity?.consumption)} @keyDown=${this.handleKeyDown(battery?.entity?.consumption)}>
+            <span class="battery-out" style="padding-top: 2px;" @click=${this.handleClick(this._battery.mainEntity)} @keyDown=${this.handleKeyDown(this._battery.mainEntity)}>
               <ha-icon class="small" .icon=${"mdi:arrow-up"}></ha-icon>
               ${this.displayValue(batteryFromBattery)}
             </span>
@@ -1080,7 +1033,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     `;
   };
 
-  private renderIndividualCircleAtTop = (type: EntityType, entity: Entity, state: number, animDuration: number): TemplateResult => {
+  private renderIndividualCircleAtTop = (type: EntityType, entity: State, state: number, animDuration: number): TemplateResult => {
     return html`
       <div class="circle-container ${type}">
         <span class="label">${entity.name}</span>
@@ -1101,7 +1054,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     `;
   };
 
-  private renderIndividualCircleAtBottom = (type: EntityType, entity: Entity, state: number, animDuration: number): TemplateResult => {
+  private renderIndividualCircleAtBottom = (type: EntityType, entity: State, state: number, animDuration: number): TemplateResult => {
     return html`
       <div class="circle-container ${type}">
         ${this.showLine(state)
@@ -1144,7 +1097,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     const path: string = `M${this._battery.isPresent ? 45 : 47},0 v15 c0,${this._battery.isPresent ? "30 -10,30 -30,30" : "35 -10,35 -30,35"} h-20`;
 
     return html`
-      ${this._grid.hasReturnToGrid && this._solar.isPresent && this.showLine(value ?? 0)
+      ${this._grid.hasReturn && this._solar.isPresent && this.showLine(value ?? 0)
         ? html`
         <div class=${this.getLineCssClasses()}>
           <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" id="solar-grid-flow">
@@ -1224,8 +1177,8 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     return "lines" +
       (this._battery.isPresent
         ? " high"
-        : this._individual1.isPresent && this._individual2.isPresent
-          ? " individual1-individual2"
+//        : this._individual1.isPresent && this._individual2.isPresent
+  //        ? " individual1-individual2"
           : "");
   };
 

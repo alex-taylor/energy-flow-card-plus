@@ -1,6 +1,6 @@
 import { getBaseMainConfigSchema, secondaryInfoSchema } from './_schema-base';
 import localize from '../../localize/localize';
-import { ColorMode } from '../../enums';
+import { ColourMode } from '../../enums';
 
 const mainSchema = {
   ...getBaseMainConfigSchema(),
@@ -12,11 +12,12 @@ const mainSchema = {
       selector: {
         select: {
           options: [
-            ColorMode.getItem(ColorMode.Do_Not_Color),
-            ColorMode.getItem(ColorMode.Color_Dynamically),
-            ColorMode.getItem(ColorMode.Solar),
-            ColorMode.getItem(ColorMode.Grid),
-            ColorMode.getItem(ColorMode.Battery),
+            ColourMode.getItem(ColourMode.Do_Not_Colour),
+            ColourMode.getItem(ColourMode.Colour_Dynamically),
+            ColourMode.getItem(ColourMode.Solar),
+            ColourMode.getItem(ColourMode.High_Carbon),
+            ColourMode.getItem(ColourMode.Low_Carbon),
+            ColourMode.getItem(ColourMode.Battery),
           ],
           mode: 'dropdown'
         },
@@ -28,34 +29,21 @@ const mainSchema = {
       selector: {
         select: {
           options: [
-            ColorMode.getItem(ColorMode.Do_Not_Color),
-            ColorMode.getItem(ColorMode.Color_Dynamically),
-            ColorMode.getItem(ColorMode.Solar),
-            ColorMode.getItem(ColorMode.Grid),
-            ColorMode.getItem(ColorMode.Battery),
+            ColourMode.getItem(ColourMode.Do_Not_Colour),
+            ColourMode.getItem(ColourMode.Colour_Dynamically),
+            ColourMode.getItem(ColourMode.Solar),
+            ColourMode.getItem(ColourMode.High_Carbon),
+            ColourMode.getItem(ColourMode.Low_Carbon),
+            ColourMode.getItem(ColourMode.Battery),
           ],
           mode: 'dropdown'
         },
       },
-    },
-    {
-      name: 'subtract_individual',
-      label: 'Subtract Individual',
-      selector: { boolean: {} },
-    },
-    {
-      name: 'override_state',
-      label: 'Override State (With Home Entity)',
-      selector: { boolean: {} },
     }
   ],
 };
 
 export const homeSchema = [
-  {
-    name: 'entity',
-    selector: { entity: {} },
-  },
   mainSchema,
   {
     title: localize('editor.secondary_info'),

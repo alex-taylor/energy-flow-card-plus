@@ -1,5 +1,5 @@
 import { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
-import { ColorMode, DisplayMode } from '../enums';
+import { ColourMode, DeviceType, DisplayMode, DotsMode, LowCarbonType, ZeroLinesMode } from '../enums';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -7,151 +7,120 @@ declare global {
   }
 }
 
-export type BasicEntity = string | string[];
-
-export type ComboEntity = {
-  consumption: string;
-  production: string;
-};
-
-export interface EnergyFlowCardPlusConfig extends LovelaceCardConfig, MainConfigOptions {
-  entities: EntitiesConfig;
+export interface EnergyFlowCardPlusConfig extends LovelaceCardConfig {
+  title?: string;
+  display_mode?: DisplayMode;
+  appearance?: AppearanceConfig;
+  grid?: GridConfig;
+  gas?: GasConfig;
+  low_carbon?: LowCarbonConfig;
+  solar?: SolarConfig;
+  battery?: BatteryConfig;
+  home?: HomeConfig;
+  devices?: DeviceConfig[];
 }
 
-interface MainConfigOptions {
-  display_mode?: DisplayMode;
+interface AppearanceConfig {
   dashboard_link?: string;
   dashboard_link_label?: string;
-  min_flow_rate?: number;
-  max_flow_rate?: number;
+  display_zero_lines?: ZeroLinesConfig;
+  display_zero_state?: boolean;
+  clickable_entities?: boolean;
+  use_hourly_stats?: boolean;
+  unit_white_space?: boolean;
+  energy_units?: EnergyUnitsConfig;
+  flows?: FlowsConfig;
+};
+
+interface ZeroLinesConfig {
+  mode?: ZeroLinesMode;
+  transparency?: number;
+  colour?: number[];
+};
+
+interface EnergyUnitsConfig {
   wh_decimals?: number;
   kwh_decimals?: number;
   mwh_decimals?: number;
   wh_kwh_threshold?: number;
   kwh_mwh_threshold?: number;
-  clickable_entities?: boolean;
+};
+
+interface FlowsConfig {
+  min_flow_rate?: number;
+  max_flow_rate?: number;
   max_expected_energy?: number;
   min_expected_energy?: number;
-  display_zero_lines?: boolean;
-  energy_date_selection?: boolean;
-  use_new_flow_rate_model?: boolean;
-  use_hourly_stats?: boolean;
-  unit_white_space?: boolean;
-  display_zero_state?: boolean;
-}
+  mode?: DotsMode;
+};
 
-interface EntitiesConfig {
-  battery?: BatteryConfigEntity;
-  grid?: GridConfigEntity;
-  fossil_fuel_percentage?: FossilFuelConfigEntity;
-  home?: HomeConfigEntity;
-  solar?: SolarConfigEntity;
-  individual1?: IndividualConfigEntity;
-  individual2?: IndividualConfigEntity;
-}
+export interface GridConfig extends DualValueNodeConfig {
+  power_outage?: PowerOutageConfig;
+};
 
-export interface EntityConfigOptions {
+export interface GasConfig extends SingleValueNodeConfig {
+  sum?: boolean;
+};
+
+export interface LowCarbonConfig extends SingleValueNodeConfig {
+  display?: LowCarbonType;
+};
+
+export interface SolarConfig extends SingleValueNodeConfig {
+};
+
+export interface BatteryConfig extends DualValueNodeConfig {
+};
+
+export interface HomeConfig extends NodeConfig {
+  color_of_icon?: ColourMode;
+  color_of_value?: ColourMode;
+};
+
+ export interface DeviceConfig extends SingleValueNodeConfig {
+  type?: DeviceType;
+  sum?: boolean;
+};
+
+export interface NodeConfig {
   name?: string;
   icon?: string;
-  display_zero_tolerance?: number;
-  use_metadata?: boolean;
-  secondary_info?: SecondaryInfoType;
+  secondary_info?: SecondaryInfoConfig;
+};
+
+export interface SingleValueNodeConfig extends NodeConfig {
+  entities?: EntityConfig;
+  colour?: number[];
+  colour_icon?: boolean;
+  colour_value?: boolean;
+};
+
+export interface DualValueNodeConfig extends NodeConfig {
+  consumption_entities?: EntityConfig;
+  production_entities?: EntityConfig;
+  consumption_colour?: number[];
+  production_colour?: number[];
+  colour_of_icon?: ColourMode;
+  colour_of_circle?: ColourMode;
+  colour_values?: boolean;
+};
+
+export interface EntityConfig {
+  entity_ids?: string[];
+  units?: string;
+  zero_threshold?: number;
+  decimals?: number;
 }
 
-export interface ExtraConfigOptions extends EntityConfigOptions {
-  entity?: BasicEntity;
-  color?: string | number[];
-  color_icon?: boolean;
-  display_zero?: boolean;
-  color_value?: boolean;
-  color_label?: boolean;
-};
-
-interface BidirectionalConfigOptions extends EntityConfigOptions {
-  entity?: ComboEntity;
-  invert_state?: boolean;
-  // TODO: not valid here, should be an array of string|number[], separate for consumption/production
-  color?: ComboEntity;
-  color_of_icon?: ColorMode;
-  color_of_circle?: ColorMode;
-
-  // @deprecated replaced by color_of_icon
-  color_icon?: any;
-  // @deprecated replaced by color_of_circle
-  color_circle?: any;
-};
-
-export interface BatteryConfigEntity extends BidirectionalConfigOptions {
-  state_of_charge?: string;
-  state_of_charge_unit?: string;
-  state_of_charge_decimals?: number;
-  color_state_of_charge_value?: ColorMode;
-
-  // @deprecated replaced by mainConfigOptions#unit_white_space
-  unit_white_space?: any;
-  // @deprecated replaced by mainConfigOptions#unit_white_space
-  state_of_charge_unit_white_space?: any;
-};
-
-export interface FossilFuelConfigEntity extends ExtraConfigOptions {
-  state_type?: 'percentage' | 'energy';
-
-  // @deprecated replaced by mainConfigOptions#unit_white_space
-  unit_white_space?: any;
-};
-
-export interface GridConfigEntity extends BidirectionalConfigOptions {
-  power_outage?: GridPowerOutage;
-};
-
-export interface HomeConfigEntity extends EntityConfigOptions {
-  entity?: BasicEntity;
-  override_state?: boolean;
-  subtract_individual?: boolean;
-  color_of_icon?: ColorMode;
-  color_of_value?: ColorMode;
-
-  // @deprecated replaced by color_of_icon
-  color_icon?: any;
-  // @deprecated replaced by color_of_value
-  color_value?: any;
-};
-
-export interface IndividualConfigEntity extends ExtraConfigOptions {
-  inverted_animation?: boolean;
-  show_direction?: boolean;
-
-  // @deprecated replaced by mainConfigOptions#unit_white_space
-  unit_white_space?: any;
-};
-
-export interface SolarConfigEntity extends EntityConfigOptions {
-  entity?: BasicEntity;
-  color?: string | number[];
-  color_icon?: boolean;
-  color_value?: boolean;
-  color_label?: boolean;
-};
-
-type GridPowerOutage = {
+interface PowerOutageConfig {
   entity: string;
   state_alert?: string;
   label_alert?: string;
   icon_alert?: string;
 };
 
-export type SecondaryInfoType = {
-  entity?: string;
-  unit_of_measurement?: string;
+export interface SecondaryInfoConfig {
+  entity?: EntityConfig;
   icon?: string;
-  display_zero?: boolean;
-  display_zero_tolerance?: number;
-  color_of_value?: ColorMode;
   template?: string;
-  decimals?: number;
-
-  // @deprecated replaced by mainConfigOptions#unit_white_space
-  unit_white_space?: any;
-  // @deprecated replaced by color_of_value
-  color_value?: any;
 };

@@ -2,7 +2,7 @@ import { HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
 import { coerceNumber, isNumberValue, unavailableOrMisconfiguredError } from "../utils";
 import { Statistics, StatisticValue } from "../energy";
-import type { BasicEntity } from "../config";
+import { EntityConfig } from "../config";
 
 export const entityExists = (hass: HomeAssistant, entityId: string): boolean => entityId in hass.states;
 
@@ -17,21 +17,22 @@ export const getEntityStateObj = (hass: HomeAssistant, entity: string | undefine
   return hass.states[entity];
 };
 
-export const getEntityState = (hass: HomeAssistant, entity: string | string[] | undefined): number => {
-  if (Array.isArray(entity)) {
-    // TODO: sort this out!
+export const getEntityState = (hass: HomeAssistant, entities: EntityConfig | undefined): number => {
+  if (!entities?.entity_ids?.length) {
     return 0;
   }
 
-  return coerceNumber(getEntityStateObj(hass, entity as string)?.state || 0);
+  // TODO: support multiple entities
+  const entity: string = entities.entity_ids[0];
+  return coerceNumber(getEntityStateObj(hass, entity)?.state || 0);
 };
 
-export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statistics | undefined, entity: BasicEntity | undefined): number => {
-  if (!statistics || !entity) {
+export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statistics | undefined, entities: EntityConfig | undefined): number => {
+  if (!statistics || !entities?.entity_ids?.length) {
     return 0;
   }
 
-  const entityStatistics = getEntityStatistics(hass, statistics, entity);
+  const entityStatistics = getEntityStatistics(hass, statistics, entities);
   let sum = 0;
 
   entityStatistics.forEach((value, key) => {
@@ -41,17 +42,14 @@ export const getEntityStateWattHours = (hass: HomeAssistant, statistics: Statist
   return sum;
 };
 
-export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics, entity: BasicEntity): Map<number, number> => {
-  const result: Map<number, number> = new Map();
-  let entityArr: string[] = [];
-
-  if (typeof entity === "string") {
-    entityArr.push(entity);
-  } else if (Array.isArray(entity)) {
-    entityArr = entity;
+export const getEntityStatistics = (hass: HomeAssistant, statistics: Statistics, entities: EntityConfig | undefined): Map<number, number> => {
+  if (!entities?.entity_ids?.length) {
+    return new Map();
   }
 
-  entityArr.forEach((entity) => {
+  const result: Map<number, number> = new Map();
+
+  entities.entity_ids.forEach((entity) => {
     if (!entity || !entityAvailable(hass, entity)) {
       unavailableOrMisconfiguredError(entity);
     }

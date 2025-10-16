@@ -1,144 +1,108 @@
-import { ColorMode } from '../../enums';
+import { ColourMode } from '../../enums';
 import localize from '../../localize/localize';
 
-export const getEntityCombinedSelectionSchema = {
-  type: 'expandable',
-  title: localize('editor.combined'),
-  schema: [
-    {
-      name: 'entity',
-      selector: { entity: {} },
-    },
-  ],
-} as const
+// TODO: support multiple entities
+export const singleEntitySelectionSchema = {
+  name: 'entity',
+  label: 'Entity',
+  selector: { entity: {} },
+  // TODO: units, zero threshold, decimals
+};
 
-export const getEntitySeparatedSelectionSchema = () => {
+export const getDualEntitySelectionSchema = () => {
   return {
-    type: 'expandable',
-    title: localize('editor.separated'),
+    type: 'grid',
+    title: localize('editor.dual_entity'),
     name: 'entity',
     schema: [
       {
+        ...singleEntitySelectionSchema,
         name: 'consumption',
-        label: 'Consumption Entity',
-        selector: { entity: {} },
+        label: 'Consumption'
       },
       {
+        ...singleEntitySelectionSchema,
         name: 'production',
-        label: 'Production Entity',
-        selector: { entity: {} },
+        label: 'Production'
       },
     ]
   } as const;
 }
 
-export const customColorsSchema = {
-  name: 'color',
-  title: localize('editor.custom_colors'),
+export const secondaryInfoSchema = {
+  title: localize('editor.secondary_info'),
+  name: 'secondary_info',
   type: 'expandable',
   schema: [
     {
-      type: 'grid',
-      column_min_width: '200px',
-      schema: [
-        {
-          name: 'consumption',
-          label: 'Consumption',
-          selector: { color_rgb: {} },
-        },
-        {
-          name: 'production',
-          label: 'Production',
-          selector: { color_rgb: {} },
-        },
-      ],
+      name: 'entity',
+      selector: { entity: {} },
     },
-  ],
+    {
+      name: 'template',
+      label: 'Template (overrides entity, save to update)',
+      selector: { template: {} },
+    },
+    {
+      name: 'icon',
+      label: 'Icon',
+      selector: { icon: {} }
+    }
+  ]
 } as const;
 
-export const secondaryInfoSchema = [
+export const singleValueColourConfigSchema = [
   {
-    name: 'entity',
-    selector: { entity: {} },
+    name: 'colour_value',
+    label: 'Colour Value',
+    selector: { boolean: {} },
   },
   {
-    name: 'template',
-    label: 'Template (overrides entity, save to update)',
-    selector: { template: {} },
+    name: 'colour_icon',
+    label: 'Colour Icon',
+    selector: { boolean: {} },
   },
   {
-    type: 'grid',
-    column_min_width: '200px',
+    name: 'colour',
+    label: 'Colour',
+    selector: { color_rgb: {} },
+  },
+];
+
+export const dualValueColourConfigSchema = [
+  {
+    name: 'colour',
+    title: localize('editor.dual_custom_colours'),
+    type: 'expandable',
     schema: [
       {
-        name: 'icon',
-        label: 'Icon',
-        selector: { icon: {} }
+        type: 'grid',
+        column_min_width: '200px',
+        schema: [
+          {
+            name: 'consumption',
+            label: 'Consumption',
+            selector: { color_rgb: {} },
+          },
+          {
+            name: 'production',
+            label: 'Production',
+            selector: { color_rgb: {} },
+          },
+        ],
       },
-      {
-        name: 'unit_of_measurement',
-        label: 'Unit of Measurement',
-        selector: { text: {} }
-      },
-      {
-        name: 'color_of_value',
-        label: 'Color Value',
-        selector: {
-          select: {
-            options: [
-              ColorMode.getItem(ColorMode.Do_Not_Color),
-              ColorMode.getItem(ColorMode.Color_Dynamically),
-              ColorMode.getItem(ColorMode.Production),
-              ColorMode.getItem(ColorMode.Consumption)
-            ],
-            mode: 'dropdown'
-          }
-        }
-      },
-      {
-        name: 'display_zero_tolerance',
-        label: 'Display Zero Tolerance',
-        selector: {
-          number: {
-            mode: 'box',
-            min: 0,
-            max: 1000000,
-            step: 0.1
-          }
-        }
-      },
-      {
-        name: 'decimals',
-        label: 'Decimals',
-        selector: {
-          number: {
-            mode: 'box',
-            min: 0,
-            max: 10,
-            step: 1
-          }
-        }
-      },
-      {
-        name: 'display_zero',
-        label: 'Display Zero',
-        selector: { boolean: {} }
-      },
-    ],
+    ]
   },
-] as const;
-
-const batteryOrGridMainConfigSchema = [
   {
     name: 'color_of_icon',
     label: 'Color of Icon',
     selector: {
       select: {
         options: [
-          ColorMode.getItem(ColorMode.Do_Not_Color),
-          ColorMode.getItem(ColorMode.Color_Dynamically),
-          ColorMode.getItem(ColorMode.Production),
-          ColorMode.getItem(ColorMode.Consumption)
+          ColourMode.getItem(ColourMode.Do_Not_Colour),
+          ColourMode.getItem(ColourMode.Colour_Dynamically),
+          ColourMode.getItem(ColourMode.Production),
+          ColourMode.getItem(ColourMode.Consumption)
         ],
         mode: 'dropdown'
       },
@@ -150,43 +114,21 @@ const batteryOrGridMainConfigSchema = [
     selector: {
       select: {
         options: [
-          ColorMode.getItem(ColorMode.Color_Dynamically),
-          ColorMode.getItem(ColorMode.Production),
-          ColorMode.getItem(ColorMode.Consumption)
+          ColourMode.getItem(ColourMode.Colour_Dynamically),
+          ColourMode.getItem(ColourMode.Production),
+          ColourMode.getItem(ColourMode.Consumption)
         ],
         mode: 'dropdown'
       },
     },
-  },
-  {
-    name: 'display_zero_tolerance',
-    label: 'Display Zero Tolerance',
-    selector: {
-      number: {
-        min: 0,
-        max: 1000000,
-        step: 1,
-        mode: 'box',
-      },
-    },
-  },
+  }
 ];
 
-export function getBaseMainConfigSchema(field?: string) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const result: any = {
-    type: 'grid',
-    column_min_width: '200px',
-    schema: [
-      { name: 'name', selector: { text: {} } },
-      { name: 'icon', selector: { icon: {} } },
-      { name: 'use_metadata', label: 'Use Metadata', selector: { boolean: {} } },
-    ],
-  };
-
-  if (field === 'battery' || field === 'grid') {
-    result.schema.push(...batteryOrGridMainConfigSchema);
-  }
-
-  return result;
-}
+export const baseMainConfigSchema = {
+  type: 'grid',
+  column_min_width: '200px',
+  schema: [
+    { name: 'name', selector: { text: {} } },
+    { name: 'icon', selector: { icon: {} } },
+  ]
+};

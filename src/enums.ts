@@ -1,7 +1,7 @@
 import localize from './localize/localize';
 
 export enum DisplayMode {
-  Live = 'live',
+  Today = 'today',
   History = 'history',
   Hybrid = 'hybrid'
 };
@@ -16,22 +16,25 @@ export namespace DisplayMode {
   }
 }
 
-export enum ColorMode {
-  Do_Not_Color = 'no_color',
-  Color_Dynamically = 'dynamic',
-  Production = 'production',
+export enum ColourMode {
+  Do_Not_Colour = 'no_colour',
+  Colour_Dynamically = 'dynamic',
   Consumption = 'consumption',
+  Consumption_Sources = 'consumption_sources',
+  Production = 'production',
+  Production_Sources = 'production_sources',
   Solar = 'solar',
-  Grid = 'grid',
+  High_Carbon = 'high-carbon',
+  Low_Carbon = 'low-carbon',
   Battery = 'battery'
 };
 
-export namespace ColorMode {
-  export function getName(value: ColorMode): string {
-    return getEnumValueName(ColorMode, value);
+export namespace ColourMode {
+  export function getName(value: ColourMode): string {
+    return getEnumValueName(ColourMode, value);
   }
 
-  export function getItem(value: ColorMode): { label: string, value: string } {
+  export function getItem(value: ColourMode): { label: string, value: string } {
     return { label: getName(value), value: value };
   }
 }
@@ -50,6 +53,74 @@ export enum EntityType {
   Individual2_Secondary = "individual2Secondary",
   LowCarbon = "low-carbon",
   LowCarbon_Secondary = "nonFossilSecondary"
+};
+
+export enum LowCarbonType {
+  Energy = "energy",
+  Percentage = "percentage"
+};
+
+export namespace LowCarbonType {
+  export function getName(value: LowCarbonType): string {
+    return getEnumValueName(LowCarbonType, value);
+  }
+
+  export function getItem(value: LowCarbonType): { label: string, value: string } {
+    return { label: getName(value), value: value };
+  }
+}
+
+export enum DeviceType {
+  Consumption = "consumption",
+  Production = "production"
+};
+
+export namespace DeviceType {
+  export namespace DeviceType {
+    export function getName(value: DeviceType): string {
+      return getEnumValueName(DeviceType, value);
+    }
+
+    export function getItem(value: DeviceType): { label: string, value: string } {
+      return { label: getName(value), value: value };
+    }
+  }
+};
+
+export enum ZeroLinesMode {
+  Show = "show",
+  Hide = "hide",
+  Transparent = "transparent",
+  Greyed_Out = "greyed_out",
+  Custom = "custom"
+};
+
+export namespace ZeroLinesMode {
+  export namespace ZeroLinesMode {
+    export function getName(value: ZeroLinesMode): string {
+      return getEnumValueName(ZeroLinesMode, value);
+    }
+
+    export function getItem(value: ZeroLinesMode): { label: string, value: string } {
+      return { label: getName(value), value: value };
+    }
+  }
+};
+
+export enum DotsMode {
+  Off = "off",
+  HASS = "hass",
+  Dynamic = "dynamic"
+};
+
+export namespace DotsMode {
+  export function getName(value: DotsMode): string {
+    return getEnumValueName(DotsMode, value);
+  }
+
+  export function getItem(value: DotsMode): { label: string, value: string } {
+    return { label: getName(value), value: value };
+  }
 };
 
 function getEnumValueName(type: any, value: any): string {
