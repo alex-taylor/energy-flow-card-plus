@@ -1,24 +1,29 @@
-import { dualValueNodeSchema, nodeConfigSchema } from './_schemas';
+import { EnergyFlowCardExtConfig } from '@/config';
+import { EntitiesOptions, PowerOutageOptions } from '.';
+import { dualValueNodeSchema, nodeConfigSchema } from './schemas';
 
-const powerOutageGridSchema = [
+const powerOutageGridSchema: any[] = [
   {
-    name: 'entity',
+    name: EntitiesOptions.Single_Entity,
     selector: { entity: {} },
   },
   {
     type: 'grid',
     column_min_width: '200px',
     schema: [
-      { name: 'label_alert', label: 'Outage Label', selector: { text: {} } },
-      { name: 'icon_alert', label: 'Outage Icon', selector: { icon: {} } },
-      { name: 'state_alert', label: 'Outage State', selector: { text: {} } }
+      { name: [PowerOutageOptions.Label_Alert], selector: { text: {} } },
+      { name: [PowerOutageOptions.Icon_Alert], selector: { icon: {} } },
+      { name: [PowerOutageOptions.State_Alert], selector: { text: {} } }
     ],
   },
 ];
 
-export const gridSchema = nodeConfigSchema(dualValueNodeSchema()).concat(
-  {
-    name: 'power_outage',
-    type: 'expandable',
-    schema: powerOutageGridSchema
-  });
+export function gridSchema(config: EnergyFlowCardExtConfig): any[] {
+  return nodeConfigSchema(dualValueNodeSchema()).concat(
+    {
+      name: [PowerOutageOptions.Power_Outage],
+      type: 'expandable',
+      schema: powerOutageGridSchema
+    }
+  );
+}

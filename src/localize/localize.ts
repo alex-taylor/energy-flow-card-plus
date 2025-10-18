@@ -44,7 +44,7 @@ function getTranslatedString(key: string, lang: string): string | undefined {
   }
 }
 
-export function setupCustomlocalize(key: string) {
+export function setupCustomlocalize(key: string, fallback: string | undefined = undefined) {
   const lang = (localStorage.getItem("selectedLanguage") || DEFAULT_LANGUAGE).replace(/['"]+/g, "").replace("-", "_");;
   let translated = getTranslatedString(key, lang);
 
@@ -52,7 +52,7 @@ export function setupCustomlocalize(key: string) {
     translated = getTranslatedString(key, DEFAULT_LANGUAGE);
   }
 
-  return translated ?? key;
+  return translated ?? fallback ?? key;
 }
 
 export default setupCustomlocalize;

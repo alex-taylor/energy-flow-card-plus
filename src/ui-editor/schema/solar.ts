@@ -1,3 +1,6 @@
-import { nodeConfigSchema, singleValueNodeSchema } from './_schemas';
+import { EnergyFlowCardExtConfig } from '@/config';
+import { nodeConfigSchema, singleValueNodeSchema } from './schemas';
 
-export const solarSchema = nodeConfigSchema(singleValueNodeSchema());
+export function solarSchema(config: EnergyFlowCardExtConfig): any[] {
+  return nodeConfigSchema(singleValueNodeSchema());
+}

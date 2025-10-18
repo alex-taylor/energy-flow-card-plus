@@ -31,10 +31,8 @@ export default [
     ],
     plugins: [
       minifyHTML(),
-      terser({ output: { comments: false } }),
-      typescript({
-        declaration: false,
-      }),
+      //terser({ output: { comments: false } }),
+      typescript(),
       nodeResolve(),
       json({
         compact: true,
@@ -44,7 +42,7 @@ export default [
         exclude: "node_modules/**",
         babelHelpers: "bundled",
       }),
-      ...(dev ? [serve(serveOptions)] : [terser()]),
+      ...(dev ? [serve(serveOptions)] : [/*terser()*/]),
     ],
     moduleContext: (id) => {
       const thisAsWindowForModules = [

@@ -1,3 +1,6 @@
-import {  dualValueNodeSchema, nodeConfigSchema } from './_schemas';
+import { EnergyFlowCardExtConfig } from '@/config';
+import {  dualValueNodeSchema, nodeConfigSchema } from './schemas';
 
-export const batterySchema = nodeConfigSchema(dualValueNodeSchema());
+export function batterySchema(config: EnergyFlowCardExtConfig): any[] {
+  return nodeConfigSchema(dualValueNodeSchema());
+}

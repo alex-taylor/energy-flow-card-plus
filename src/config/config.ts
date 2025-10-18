@@ -1,15 +1,16 @@
-import { ColourMode, DisplayMode, DotsMode, LowCarbonType, ZeroLinesMode } from "../enums";
+import { ColourMode, DisplayMode, DotsMode, LowCarbonType, InactiveLinesMode, UnitDisplayMode } from "@/enums";
 import { HomeAssistant } from 'custom-card-helpers';
 import { EnergyFlowCardExtConfig } from ".";
+import { CARD_NAME } from "@/const";
+import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions } from "@/ui-editor/schema";
 
 const defaultValues = {
   displayMode: DisplayMode.Today,
 
   // Appearance
-  displayZeroLines: ZeroLinesMode.Solid,
-  displayZeroState: true,
+  inactiveLines: InactiveLinesMode.Normal,
+  showZeroStates: true,
   clickableEntities: true,
-  useHourlyStats: false,
   unitWhiteSpace: true,
 
   // EnergyUnits
@@ -19,11 +20,14 @@ const defaultValues = {
   whkWhThreshold: 1000,
   kwhMwhThreshold: 1000,
 
+  // Entities
+  unitsMode: UnitDisplayMode.After,
+
   // Flows
-  minFlowRate: 1,
-  maxFlowRate: 6,
-  minExpectedEnergy: 10,
-  maxExpectedEnergy: 2000,
+  minRate: 1,
+  maxRate: 6,
+  minEnergy: 10,
+  maxEnergy: 2000,
   dotsMode: DotsMode.Dynamic
 };
 
@@ -46,86 +50,109 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   const firstSolarEnergyEntity = energyEntities.filter(entityId => checkStrings(entityId, solarTests))[0];
 
   return {
-    type: 'custom:energy-flow-card-ext',
-    display_mode: defaultValues.displayMode,
+    type: 'custom:' + CARD_NAME,
+    [GlobalOptions.Display_Mode]: defaultValues.displayMode,
 
-    appearance: {
-      display_zero_lines: {
-        mode: defaultValues.displayZeroLines,
+    [EditorPages.Appearance]: {
+      [GlobalOptions.Options]: {
+        [AppearanceOptions.Inactive_Lines]: defaultValues.inactiveLines,
+        [AppearanceOptions.Show_Zero_States]: defaultValues.showZeroStates,
+        [AppearanceOptions.Clickable_Entities]: defaultValues.clickableEntities,
+        [AppearanceOptions.Unit_Whitespace]: defaultValues.unitWhiteSpace,
       },
-      display_zero_state: defaultValues.displayZeroState,
-      clickable_entities: defaultValues.clickableEntities,
-      use_hourly_stats: defaultValues.useHourlyStats,
-      unit_white_space: defaultValues.unitWhiteSpace,
-
-      energy_units: {
-        wh_decimals: defaultValues.watthourDecimals,
-        kwh_decimals: defaultValues.kilowatthourDecimals,
-        mwh_decimals: defaultValues.megawatthourDecimals,
-        wh_kwh_threshold: defaultValues.whkWhThreshold,
-        kwh_mwh_threshold: defaultValues.kwhMwhThreshold
+      [AppearanceOptions.Energy_Units]: {
+        [EnergyUnitsOptions.Wh_Decimals]: defaultValues.watthourDecimals,
+        [EnergyUnitsOptions.Kwh_Decimals]: defaultValues.kilowatthourDecimals,
+        [EnergyUnitsOptions.Mwh_Decimals]: defaultValues.megawatthourDecimals,
+        [EnergyUnitsOptions.Wh_Kwh_Threshold]: defaultValues.whkWhThreshold,
+        [EnergyUnitsOptions.Kwh_Mwh_Threshold]: defaultValues.kwhMwhThreshold
       },
-
-      flows: {
-        min_flow_rate: defaultValues.minFlowRate,
-        max_flow_rate: defaultValues.maxFlowRate,
-        max_expected_energy: defaultValues.maxExpectedEnergy,
-        min_expected_energy: defaultValues.minExpectedEnergy,
-        mode: defaultValues.dotsMode
+      [AppearanceOptions.Flows]: {
+        [FlowsOptions.Animation]: defaultValues.dotsMode,
+        [FlowsOptions.Min_Rate]: defaultValues.minRate,
+        [FlowsOptions.Max_Rate]: defaultValues.maxRate,
+        [FlowsOptions.Min_Energy]: defaultValues.minEnergy,
+        [FlowsOptions.Max_Energy]: defaultValues.maxEnergy
       }
     },
 
-    grid: {
-      // TODO: this is clearly not correct!
-      //consumption_entities: {
+    [EditorPages.Grid]: {
+      [EntitiesOptions.Import_Entities]: {
+        units_mode: defaultValues.unitsMode
+        // TODO: this is clearly not correct!
         //entity_ids: gridEnergyEntities
-      //},
-      //production_entities: {
+      },
+      [EntitiesOptions.Export_Entities]: {
+        units_mode: defaultValues.unitsMode
         //entity_ids: gridEnergyEntities
-      //},
-      colour_of_icon: ColourMode.Do_Not_Colour,
-      colour_of_circle: ColourMode.Colour_Dynamically,
-      colour_values: true
+      },
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Circle]: ColourMode.Colour_Dynamically,
+        [ColourOptions.Values]: ColourMode.Colour_Dynamically
+      },
+      [EntitiesOptions.Secondary_Info]: {
+        [EntitiesOptions.Entities]: {
+          units_mode: defaultValues.unitsMode
+        }
+      }
     },
 
-    gas: {
-      // TODO: entities
-      colour_icon: false,
-      colour_value: false,
-      sum: false
+    [EditorPages.Gas]: {
+      [EntitiesOptions.Entities]: {
+        [EntityOptions.Units_Mode]: defaultValues.unitsMode
+        // TODO: entities
+      },
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+      }
     },
 
-    low_carbon: {
-      colour_icon: false,
-      colour_value: false,
-      display: LowCarbonType.Energy
+    [EditorPages.Low_Carbon]: {
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+      },
+      [GlobalOptions.Options]: {
+        [EntitiesOptions.Low_Carbon_Mode]: LowCarbonType.Energy
+      }
     },
 
-    solar: {
-      //entities: {
+    [EditorPages.Solar]: {
+      [EntitiesOptions.Entities]: {
+        [EntityOptions.Units_Mode]: defaultValues.unitsMode
         // TODO: handle multiple entities
         //entity_ids: [firstSolarEnergyEntity]
-      //},
-      colour_icon: false,
-      colour_value: false
+      },
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+      }
     },
 
-    battery: {
-      // TODO: this is clearly not correct!
-      //consumption_entities: {
+    [EditorPages.Battery]: {
+      [EntitiesOptions.Import_Entities]: {
+        [EntityOptions.Units_Mode]: defaultValues.unitsMode
+        // TODO: this is clearly not correct!
         //entity_ids: batteryEnergyEntities
-      //},
-      //production_entities: {
+      },
+      [EntitiesOptions.Export_Entities]: {
+        [EntityOptions.Units_Mode]: defaultValues.unitsMode
         //entity_ids: batteryEnergyEntities
-      //},
-      colour_of_icon: ColourMode.Do_Not_Colour,
-      colour_of_circle: ColourMode.Colour_Dynamically,
-      colour_values: true
+      },
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Circle]: ColourMode.Colour_Dynamically,
+        [ColourOptions.Values]: ColourMode.Colour_Dynamically
+      }
     },
 
-    home: {
-      color_of_icon: ColourMode.Do_Not_Colour,
-      color_of_value: ColourMode.Colour_Dynamically      
+    [EditorPages.Home]: {
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+      }
     }
   };
 }

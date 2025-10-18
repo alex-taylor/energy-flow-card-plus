@@ -1,89 +1,71 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-use-before-define */
-
 import { LitElement, css, html, nothing, TemplateResult } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { EnergyFlowCardExtConfig } from '../config';
-import { cardConfigStruct } from './schema';
-import { appearanceOptionsSchema, generalConfigSchema} from './schema/_schemas';
-import localize from '../localize/localize';
+import { EnergyFlowCardExtConfig } from '@/config';
+import { cardConfigStruct, EditorPages } from './schema';
+import { appearanceSchema, generalConfigSchema } from './schema/schemas';
+import localize from '@/localize/localize';
 import { gridSchema } from './schema/grid';
 import { solarSchema } from './schema/solar';
 import { batterySchema } from './schema/battery';
 import { lowCarbonSchema } from './schema/low-carbon';
 import { homeSchema } from './schema/home';
 import { gasSchema } from './schema/gas';
+import "./components/subpage-header";
+import "./components/link-subpage";
+import "./components/devices-editor";
+import { CARD_NAME } from '@/const';
+
+export const EDITOR_ELEMENT_NAME = CARD_NAME + "-editor";
 
 const CONFIG_PAGES: {
   page: string;
-  icon?: string;
-  schema?: any[];
+  icon: string;
+  schema?;
 }[] = [
     {
-      page: "appearance",
+      page: EditorPages.Appearance,
       icon: "mdi:cog",
-      schema: appearanceOptionsSchema,
+      schema: appearanceSchema
     },
     {
-      page: "grid",
+      page: EditorPages.Grid,
       icon: "mdi:transmission-tower",
-      schema: gridSchema,
+      schema: gridSchema
     },
     {
-      page: "gas",
+      page: EditorPages.Gas,
       icon: "mdi:fire",
-      schema: gasSchema,
+      schema: gasSchema
     },
     {
-      page: "solar",
+      page: EditorPages.Solar,
       icon: "mdi:solar-power",
-      schema: solarSchema,
+      schema: solarSchema
     },
     {
-      page: "battery",
+      page: EditorPages.Battery,
       icon: "mdi:battery-high",
-      schema: batterySchema,
+      schema: batterySchema
     },
     {
-      page: "low_carbon",
+      page: EditorPages.Low_Carbon,
       icon: "mdi:leaf",
-      schema: lowCarbonSchema,
+      schema: lowCarbonSchema
     },
     {
-      page: "home",
+      page: EditorPages.Home,
       icon: "mdi:home",
-      schema: homeSchema,
+      schema: homeSchema
     },
     {
-      page: "devices",
-      icon: "mdi:dots-horizontal-circle-outline",
+      page: EditorPages.Devices,
+      icon: "mdi:dots-horizontal-circle-outline"
     }
   ];
 
-
-export const loadHaForm = async () => {
-  if (customElements.get('ha-form')) {
-    return;
-  }
-
-  const helpers = await (window as any).loadCardHelpers?.();
-
-  if (!helpers) {
-    return;
-  }
-
-  const card = await helpers.createCardElement({ type: 'entity' });
-
-  if (!card) {
-    return;
-  }
-
-  await card.getConfigElement();
-};
-
-@customElement('energy-flow-card-ext-editor')
+@customElement(EDITOR_ELEMENT_NAME)
 export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardEditor {
   @property({ attribute: false }) public hass!: HomeAssistant;
   @state() private _config?: EnergyFlowCardExtConfig;
@@ -116,18 +98,31 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
 
     if (this._currentConfigPage) {
       const currentPage: string = this._currentConfigPage;
-      const schema: any[] | undefined = CONFIG_PAGES.find((page) => page.page === currentPage)?.schema;
-      const dataForForm: any = config[currentPage];
+      const schema = CONFIG_PAGES.find((page) => page.page === currentPage)?.schema;
+      const icon = CONFIG_PAGES.find((page) => page.page === currentPage)?.icon;
+      const configForPage: any = config[currentPage];
 
       return html`
-        <subpage-header @go-back=${this._goBack} page=${currentPage}></subpage-header>
-        <ha-form
-          .hass=${this.hass}
-          .data=${dataForForm}
-          .schema=${schema}
-          .computeLabel=${this._computeLabelCallback}
-          @value-changed=${this._valueChanged}
-        ></ha-form>
+        <energy-flow-card-ext-subpage-header @go-back=${this._goBack} icon="${icon}" label=${localize(`editor.${currentPage}`)}></energy-flow-card-ext-subpage-header>
+        ${this._currentConfigPage === EditorPages.Devices
+          ? html`
+            <energy-flow-card-ext-devices-editor
+              .hass=${this.hass}
+              .config=${this._config}
+              @config-changed=${this._valueChanged}
+            ></energy-flow-card-ext-devices-editor>
+          `
+          : html`
+            <ha-form
+              .hass=${this.hass}
+              .data=${configForPage}
+              .schema=${schema(config)}
+              .computeLabel=${this._computeLabelCallback}
+              .computeHelper=${this._computeHelperCallback}
+              @value-changed=${this._valueChanged}
+            ></ha-form>
+          `
+        }
       `;
     }
 
@@ -138,6 +133,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
           .data=${config}
           .schema=${generalConfigSchema()}
           .computeLabel=${this._computeLabelCallback}
+          .computeHelper=${this._computeHelperCallback}
           @value-changed=${this._valueChanged}
         ></ha-form>
         ${this.renderLinkSubPages()}
@@ -155,27 +151,30 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
     }
 
     return html`
-        <link-subpage
-          path=${page}
-          header="${localize(`editor.${page}`)}"
-          @open-sub-element-editor=${() => this._editDetailElement(page)}
-          icon=${icon}
-        >
-        </link-subpage>
+        <energy-flow-card-ext-link-subpage label="${localize(`editor.${page}`)}" @open-sub-element-editor=${() => this._editDetailElement(page)} icon=${icon}></energy-flow-card-ext-link-subpage>
       `;
   };
 
   private _valueChanged(ev: any): void {
-    const config = ev.detail.value || '';
-
     if (!this._config || !this.hass) {
       return;
+    }
+
+    let config = ev.detail.value || '';
+
+    if (this._currentConfigPage) {
+      config = {
+        ...this._config,
+        [this._currentConfigPage]: config
+      };
     }
 
     fireEvent(this, 'config-changed', { config });
   }
 
-  private _computeLabelCallback = (schema: any): string => this.hass!.localize(`ui.panel.lovelace.editor.card.generic.${schema?.name}`) || localize(`editor.${schema?.name}`);
+  private _computeHelperCallback = (schema: any): string => localize(`editor.${schema?.name}#helptext`, "");
+
+  private _computeLabelCallback = (schema: any): string => localize(`editor.${schema?.name}`);
 
   static get styles() {
     return css`
@@ -187,27 +186,11 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
         align-self: center;
       }
 
-      .entities-section * {
-        background-color: #f00;
-      }
-
       .card-config {
         display: flex;
         flex-direction: column;
         gap: 1.5rem;
         margin-bottom: 10px;
-      }
-
-      .config-header {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        width: 100%;
-      }
-
-      .config-header.sub-header {
-        margin-top: 24px;
       }
 
       ha-icon {
@@ -220,8 +203,28 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
   }
 }
 
+const loadHaForm = async () => {
+  if (customElements.get('ha-form')) {
+    return;
+  }
+
+  const helpers = await (window as any).loadCardHelpers?.();
+
+  if (!helpers) {
+    return;
+  }
+
+  const card = await helpers.createCardElement({ type: 'entity' });
+
+  if (!card) {
+    return;
+  }
+
+  await card.getConfigElement();
+};
+
 declare global {
   interface HTMLElementTagNameMap {
-    'energy-flow-card-ext-editor': EnergyFlowCardExtEditor;
+    EDITOR_ELEMENT_NAME: EnergyFlowCardExtEditor;
   }
 }

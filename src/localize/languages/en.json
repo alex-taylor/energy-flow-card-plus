@@ -4,39 +4,58 @@
     "unknown": "Unknown"
   },
   "editor": {
-    "display_mode": "Display Mode",
+    "title": "Title",
+    "name": "Name",
+    "name#helptext": "Overrides the built-in name",
+    "icon": "Icon",
+    "icon#helptext": "Overrides the built-in icon",
+    "entity": "Entity",
+    "entities": "Entities",
+    "overrides": "Overrides",
+    "options": "Options",
+    "include_in_home": "Include when calculating energy usage for Home",
+    "low_carbon_mode": "Display as",
+
+    "display_mode": "Display mode",
+    "display_mode#helptext": "History and Hybrid modes require an energy-date-selection card to be present on the page",
     "today": "Today",
     "history": "History",
     "hybrid": "Hybrid",
 
     "appearance": "Appearance",
-    "dashboard_link": "Dashboard Link",
-    "dashboard_link_label": "Dashboard Link Name",
-    "display_zero_state": "Display Zero States",
-    "clickable_entities": "Clickable Entities",
-    "use_hourly_stats": "Use Hourly Stats",
-    "unit_white_space": "Unit White Space",
+    "dashboard_link": "Dashboard link",
+    "dashboard_link_label": "Dashboard link label",
+    "show_zero_states": "Show zero states",
+    "clickable_entities": "Clickable entities",
+    "use_hourly_stats": "Use hourly statistics",
+    "use_hourly_stats#helptext": "Hourly statistics are more precise, but may take longer to calculate",
+    "unit_whitespace": "White-space between value and unit",
 
-    "display_zero_lines": "Display Zero Lines",
-    "zero_lines_display_as": "Display As",
+    "inactive_lines": "Inactive lines",
 
     "flows": "Flows",
     "animation": "Animation",
-    "min_flow_rate": "Min Flow Rate",
-    "max_flow_rate": "Max Flow Rate",
-    "min_expected_energy": "Min Expected Energy",
-    "max_expected_energy": "Max Expected Energy",
+    "min_rate": "Min rate",
+    "max_rate": "Max rate",
+    "min_energy": "Min energy",
+    "max_energy": "Max energy",
 
     "energy_units": "Energy Units",
-    "wh_kwh_threshold": "Wh/kWh Threshold",
-    "kwh_mwh_threshold": "kWh/MWh Threshold",
-    "wh_decimals": "Wh Decimals",
-    "kwh_decimals": "kWh Decimals",
-    "mwh_decimals": "MWh Decimals",
+    "wh_kwh_threshold": "Wh/kWh threshold",
+    "kwh_mwh_threshold": "kWh/MWh threshold",
+    "wh_decimals": "Wh decimals",
+    "kwh_decimals": "kWh decimals",
+    "mwh_decimals": "MWh decimals",
+
+    "units_mode": "Show units",
+    "units": "Override units",
+    "zero_threshold": "Threshold",
+    "zero_threshold#helptext": "Values less than this will be shown as zero",
+    "decimals": "Decimal places",
 
     "grid": "Grid",
-    "consumption_entities": "Consumption",
-    "production_entities": "Production",
+    "import_entities": "Import entities",
+    "export_entities": "Export entities",
     "consumption_colour": "Consumption",
     "production_colour": "Production",
 
@@ -58,16 +77,15 @@
     "home": "Home",
 
     "devices": "Devices",
+    "device": "Device",
 
     "custom_colour": "Custom Color",
-    "custom_colours": "Custom Colors",
+    "colours": "Colors",
 
-    "colour_icon": "Color Icon",
-    "colour_value": "Color Value",
-    "colour_values": "Color Values",
-    "colour_of_value": "Color of Value",
-    "colour_of_icon": "Color of Icon",
-    "colour_of_circle": "Color of Circle",
+    "colour_of_value": "Value",
+    "colour_of_icon": "Icon",
+    "colour_of_values": "Values",
+    "colour_of_circle": "Circle",
 
     "secondary_info": "Secondary Info",
     "template": "Template"
@@ -80,10 +98,10 @@
   "ColourMode": {
     "none": "Do not color",
     "dynamic": "Color dynamically",
-    "consumption": "Consumption",
-    "consumption_sources": "Consumption sources",
-    "production": "Production",
-    "production_sources": "Production sources",
+    "import": "Import",
+    "import_sources": "Import sources",
+    "export": "Export",
+    "export_sources": "Export sources",
     "solar": "Solar",
     "high_carbon": "High-carbon",
     "low_carbon": "Low-carbon",
@@ -97,16 +115,20 @@
     "consumption": "Consumption",
     "production": "Production"
   },
-  "ZeroLinesMode": {
-    "solid": "Solid",
-    "hide": "Hide",
-    "transparent": "Transparent",
-    "greyed_out": "Greyed-out",
-    "custom": "Custom"
+  "InactiveLinesMode": {
+    "normal": "Normal",
+    "dimmed": "Dimmed",
+    "greyed": "Greyed",
+    "hidden": "Hidden"
   },
   "DotsMode": {
-    "off": "Off",
+    "dynamic": "Dynamic",
     "hass": "HASS",
-    "dynamic": "Dynamic"
+    "off": "Off"
+  },
+  "UnitDisplayType": {
+    "after": "After value",
+    "before": "Before value",
+    "hidden": "Hidden"
   }
 }

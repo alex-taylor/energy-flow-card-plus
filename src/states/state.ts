@@ -12,8 +12,8 @@ export abstract class State {
 
   protected constructor(config: NodeConfig | undefined, type: EntityType, mainEntity: string | undefined, defaultName: string, defaultIcon: string) {
     this.isPresent = mainEntity !== undefined;
-    this.name = config?.name || defaultName;
-    this.icon = config?.icon || defaultIcon;
+    this.name = config?.overrides?.name || defaultName;
+    this.icon = config?.overrides?.icon || defaultIcon;
     this.secondary = new SecondaryInfoEntity(config?.secondary_info);
     this.mainEntity = mainEntity;
     this.type = type;
@@ -41,16 +41,16 @@ export abstract class DualValueState extends State {
     super(
       config,
       type,
-      !config?.consumption_entities?.entity_ids?.length
-        ? !config?.production_entities?.entity_ids?.length
+      !config?.import_entities?.entity_ids?.length
+        ? !config?.export_entities?.entity_ids?.length
           ? undefined
-          : config.production_entities.entity_ids[0]
-        : config.consumption_entities.entity_ids[0],
+          : config.export_entities.entity_ids[0]
+        : config.import_entities.entity_ids[0],
       defaultName,
       defaultIcon);
 
-    if (!config?.consumption_entities?.entity_ids?.length && config?.production_entities?.entity_ids?.length) {
-      this.returnEntity = config.production_entities.entity_ids[0];
+    if (!config?.import_entities?.entity_ids?.length && config?.export_entities?.entity_ids?.length) {
+      this.returnEntity = config.export_entities.entity_ids[0];
       this.hasReturn = true;
     }
   }

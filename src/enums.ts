@@ -1,9 +1,9 @@
-import localize from './localize/localize';
+import localize from '@/localize/localize';
 
 export enum DisplayMode {
-  Today = 'today',
-  History = 'history',
-  Hybrid = 'hybrid'
+  Today = "today",
+  History = "history",
+  Hybrid = "hybrid"
 };
 
 export namespace DisplayMode {
@@ -17,16 +17,16 @@ export namespace DisplayMode {
 }
 
 export enum ColourMode {
-  Do_Not_Colour = 'none',
-  Colour_Dynamically = 'dynamic',
-  Consumption = 'consumption',
-  Consumption_Sources = 'consumption_sources',
-  Production = 'production',
-  Production_Sources = 'production_sources',
-  Solar = 'solar',
-  High_Carbon = 'high_carbon',
-  Low_Carbon = 'low_carbon',
-  Battery = 'battery'
+  Do_Not_Colour = "none",
+  Colour_Dynamically = "dynamic",
+  Import = "import",
+  Import_Sources = "import_sources",
+  Export = "export",
+  Export_Sources = "import_sources",
+  Solar = "solar",
+  High_Carbon = "high_carbon",
+  Low_Carbon = "low_carbon",
+  Battery = "battery"
 };
 
 export namespace ColourMode {
@@ -81,20 +81,19 @@ export namespace DeviceType {
   }
 };
 
-export enum ZeroLinesMode {
-  Solid = "solid",
-  Hide = "hide",
-  Transparent = "transparent",
-  Greyed_Out = "greyed_out",
-  Custom = "custom"
+export enum InactiveLinesMode {
+  Normal = "normal",
+  Hidden = "hidden",
+  Dimmed = "dimmed",
+  Greyed = "greyed"
 };
 
-export namespace ZeroLinesMode {
-  export function getName(value: ZeroLinesMode): string {
-    return getEditorLabel("ZeroLinesMode", value);
+export namespace InactiveLinesMode {
+  export function getName(value: InactiveLinesMode): string {
+    return getEditorLabel("InactiveLinesMode", value);
   }
 
-  export function getItem(value: ZeroLinesMode): { label: string, value: string } {
+  export function getItem(value: InactiveLinesMode): { label: string, value: string } {
     return { label: getName(value), value: value };
   }
 };
@@ -117,4 +116,20 @@ export namespace DotsMode {
 
 function getEditorLabel(type: string, value: any): string {
   return localize(type + "." + value);
+}
+
+export enum UnitDisplayMode {
+  Hidden = "hidden",
+  Before = "before",
+  After = "after"
+}
+
+export namespace UnitDisplayMode {
+  export function getName(value: UnitDisplayMode): string {
+    return getEditorLabel("UnitDisplayType", value);
+  }
+
+  export function getItem(value: UnitDisplayMode): { label: string, value: string } {
+    return { label: getName(value), value: value };
+  }
 }

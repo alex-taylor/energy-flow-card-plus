@@ -17,6 +17,6 @@ export class HomeState extends State {
     );
 
     this.state = 0;
-    this.colorIcon = config?.color_of_icon;
+    this.colorIcon = config?.colours?.colour_of_icon;
   }
 }

@@ -23,6 +23,9 @@
     <Content Include="src\localize\languages\en-GB.json">
       <SubType>Code</SubType>
     </Content>
+    <Content Include="src\ui-editor\components\subpage-header.ts">
+      <SubType>Code</SubType>
+    </Content>
     <Content Include="TODO.txt">
       <SubType>Code</SubType>
     </Content>
@@ -68,13 +71,14 @@
     <None Include="src\ui-editor\schema\home.ts" />
     <None Include="src\ui-editor\schema\device.ts" />
     <None Include="src\ui-editor\schema\solar.ts" />
-    <None Include="src\ui-editor\schema\_schemas.ts" />
+    <None Include="src\ui-editor\schema\schemas.ts" />
     <None Include="src\ui-editor\schema\index.ts" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\states\" />
     <Folder Include="src\flows\" />
     <Folder Include="src\config\" />
+    <Folder Include="src\ui-editor\components\" />
     <Folder Include="__tests__" />
     <Folder Include="dist" />
     <Folder Include="src" />
@@ -109,7 +113,25 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\flows\index.ts" />
+    <TypeScriptCompile Include="src\ui-editor\components\device-row-editor.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\ui-editor\components\devices-editor.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\ui-editor\components\link-subpage.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\ui-editor\schema\gas.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\utils\sortable-ondemand.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\utils\sortable.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\utils\sortable_styles.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>

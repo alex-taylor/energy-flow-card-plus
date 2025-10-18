@@ -16,6 +16,12 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "esModuleInterop": true,
-    "allowJs": true
+    "allowJs": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    }
   }
 }

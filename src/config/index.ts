@@ -1,5 +1,6 @@
 import { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
-import { ColourMode, DeviceType, DisplayMode, DotsMode, LowCarbonType, ZeroLinesMode } from '../enums';
+import { ColourMode, DeviceType, DisplayMode, DotsMode, LowCarbonType, UnitDisplayMode, InactiveLinesMode } from '@/enums';
+import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions, OverridesOptions, PowerOutageOptions, SecondaryInfoOptions } from '@/ui-editor/schema';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -8,62 +9,64 @@ declare global {
 }
 
 export interface EnergyFlowCardExtConfig extends LovelaceCardConfig {
-  title?: string;
-  display_mode?: DisplayMode;
-  appearance?: AppearanceConfig;
-  grid?: GridConfig;
-  gas?: GasConfig;
-  low_carbon?: LowCarbonConfig;
-  solar?: SolarConfig;
-  battery?: BatteryConfig;
-  home?: HomeConfig;
-  devices?: DeviceConfig[];
+  [GlobalOptions.Title]?: string;
+  [GlobalOptions.Display_Mode]?: DisplayMode;
+  [EditorPages.Appearance]?: AppearanceConfig;
+  [EditorPages.Grid]?: GridConfig;
+  [EditorPages.Gas]?: GasConfig;
+  [EditorPages.Low_Carbon]?: LowCarbonConfig;
+  [EditorPages.Solar]?: SolarConfig;
+  [EditorPages.Battery]?: BatteryConfig;
+  [EditorPages.Home]?: HomeConfig;
+  [EditorPages.Devices]?: DeviceConfig[];
 }
 
 interface AppearanceConfig {
-  dashboard_link?: string;
-  dashboard_link_label?: string;
-  display_zero_lines?: ZeroLinesConfig;
-  display_zero_state?: boolean;
-  clickable_entities?: boolean;
-  use_hourly_stats?: boolean;
-  unit_white_space?: boolean;
-  energy_units?: EnergyUnitsConfig;
-  flows?: FlowsConfig;
+  [GlobalOptions.Options]?: AppearanceOptionsConfig;
+  [AppearanceOptions.Energy_Units]?: EnergyUnitsConfig;
+  [AppearanceOptions.Flows]?: FlowsConfig;
 };
 
-interface ZeroLinesConfig {
-  mode?: ZeroLinesMode;
-  transparency?: number;
-  colour?: number[];
+interface AppearanceOptionsConfig {
+  [AppearanceOptions.Dashboard_Link]?: string;
+  [AppearanceOptions.Dashboard_Link_Label]?: string;
+  [AppearanceOptions.Inactive_Lines]?: InactiveLinesMode;
+  [AppearanceOptions.Show_Zero_States]?: boolean;
+  [AppearanceOptions.Clickable_Entities]?: boolean;
+  [AppearanceOptions.Use_Hourly_Stats]?: boolean;
+  [AppearanceOptions.Unit_Whitespace]?: boolean;
 };
 
 interface EnergyUnitsConfig {
-  wh_decimals?: number;
-  kwh_decimals?: number;
-  mwh_decimals?: number;
-  wh_kwh_threshold?: number;
-  kwh_mwh_threshold?: number;
+  [EnergyUnitsOptions.Wh_Decimals]?: number;
+  [EnergyUnitsOptions.Kwh_Decimals]?: number;
+  [EnergyUnitsOptions.Mwh_Decimals]?: number;
+  [EnergyUnitsOptions.Wh_Kwh_Threshold]?: number;
+  [EnergyUnitsOptions.Kwh_Mwh_Threshold]?: number;
 };
 
 interface FlowsConfig {
-  min_flow_rate?: number;
-  max_flow_rate?: number;
-  max_expected_energy?: number;
-  min_expected_energy?: number;
-  mode?: DotsMode;
+  [FlowsOptions.Animation]?: DotsMode;
+  [FlowsOptions.Min_Rate]?: number;
+  [FlowsOptions.Max_Rate]?: number;
+  [FlowsOptions.Min_Energy]?: number;
+  [FlowsOptions.Max_Energy]?: number;
 };
 
 export interface GridConfig extends DualValueNodeConfig {
-  power_outage?: PowerOutageConfig;
+  [PowerOutageOptions.Power_Outage]?: PowerOutageConfig;
 };
 
 export interface GasConfig extends SingleValueNodeConfig {
-  sum?: boolean;
+  [EntitiesOptions.Include_In_Home]?: boolean;
 };
 
 export interface LowCarbonConfig extends SingleValueNodeConfig {
-  display?: LowCarbonType;
+  [GlobalOptions.Options]?: LowCarbonOptionsConfig;
+};
+
+export interface LowCarbonOptionsConfig {
+  [EntitiesOptions.Low_Carbon_Mode]?: LowCarbonType;
 };
 
 export interface SolarConfig extends SingleValueNodeConfig {
@@ -73,54 +76,64 @@ export interface BatteryConfig extends DualValueNodeConfig {
 };
 
 export interface HomeConfig extends NodeConfig {
-  color_of_icon?: ColourMode;
-  color_of_value?: ColourMode;
+  [EntitiesOptions.Colours]: SingleValueColourConfig;
 };
 
- export interface DeviceConfig extends SingleValueNodeConfig {
+export interface DeviceConfig extends SingleValueNodeConfig {
   type?: DeviceType;
-  sum?: boolean;
+  colour?: number[];
+  [EntitiesOptions.Include_In_Home]?: boolean;
 };
 
 export interface NodeConfig {
-  name?: string;
-  icon?: string;
-  secondary_info?: SecondaryInfoConfig;
+  [EntitiesOptions.Overrides]?: OverridesConfig;
+  [EntitiesOptions.Secondary_Info]?: SecondaryInfoConfig;
+};
+
+export interface OverridesConfig {
+  [OverridesOptions.Name]?: string;
+  [OverridesOptions.Icon]?: string;
 };
 
 export interface SingleValueNodeConfig extends NodeConfig {
-  entities?: EntityConfig;
-  colour?: number[];
-  colour_icon?: boolean;
-  colour_value?: boolean;
+  [EntitiesOptions.Entities]?: EntityConfig;
+  [EntitiesOptions.Colours]?: SingleValueColourConfig;
 };
 
 export interface DualValueNodeConfig extends NodeConfig {
-  consumption_entities?: EntityConfig;
-  production_entities?: EntityConfig;
-  consumption_colour?: number[];
-  production_colour?: number[];
-  colour_of_icon?: ColourMode;
-  colour_of_circle?: ColourMode;
-  colour_values?: boolean;
+  [EntitiesOptions.Import_Entities]?: EntityConfig;
+  [EntitiesOptions.Export_Entities]?: EntityConfig;
+  [EntitiesOptions.Colours]?: DualValueColourConfig;
+};
+
+export interface SingleValueColourConfig {
+  [ColourOptions.Icon]?: ColourMode;
+  [ColourOptions.Value]?: ColourMode;
+};
+
+export interface DualValueColourConfig {
+  [ColourOptions.Icon]?: ColourMode;
+  [ColourOptions.Circle]?: ColourMode;
+  [ColourOptions.Values]?: ColourMode;
 };
 
 export interface EntityConfig {
-  entity_ids?: string[];
-  units?: string;
-  zero_threshold?: number;
-  decimals?: number;
+  [EntityOptions.Entity_Ids]?: string[];
+  [EntityOptions.Units]?: string;
+  [EntityOptions.Units_Mode]?: UnitDisplayMode;
+  [EntityOptions.Zero_Threshold]?: number;
+  [EntityOptions.Decimals]?: number;
 }
 
 interface PowerOutageConfig {
-  entity: string;
-  state_alert?: string;
-  label_alert?: string;
-  icon_alert?: string;
+  [EntitiesOptions.Single_Entity]: string;
+  [PowerOutageOptions.State_Alert]?: string;
+  [PowerOutageOptions.Label_Alert]?: string;
+  [PowerOutageOptions.Icon_Alert]?: string;
 };
 
 export interface SecondaryInfoConfig {
-  entity?: EntityConfig;
-  icon?: string;
-  template?: string;
+  [EntitiesOptions.Entities]?: EntityConfig;
+  [SecondaryInfoOptions.Icon]?: string;
+  [SecondaryInfoOptions.Template]?: string;
 };

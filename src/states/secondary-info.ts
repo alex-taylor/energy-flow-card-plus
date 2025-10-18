@@ -8,7 +8,7 @@ export class SecondaryInfoEntity {
 
   public constructor(config: SecondaryInfoConfig | undefined) {
     this.config = config;
-    this.isPresent = config?.entity?.entity_ids?.length !== 0 && config?.template !== undefined;
+    this.isPresent = config?.entities?.entity_ids?.length !== 0 && config?.template !== undefined;
     this.state = 0;
 
     // TODO: initialise icon

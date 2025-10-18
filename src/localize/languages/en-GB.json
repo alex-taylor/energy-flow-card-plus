@@ -1,16 +1,9 @@
 {
-  "editor": {
-    "custom_colour": "Custom Colour",
-    "custom_colours": "Custom Colours",
-    "colour_icon": "Colour Icon",
-    "colour_value": "Colour Value",
-    "colour_values": "Colour Values",
-    "colour_of_icon": "Colour of Icon",
-    "colour_of_circle": "Colour of Circle",
-    "colour_of_value": "Colour of Value"
-  },
   "ColourMode": {
     "none": "Do not colour",
     "dynamic": "Colour dynamically"
+  },
+  "editor": {
+    "colours": "Colours"
   }
 }

@@ -20,11 +20,11 @@ export interface Flows {
 
 export const getLiveDeltas = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, statistics: Statistics, solar: SolarState, battery: BatteryState, grid: GridState): Flows => {
   const solarProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, solar.config?.entities);
-  const batteryConsumptionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, battery.config?.consumption_entities);
-  const batteryProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, battery.config?.production_entities);
-  const gridConsumptionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, grid.config?.consumption_entities);
-  const gridProductionDelta: number = getDelta(hass, periodStart, periodEnd, statistics, grid.config?.production_entities);
-  return calculateFlows(solarProductionDelta, batteryConsumptionDelta, batteryProductionDelta, gridConsumptionDelta, gridProductionDelta);
+  const batteryImportDelta: number = getDelta(hass, periodStart, periodEnd, statistics, battery.config?.import_entities);
+  const batteryExportDelta: number = getDelta(hass, periodStart, periodEnd, statistics, battery.config?.export_entities);
+  const gridImportDelta: number = getDelta(hass, periodStart, periodEnd, statistics, grid.config?.import_entities);
+  const gridExportDelta: number = getDelta(hass, periodStart, periodEnd, statistics, grid.config?.export_entities);
+  return calculateFlows(solarProductionDelta, batteryImportDelta, batteryExportDelta, gridImportDelta, gridExportDelta);
 };
 
 const getDelta = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, statistics: Statistics, entities: EntityConfig | undefined): number => {
@@ -65,16 +65,16 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
   const combinedStats: Map<number, Map<string, number>> = new Map();
 
   if (grid.isPresent) {
-    addFlowStats(hass, statistics, combinedStats, grid.config?.consumption_entities);
+    addFlowStats(hass, statistics, combinedStats, grid.config?.import_entities);
 
     if (grid.hasReturn) {
-      addFlowStats(hass, statistics, combinedStats, grid.config?.production_entities);
+      addFlowStats(hass, statistics, combinedStats, grid.config?.export_entities);
     }
   }
 
   if (battery.isPresent) {
-    addFlowStats(hass, statistics, combinedStats, battery.config?.consumption_entities);
-    addFlowStats(hass, statistics, combinedStats, battery.config?.production_entities);
+    addFlowStats(hass, statistics, combinedStats, battery.config?.import_entities);
+    addFlowStats(hass, statistics, combinedStats, battery.config?.export_entities);
   }
 
   if (solar.isPresent) {
@@ -96,10 +96,10 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
 
   combinedStats.forEach((entry, timestamp) => {
     const fs: number = getStates(entry, solar.config?.entities);
-    const fb: number = getStates(entry, battery.config?.consumption_entities);
-    const tb: number = getStates(entry, battery.config?.production_entities);
-    const fg: number = getStates(entry, grid.config?.consumption_entities);
-    const tg: number = getStates(entry, grid.config?.production_entities);
+    const fb: number = getStates(entry, battery.config?.import_entities);
+    const tb: number = getStates(entry, battery.config?.export_entities);
+    const fg: number = getStates(entry, grid.config?.import_entities);
+    const tg: number = getStates(entry, grid.config?.export_entities);
     const results: Flows = calculateFlows(fs, fb, tb, fg, tg);
 
     solarToHome += results.solarToHome;
@@ -123,13 +123,13 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
       grid.state.fromGrid = 0;
       grid.state.toGrid = 0;
     } else {
-      const threshold: number = grid.config?.consumption_entities?.zero_threshold || 0;
+      const threshold: number = grid.config?.import_entities?.zero_threshold || 0;
       grid.state.toHome = clampStateValue(gridToHome, threshold);
       grid.state.toBattery = clampStateValue(gridToBattery, threshold);
       grid.state.fromGrid = clampStateValue(fromGrid, threshold);
 
       if (grid.hasReturn) {
-        grid.state.toGrid = clampStateValue(toGrid, grid.config?.production_entities?.zero_threshold);
+        grid.state.toGrid = clampStateValue(toGrid, grid.config?.export_entities?.zero_threshold);
       } else {
         grid.state.toGrid = 0;
       }
@@ -137,11 +137,11 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
   }
 
   if (battery.isPresent) {
-    const threshold: number = battery.config?.consumption_entities?.zero_threshold || 0;
+    const threshold: number = battery.config?.import_entities?.zero_threshold || 0;
     battery.state.toGrid = clampStateValue(batteryToGrid, threshold);
     battery.state.toHome = clampStateValue(batteryToHome, threshold);
     battery.state.fromBattery = clampStateValue(fromBattery, threshold);
-    battery.state.toBattery = clampStateValue(toBattery, battery.config?.production_entities?.zero_threshold);
+    battery.state.toBattery = clampStateValue(toBattery, battery.config?.export_entities?.zero_threshold);
   }
 
   if (solar.isPresent) {

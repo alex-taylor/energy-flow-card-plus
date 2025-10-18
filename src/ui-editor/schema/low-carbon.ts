@@ -1,16 +1,28 @@
-import { LowCarbonType } from '../../enums';
-import {  nodeConfigSchema, singleValueNodeSchema } from './_schemas';
+import { EnergyFlowCardExtConfig } from '@/config';
+import { LowCarbonType } from '@/enums';
+import { EntitiesOptions, GlobalOptions } from '.';
+import { nodeConfigSchema, singleValueNodeSchema } from './schemas';
 
-export const lowCarbonSchema = nodeConfigSchema(singleValueNodeSchema()).concat(
-  {
-    name: 'low_carbon_show_as',
-    selector: {
-      select: {
-        options: [
-          LowCarbonType.getItem(LowCarbonType.Energy),
-          LowCarbonType.getItem(LowCarbonType.Percentage)
-        ],
-        mode: 'dropdown'
-      }
+export function lowCarbonSchema(config: EnergyFlowCardExtConfig): any[] {
+  return nodeConfigSchema(singleValueNodeSchema()).concat(
+    {
+      name: [GlobalOptions.Options],
+      type: 'expandable',
+      schema: [
+        {
+          name: [EntitiesOptions.Low_Carbon_Mode],
+          required: true,
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: [
+                LowCarbonType.getItem(LowCarbonType.Energy),
+                LowCarbonType.getItem(LowCarbonType.Percentage)
+              ]
+            }
+          }
+        }
+      ]
     }
-  });
+  );
+}

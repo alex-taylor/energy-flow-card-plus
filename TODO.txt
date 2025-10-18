@@ -1,13 +1,17 @@
 BUGS
 ----
 
+Still got bugs with the mignight rollover
+
 Reinstate the -ve coords for the lines, they are required so that the dots don't just vanish!
   - and presumably they should extend at both ends?
 
 Home value still getting the wrong colour - usually 'low-carbon'
+  - the circle gets it wrong at midnight, too
 
 The 'loading...' flag doesn't seem to be getting cleared reliably
   - possibly now fixed
+  - should, however, display the circles but with 'Unknown' for their values
 
 Secondary value being mis-coloured, needs to take into account the relevant setting
 
@@ -53,113 +57,11 @@ Perhaps support images?
 GENERAL
 -------
 
-'Config'
-  - title (string, optional)
-  - display mode (enum, today, history, hybrid, defaults to today)
-  - Appearance
-  - Grid
-  - Gas
-  - Low-carbon
-  - Solar
-  - Battery
-  - Home
-  - devices (array of Device)
-
-'Appearance'
-  - dashboard link (string)
-  - dashboard link name (string)
-  - display zero lines (enum, show, hide, transparency, grey out, custom, defaults to show)
-  - show dots (boolean, defaults to true)
-  - clickable entities (boolean, defaults to true)
-  - use hourly stats (boolean, defaults to true)
-  - unit white space (boolean, defaults to true)
-  - EnergyUnits
-  - Flows
-
-'EnergyUnits':
-  - watt decimals (number, 0..5, defaults to 0)
-  - kilowatt decimals (number, 0..5, defaults to 1)
-  - megawatt decimals (number, 0..5, defaults to 1)
-  - watt to kilowatt threshold (number, defaults to 1000)
-  - kilowatt to megawatt threshold (number, defaults to 1000)
-
-'Flows':
-  - min flow rate (number, defaults to 1)       -- there's no real need to allow these to be set, they're the values from the built-in card; but they are also used by the new calculations
-  - max flow rate (number, defaults to 6)
-  - min expected energy (number, defaults to 10)    -- only used by the 'new flow' calculations
-  - max expected energy (number, defaults to 2000)
-
-'Node'
-  - name (string, optional, overrides the built-in name for the Grid/Gas/Solar/Battery/Home/Low-carbon nodes or the entity's own name for the Devices)
-  - icon (string, optional, overrides the built-in icon for the Grid/Gas/Solar/Battery/Home/Low-carbon nodes or the entity's own icon for the Devices)
-  - SecondaryInfo
-
-'SingleValueNode':'Node'
-  - entities (array of Entity)
-  - colour (rgb, optional, overrides the built-in colour)
-      - need a means to remove it again
-  - colour icon (boolean, defaults to false)
-  - colour value (boolean, defaults to false)
-
-'DualValueNode':'Node'
-  - consumption (array of Entity)
-  - production (array of Entity)
-  - colour of consumption (rgb, optional, overrides the built-in colour)
-      - need a means to remove it again
-  - colour of production (rgb, optional, overrides the built-in colour)
-      - need a means to remove it again
-  - colour of icon (enum, none, dynamic, consumption, production, consumption sources, defaults to none)
-  - colour of circle (enum, dynamic, consumption, production, consumption sources, defaults to dynamic)
-  - colour values (boolean, it will follow 'colour of circle' when true, defaults to false)
-
-'Entity'
-  - id (optional, overrides the HASS config for the Grid/Solar/Battery/Gas/Low-carbon nodes, for Device it controls whether the node is shown)
-  - units (optional, overrides the entity's own units)
-  - display zero threshold (optional, defaults to 0)
-  - decimals (optional, defaults to no value)
-
-'Home':'Node'
-  - colour of icon (enum, none, dynamic, solar, high-carbon, battery, low-carbon, defaults to none)
-  - colour of value (enum, none, dynamic, solar, high-carbon, battery, low-carbon, defaults to none)
-
-'Grid':'DualValueNode'
-  - PowerOutage
-
-'Solar':'SingleValueNode'
-
-'Battery':'DualValueNode'
-
-'Gas':'SingleValueNode'
-  - sum (boolean, defaults to false)
-
-'Device':'SingleValueNode'
-  - type (enum, consumption, production, defaults to consumption)
-  - sum (boolean, defaults to false)
-
-'Low-Carbon':'SingleValueNode'
-  - display (enum, energy, percentage, defaults to energy)
-
-'PowerOutage'
-  - entity (string)
-  - label for alert (string)
-  - icon for alert (icon)
-  - state of alert (string)
-
-'SecondaryInfo'
-  - entity (Entity)
-  - template (string)
-    - is this worth it?
-    - how to implement?
-  - icon (string, optional, overrides the entity's own icon?)
-
-
-
-
-
-
-
+Move the sensor type-detection to the init code, it only needs to be done once per session
+  - change _entitiesArr to a Map where the keys are the IDs and the values are the types
+  - might as well do the type as an enum, and track all three values
 
 
 README and CHANGELOG updates
 
-Test localisation by disabling EN and checking that all strings revert to their keys
+Test localisation by disabling EN and EN-GB and checking that all strings revert to their keys
