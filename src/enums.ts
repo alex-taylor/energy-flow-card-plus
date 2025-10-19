@@ -18,15 +18,17 @@ export namespace DisplayMode {
 
 export enum ColourMode {
   Do_Not_Colour = "none",
-  Colour_Dynamically = "dynamic",
+  Auto = "auto",
   Import = "import",
   Import_Sources = "import_sources",
   Export = "export",
-  Export_Sources = "import_sources",
+  Export_Sources = "export_sources",
   Solar = "solar",
   High_Carbon = "high_carbon",
   Low_Carbon = "low_carbon",
-  Battery = "battery"
+  Battery = "battery",
+  Gas = "gas",
+  Custom = "custom"
 };
 
 export namespace ColourMode {

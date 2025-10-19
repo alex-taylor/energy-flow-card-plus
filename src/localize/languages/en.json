@@ -47,6 +47,7 @@
     "kwh_decimals": "kWh decimals",
     "mwh_decimals": "MWh decimals",
 
+    "entity_ids": "",
     "units_mode": "Show units",
     "units": "Override units",
     "zero_threshold": "Threshold",
@@ -56,13 +57,11 @@
     "grid": "Grid",
     "import_entities": "Import entities",
     "export_entities": "Export entities",
-    "consumption_colour": "Consumption",
-    "production_colour": "Production",
 
-    "power_outage": "Power Outage",
-    "label_alert": "Label for Alert",
-    "icon_alert": "Icon for Alert",
-    "state_alert": "State of Alert",
+    "power_outage": "Power outage",
+    "label_alert": "Label for alert",
+    "icon_alert": "Icon for alert",
+    "state_alert": "State of alert",
 
     "gas": "Gas",
     "sum": "Sum",
@@ -79,8 +78,10 @@
     "devices": "Devices",
     "device": "Device",
 
-    "custom_colour": "Custom Color",
     "colours": "Colors",
+    "custom_colour": "Custom color",
+    "import_colour": "Import color",
+    "export_colour": "Export color",
 
     "colour_of_value": "Value",
     "colour_of_icon": "Icon",
@@ -97,7 +98,7 @@
   },
   "ColourMode": {
     "none": "Do not color",
-    "dynamic": "Color dynamically",
+    "auto": "Auto",
     "import": "Import",
     "import_sources": "Import sources",
     "export": "Export",
@@ -105,7 +106,9 @@
     "solar": "Solar",
     "high_carbon": "High-carbon",
     "low_carbon": "Low-carbon",
-    "battery": "Battery"
+    "battery": "Battery",
+    "gas": "Gas",
+    "custom": "Custom"
   },
   "LowCarbonType": {
     "energy": "Energy",

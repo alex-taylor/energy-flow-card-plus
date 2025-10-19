@@ -11,6 +11,8 @@ import localize from "@/localize/localize";
 import { CARD_NAME } from "../../const";
 import { DeviceConfig, EnergyFlowCardExtConfig } from "../../config";
 import { deviceSchema } from "../schema/device";
+import { ColourMode, DeviceType, UnitDisplayMode } from "../../enums";
+import { ColourOptions, EntitiesOptions, EntityOptions } from "../schema";
 
 export const DEVICE_EDITOR_ELEMENT_NAME = CARD_NAME + "-device-row-editor";
 
@@ -100,7 +102,7 @@ export class DeviceRowEditor extends LitElement {
         <ha-form
           .hass=${this.hass}
           .data=${this.devices[this._indexBeingEdited]}
-          .schema=${deviceSchema(this.config!)}
+          .schema=${deviceSchema(this.config!, this.devices[this._indexBeingEdited])}
           .computeLabel=${this._computeLabelCallback}
           @value-changed=${this._configChanged}
         ></ha-form>
@@ -148,26 +150,22 @@ export class DeviceRowEditor extends LitElement {
   }
 
   private _configChanged(ev: any): void {
-    const newRowConfig = ev.detail.value || "";
-
     if (!this.config || !this.hass) {
       return;
     }
 
-    if (!Array.isArray(this.config.entities.individual)) {
-      this.config.entities.individual = [];
+    const devicesConfig: DeviceConfig[] | undefined = this.config.devices?.concat();
+
+    if (!devicesConfig) {
+      return;
     }
-    const individualConfig = [...this.config.entities.individual];
-    if (!individualConfig) return;
 
-    individualConfig[this._indexBeingEdited] = newRowConfig;
+    const updatedDeviceConfig = ev.detail.value || "";
+    devicesConfig[this._indexBeingEdited] = updatedDeviceConfig;
 
-    const config = {
+    const config: EnergyFlowCardExtConfig = {
       ...this.config,
-      entities: {
-        ...this.config.entities,
-        individual: individualConfig,
-      },
+      devices: devicesConfig
     };
 
     fireEvent(this, "config-changed", { config });
@@ -213,9 +211,16 @@ export class DeviceRowEditor extends LitElement {
     }
 
     const newDevice: DeviceConfig = {
-      entities: {
-        entity_ids: [value]
-      }
+      [EntitiesOptions.Entities]: {
+        [EntityOptions.Entity_Ids]: [value],
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+      },
+      [EntitiesOptions.Colours]: {
+        [ColourOptions.Circle]: ColourMode.Auto,
+        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
+        [ColourOptions.Value]: ColourMode.Do_Not_Colour
+      },
+      type: DeviceType.Consumption
     };
 
     const updatedDevices: DeviceConfig[] = this.devices!.concat(newDevice);

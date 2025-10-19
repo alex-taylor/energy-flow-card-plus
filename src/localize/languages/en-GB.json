@@ -4,6 +4,9 @@
     "dynamic": "Colour dynamically"
   },
   "editor": {
-    "colours": "Colours"
+    "colours": "Colours",
+    "custom_colour": "Custom colour",
+    "import_colour": "Import colour",
+    "export_colour": "Export colour"
   }
 }

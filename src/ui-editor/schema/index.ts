@@ -54,7 +54,10 @@ export enum EntitiesOptions {
   Overrides = "overrides",
   Secondary_Info = "secondary_info",
   Include_In_Home = "include_in_home",
-  Low_Carbon_Mode = "low_carbon_mode"
+  Low_Carbon_Mode = "low_carbon_mode",
+  Custom_Colour = "custom_colour",
+  Import_Colour = "import_colour",
+  Export_Colour = "export_colour"
 };
 
 export enum EntityOptions {

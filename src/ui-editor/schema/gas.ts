@@ -1,9 +1,10 @@
 import { EnergyFlowCardExtConfig } from '@/config';
-import { EntitiesOptions, GlobalOptions } from '.';
+import { EditorPages, EntitiesOptions, GlobalOptions } from '.';
 import { nodeConfigSchema, singleValueNodeSchema } from './schemas';
 
-export function gasSchema(config: EnergyFlowCardExtConfig): any[] {
-  return nodeConfigSchema(singleValueNodeSchema()).concat(
+export function gasSchema(config: EnergyFlowCardExtConfig | undefined): any[] {
+  return nodeConfigSchema(config, config?.[EditorPages.Gas], singleValueNodeSchema(config, config?.[EditorPages.Gas]))
+    .concat(
     {
       name: [GlobalOptions.Options],
       type: 'expandable',

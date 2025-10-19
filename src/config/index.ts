@@ -21,13 +21,13 @@ export interface EnergyFlowCardExtConfig extends LovelaceCardConfig {
   [EditorPages.Devices]?: DeviceConfig[];
 }
 
-interface AppearanceConfig {
+export interface AppearanceConfig {
   [GlobalOptions.Options]?: AppearanceOptionsConfig;
   [AppearanceOptions.Energy_Units]?: EnergyUnitsConfig;
   [AppearanceOptions.Flows]?: FlowsConfig;
 };
 
-interface AppearanceOptionsConfig {
+export interface AppearanceOptionsConfig {
   [AppearanceOptions.Dashboard_Link]?: string;
   [AppearanceOptions.Dashboard_Link_Label]?: string;
   [AppearanceOptions.Inactive_Lines]?: InactiveLinesMode;
@@ -37,7 +37,7 @@ interface AppearanceOptionsConfig {
   [AppearanceOptions.Unit_Whitespace]?: boolean;
 };
 
-interface EnergyUnitsConfig {
+export interface EnergyUnitsConfig {
   [EnergyUnitsOptions.Wh_Decimals]?: number;
   [EnergyUnitsOptions.Kwh_Decimals]?: number;
   [EnergyUnitsOptions.Mwh_Decimals]?: number;
@@ -45,7 +45,7 @@ interface EnergyUnitsConfig {
   [EnergyUnitsOptions.Kwh_Mwh_Threshold]?: number;
 };
 
-interface FlowsConfig {
+export interface FlowsConfig {
   [FlowsOptions.Animation]?: DotsMode;
   [FlowsOptions.Min_Rate]?: number;
   [FlowsOptions.Max_Rate]?: number;
@@ -81,7 +81,6 @@ export interface HomeConfig extends NodeConfig {
 
 export interface DeviceConfig extends SingleValueNodeConfig {
   type?: DeviceType;
-  colour?: number[];
   [EntitiesOptions.Include_In_Home]?: boolean;
 };
 
@@ -106,15 +105,20 @@ export interface DualValueNodeConfig extends NodeConfig {
   [EntitiesOptions.Colours]?: DualValueColourConfig;
 };
 
-export interface SingleValueColourConfig {
-  [ColourOptions.Icon]?: ColourMode;
-  [ColourOptions.Value]?: ColourMode;
-};
-
-export interface DualValueColourConfig {
+interface ValueColourConfig {
   [ColourOptions.Icon]?: ColourMode;
   [ColourOptions.Circle]?: ColourMode;
+};
+
+export interface SingleValueColourConfig extends ValueColourConfig {
+  [ColourOptions.Value]?: ColourMode;
+  colour?: number[];
+};
+
+export interface DualValueColourConfig extends ValueColourConfig {
   [ColourOptions.Values]?: ColourMode;
+  import_colour?: number[];
+  export_colour?: number[];
 };
 
 export interface EntityConfig {

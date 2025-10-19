@@ -1,10 +1,11 @@
 import { nodeConfigSchema } from './schemas';
 import { ColourMode } from '@/enums';
 import { EnergyFlowCardExtConfig } from '@/config';
-import { ColourOptions, EntitiesOptions } from '.';
+import { ColourOptions, EditorPages, EntitiesOptions } from '.';
 
-export function homeSchema(config: EnergyFlowCardExtConfig): any[] {
-  return nodeConfigSchema(undefined).concat(
+export function homeSchema(config: EnergyFlowCardExtConfig | undefined): any[] {
+  return nodeConfigSchema(config, config?.[EditorPages.Home], undefined)
+    .concat(
     {
       type: 'expandable',
       name: EntitiesOptions.Colours,
@@ -20,11 +21,13 @@ export function homeSchema(config: EnergyFlowCardExtConfig): any[] {
                 select: {
                   options: [
                     ColourMode.getItem(ColourMode.Do_Not_Colour),
-                    ColourMode.getItem(ColourMode.Colour_Dynamically),
+                    ColourMode.getItem(ColourMode.Auto),
                     ColourMode.getItem(ColourMode.Solar),
                     ColourMode.getItem(ColourMode.High_Carbon),
                     ColourMode.getItem(ColourMode.Low_Carbon),
-                    ColourMode.getItem(ColourMode.Battery)
+                    ColourMode.getItem(ColourMode.Battery),
+                    ColourMode.getItem(ColourMode.Gas),
+                    ColourMode.getItem(ColourMode.Custom)
                   ],
                   mode: 'dropdown'
                 },
@@ -37,11 +40,13 @@ export function homeSchema(config: EnergyFlowCardExtConfig): any[] {
                 select: {
                   options: [
                     ColourMode.getItem(ColourMode.Do_Not_Colour),
-                    ColourMode.getItem(ColourMode.Colour_Dynamically),
+                    ColourMode.getItem(ColourMode.Auto),
                     ColourMode.getItem(ColourMode.Solar),
                     ColourMode.getItem(ColourMode.High_Carbon),
                     ColourMode.getItem(ColourMode.Low_Carbon),
-                    ColourMode.getItem(ColourMode.Battery)
+                    ColourMode.getItem(ColourMode.Battery),
+                    ColourMode.getItem(ColourMode.Gas),
+                    ColourMode.getItem(ColourMode.Custom)
                   ],
                   mode: 'dropdown'
                 },

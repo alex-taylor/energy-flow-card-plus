@@ -185,7 +185,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         ? "var(--energy-grid-consumption-color)"
         : grid.config?.colours?.colour_of_icon === ColourMode.Export
           ? "var(--energy-grid-return-color)"
-          : grid.config?.colours?.colour_of_icon === ColourMode.Colour_Dynamically
+          : grid.config?.colours?.colour_of_icon === ColourMode.Auto
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -200,7 +200,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           ? "var(--energy-grid-consumption-color)"
           : grid.config?.colours?.colour_of_circle === ColourMode.Export
             ? "var(--energy-grid-return-color)"
-            : grid.config?.colours?.colour_of_circle === ColourMode.Colour_Dynamically
+            : grid.config?.colours?.colour_of_circle === ColourMode.Auto
               ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
                 ? "var(--energy-grid-consumption-color)"
                 : "var(--energy-grid-return-color)"
@@ -215,7 +215,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         ? "var(--energy-grid-consumption-color)"
         : grid.config?.colours?.colour_of_circle === ColourMode.Export
           ? "var(--energy-grid-return-color)"
-          : grid.config?.colours?.colour_of_circle === ColourMode.Colour_Dynamically
+          : grid.config?.colours?.colour_of_circle === ColourMode.Auto
             ? grid.state.fromGrid >= (grid.state.toGrid ?? 0)
               ? "var(--energy-grid-consumption-color)"
               : "var(--energy-grid-return-color)"
@@ -366,7 +366,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         ? "var(--energy-battery-in-color)"
         : battery.config?.colours?.colour_of_icon === ColourMode.Export
           ? "var(--energy-battery-out-color)"
-          : battery.config?.colours?.colour_of_icon === ColourMode.Colour_Dynamically
+          : battery.config?.colours?.colour_of_icon === ColourMode.Auto
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -380,7 +380,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
         ? "var(--energy-battery-in-color)"
         : battery.config?.colours?.colour_of_circle === ColourMode.Export
           ? "var(--energy-battery-out-color)"
-          : battery.config?.colours?.colour_of_circle === ColourMode.Colour_Dynamically
+          : battery.config?.colours?.colour_of_circle === ColourMode.Auto
             ? batteryFromBattery >= batteryToBattery
               ? "var(--energy-battery-out-color)"
               : "var(--energy-battery-in-color)"
@@ -474,7 +474,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           iconHomeColor = "var(--energy-non-fossilcolor)";
           break;
 
-        case ColourMode.Colour_Dynamically:
+        case ColourMode.Auto:
           iconHomeColor = homeSources[homeLargestSource].color;
           break;
 
@@ -500,7 +500,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           iconHomeColor = "var(--energy-non-fossilcolor)";
           break;
 
-        case ColourMode.Colour_Dynamically:
+        case ColourMode.Auto:
           textHomeColor = homeSources[homeLargestSource].color;
           break;
 

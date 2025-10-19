@@ -1,5 +1,5 @@
 import { EnergyFlowCardExtConfig } from '@/config';
-import { EntitiesOptions, PowerOutageOptions } from '.';
+import { EditorPages, EntitiesOptions, PowerOutageOptions } from '.';
 import { dualValueNodeSchema, nodeConfigSchema } from './schemas';
 
 const powerOutageGridSchema: any[] = [
@@ -18,8 +18,9 @@ const powerOutageGridSchema: any[] = [
   },
 ];
 
-export function gridSchema(config: EnergyFlowCardExtConfig): any[] {
-  return nodeConfigSchema(dualValueNodeSchema()).concat(
+export function gridSchema(config: EnergyFlowCardExtConfig | undefined): any[] {
+  return nodeConfigSchema(config, config?.[EditorPages.Grid], dualValueNodeSchema(config, config?.[EditorPages.Grid]))
+    .concat(
     {
       name: [PowerOutageOptions.Power_Outage],
       type: 'expandable',

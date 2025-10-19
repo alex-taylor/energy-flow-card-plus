@@ -88,8 +88,8 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
       },
       [EntitiesOptions.Colours]: {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Circle]: ColourMode.Colour_Dynamically,
-        [ColourOptions.Values]: ColourMode.Colour_Dynamically
+        [ColourOptions.Circle]: ColourMode.Auto,
+        [ColourOptions.Values]: ColourMode.Auto
       },
       [EntitiesOptions.Secondary_Info]: {
         [EntitiesOptions.Entities]: {
@@ -105,14 +105,16 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
       },
       [EntitiesOptions.Colours]: {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+        [ColourOptions.Circle]: ColourMode.Auto,
+        [ColourOptions.Value]: ColourMode.Do_Not_Colour
       }
     },
 
     [EditorPages.Low_Carbon]: {
       [EntitiesOptions.Colours]: {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+        [ColourOptions.Circle]: ColourMode.Auto,
+        [ColourOptions.Value]: ColourMode.Do_Not_Colour
       },
       [GlobalOptions.Options]: {
         [EntitiesOptions.Low_Carbon_Mode]: LowCarbonType.Energy
@@ -127,7 +129,8 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
       },
       [EntitiesOptions.Colours]: {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+        [ColourOptions.Circle]: ColourMode.Auto,
+        [ColourOptions.Value]: ColourMode.Do_Not_Colour
       }
     },
 
@@ -143,15 +146,15 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
       },
       [EntitiesOptions.Colours]: {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Circle]: ColourMode.Colour_Dynamically,
-        [ColourOptions.Values]: ColourMode.Colour_Dynamically
+        [ColourOptions.Circle]: ColourMode.Auto,
+        [ColourOptions.Values]: ColourMode.Auto
       }
     },
 
     [EditorPages.Home]: {
       [EntitiesOptions.Colours]: {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Value]: ColourMode.Colour_Dynamically
+        [ColourOptions.Value]: ColourMode.Do_Not_Colour
       }
     }
   };

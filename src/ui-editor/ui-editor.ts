@@ -116,7 +116,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
             <ha-form
               .hass=${this.hass}
               .data=${configForPage}
-              .schema=${schema(config)}
+              .schema=${schema(config, configForPage)}
               .computeLabel=${this._computeLabelCallback}
               .computeHelper=${this._computeHelperCallback}
               @value-changed=${this._valueChanged}
@@ -131,7 +131,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
         <ha-form
           .hass=${this.hass}
           .data=${config}
-          .schema=${generalConfigSchema()}
+          .schema=${generalConfigSchema(config)}
           .computeLabel=${this._computeLabelCallback}
           .computeHelper=${this._computeHelperCallback}
           @value-changed=${this._valueChanged}

@@ -1,10 +1,11 @@
-import { EnergyFlowCardExtConfig } from '@/config';
+import { DeviceConfig, EnergyFlowCardExtConfig } from '@/config';
 import { DeviceType } from '@/enums';
 import { EntitiesOptions } from '.';
 import { nodeConfigSchema, singleValueNodeSchema } from './schemas';
 
-export function deviceSchema(config: EnergyFlowCardExtConfig): any[] {
-  return nodeConfigSchema(singleValueNodeSchema()).concat(
+export function deviceSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: DeviceConfig | undefined): any[] {
+  return nodeConfigSchema(config, schemaConfig, singleValueNodeSchema(config, schemaConfig))
+    .concat(
     {
       name: 'device_type',
       required: true,
