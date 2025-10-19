@@ -1,12 +1,111 @@
 import { LovelaceCard, LovelaceCardConfig } from 'custom-card-helpers';
 import { ColourMode, DeviceType, DisplayMode, DotsMode, LowCarbonType, UnitDisplayMode, InactiveLinesMode } from '@/enums';
-import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions, OverridesOptions, PowerOutageOptions, SecondaryInfoOptions } from '@/ui-editor/schema';
 
 declare global {
   interface HTMLElementTagNameMap {
     'hui-error-card': LovelaceCard;
   }
 }
+
+//================================================================================================================================================================================//
+// These act both as keys in the YAML config, and as the names of the fields in the below Config interfaces                                                                       //
+//================================================================================================================================================================================//
+export enum EditorPages {
+  Appearance = "appearance",
+  Grid = "grid",
+  Gas = "gas",
+  Solar = "solar",
+  Battery = "battery",
+  Low_Carbon = "low_carbon",
+  Home = "home",
+  Devices = "devices"
+};
+
+export enum GlobalOptions {
+  Title = "title",
+  Display_Mode = "display_mode",
+  Options = "options"
+};
+
+export enum AppearanceOptions {
+  Dashboard_Link = "dashboard_link",
+  Dashboard_Link_Label = "dashboard_link_label",
+  Inactive_Lines = "inactive_lines",
+  Show_Zero_States = "show_zero_states",
+  Clickable_Entities = "clickable_entities",
+  Use_Hourly_Stats = "use_hourly_stats",
+  Unit_Whitespace = "unit_whitespace",
+  Energy_Units = "energy_units",
+  Flows = "flows"
+};
+
+export enum EnergyUnitsOptions {
+  Wh_Decimals = "wh_decimals",
+  Kwh_Decimals = "kwh_decimals",
+  Mwh_Decimals = "mwh_decimals",
+  Wh_Kwh_Threshold = "wh_kwh_threshold",
+  Kwh_Mwh_Threshold = "kwh_mwh_threshold"
+};
+
+export enum FlowsOptions {
+  Animation = "animation",
+  Min_Rate = "min_rate",
+  Max_Rate = "max_rate",
+  Min_Energy = "min_energy",
+  Max_Energy = "max_energy"
+};
+
+export enum EntitiesOptions {
+  Single_Entity = "entity",
+  Entities = "entities",
+  Import_Entities = "import_entities",
+  Export_Entities = "export_entities",
+  Colours = "colours",
+  Overrides = "overrides",
+  Secondary_Info = "secondary_info",
+  Include_In_Home = "include_in_home",
+  Low_Carbon_Mode = "low_carbon_mode",
+  Custom_Colour = "custom_colour",
+  Import_Colour = "import_colour",
+  Export_Colour = "export_colour",
+  Device_Type = "device_type"
+};
+
+export enum EntityOptions {
+  Entity_Ids = "entity_ids",
+  Units = "units",
+  Units_Mode = "units_mode",
+  Zero_Threshold = "zero_threshold",
+  Decimals = "decimals"
+};
+
+export enum ColourOptions {
+  Circle = "colour_of_circle",
+  Icon = "colour_of_icon",
+  Values = "colour_of_values",
+  Value = "colour_of_value",
+};
+
+export enum PowerOutageOptions {
+  Power_Outage = "power_outage",
+  Label_Alert = "label_alert",
+  Icon_Alert = "icon_alert",
+  State_Alert = "state_alert"
+};
+
+export enum OverridesOptions {
+  Name = "name",
+  Icon = "icon"
+};
+
+export enum SecondaryInfoOptions {
+  Icon = "icon",
+  Template = "template"
+}
+
+//================================================================================================================================================================================//
+// Config structure                                                                                                                                                               //
+//================================================================================================================================================================================//
 
 export interface EnergyFlowCardExtConfig extends LovelaceCardConfig {
   [GlobalOptions.Title]?: string;
@@ -80,7 +179,11 @@ export interface HomeConfig extends NodeConfig {
 };
 
 export interface DeviceConfig extends SingleValueNodeConfig {
-  type?: DeviceType;
+  [GlobalOptions.Options]?: DeviceOptionsConfig;
+};
+
+export interface DeviceOptionsConfig {
+  [EntitiesOptions.Device_Type]?: DeviceType;
   [EntitiesOptions.Include_In_Home]?: boolean;
 };
 
@@ -112,13 +215,13 @@ interface ValueColourConfig {
 
 export interface SingleValueColourConfig extends ValueColourConfig {
   [ColourOptions.Value]?: ColourMode;
-  colour?: number[];
+  [EntitiesOptions.Custom_Colour]?: number[];
 };
 
 export interface DualValueColourConfig extends ValueColourConfig {
   [ColourOptions.Values]?: ColourMode;
-  import_colour?: number[];
-  export_colour?: number[];
+  [EntitiesOptions.Import_Colour]?: number[];
+  [EntitiesOptions.Export_Colour]?: number[];
 };
 
 export interface EntityConfig {

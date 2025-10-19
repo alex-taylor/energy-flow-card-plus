@@ -77,6 +77,7 @@
 
     "devices": "Devices",
     "device": "Device",
+    "device_type": "Device type",
 
     "colours": "Colors",
     "custom_colour": "Custom color",
@@ -115,8 +116,10 @@
     "percentage": "Percentage"
   },
   "DeviceType": {
-    "consumption": "Consumption",
-    "production": "Production"
+    "consumption_electric": "Consumption (Electric)",
+    "production_electric": "Production (Electric)",
+    "consumption_gas": "Consumption (Gas)",
+    "production_gas": "Production (Gas)"
   },
   "InactiveLinesMode": {
     "normal": "Normal",

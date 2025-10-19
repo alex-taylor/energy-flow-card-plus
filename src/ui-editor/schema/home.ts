@@ -1,7 +1,6 @@
-import { nodeConfigSchema } from './schemas';
+import { nodeConfigSchema } from '.';
 import { ColourMode } from '@/enums';
-import { EnergyFlowCardExtConfig } from '@/config';
-import { ColourOptions, EditorPages, EntitiesOptions } from '.';
+import { ColourOptions, EditorPages, EntitiesOptions, EnergyFlowCardExtConfig } from '@/config';
 
 export function homeSchema(config: EnergyFlowCardExtConfig | undefined): any[] {
   return nodeConfigSchema(config, config?.[EditorPages.Home], undefined)

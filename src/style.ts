@@ -390,4 +390,10 @@ export const styles = css`
     padding-top: 2px;
     padding-bottom: 2px;
   }
+
+        ha-entity-picker {
+          flex-grow: 1;
+          min-width: 0;
+        }
+
 `;

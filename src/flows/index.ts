@@ -6,7 +6,7 @@ import type { SolarState } from "../states/solar";
 import { getEntityStatistics, toWattHours } from "../states";
 import { clampStateValue, coerceNumber } from "../utils";
 import { HassEntity } from "home-assistant-js-websocket";
-import { EntityConfig } from "../config";
+import { EntityConfig, EntityOptions } from "../config";
 
 export interface Flows {
   solarToHome: number;
@@ -33,7 +33,7 @@ const getDelta = (hass: HomeAssistant, periodStart: Date, periodEnd: Date, stati
   }
 
   // TODO: support all entities
-  const entity: string = entities[0].id!;
+  const entity: string = entities[EntityOptions.Entity_Ids][0];
   const stateObj: HassEntity = hass.states[entity];
 
   if (!stateObj) {
@@ -159,7 +159,7 @@ const getStates = (entry: Map<string, number>, entities: EntityConfig | undefine
   }
 
   // TODO: support multiple entries
-  const entity: string = entities[0].id!;
+  const entity: string = entities[EntityOptions.Entity_Ids][0];
   return entry.get(entity)!;
 };
 

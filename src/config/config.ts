@@ -2,7 +2,7 @@ import { ColourMode, DisplayMode, DotsMode, LowCarbonType, InactiveLinesMode, Un
 import { HomeAssistant } from 'custom-card-helpers';
 import { EnergyFlowCardExtConfig } from ".";
 import { CARD_NAME } from "@/const";
-import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions } from "@/ui-editor/schema";
+import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions } from "@/config";
 
 const defaultValues = {
   displayMode: DisplayMode.Today,

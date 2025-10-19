@@ -69,8 +69,10 @@ export namespace LowCarbonType {
 }
 
 export enum DeviceType {
-  Consumption = "consumption",
-  Production = "production"
+  Consumption_Electric = "consumption_electric",
+  Production_Electric = "production_electric",
+  Consumption_Gas = "consumption_gas",
+  Production_Gas = "production_gas"
 };
 
 export namespace DeviceType {

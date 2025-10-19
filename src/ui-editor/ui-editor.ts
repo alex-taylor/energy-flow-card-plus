@@ -1,10 +1,9 @@
-import { LitElement, css, html, nothing, TemplateResult } from 'lit';
+import { LitElement, css, html, nothing, TemplateResult, CSSResultGroup } from 'lit';
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { EnergyFlowCardExtConfig } from '@/config';
-import { cardConfigStruct, EditorPages } from './schema';
-import { appearanceSchema, generalConfigSchema } from './schema/schemas';
+import { EditorPages, EnergyFlowCardExtConfig } from '@/config';
+import { appearanceSchema, generalConfigSchema } from './schema';
 import localize from '@/localize/localize';
 import { gridSchema } from './schema/grid';
 import { solarSchema } from './schema/solar';
@@ -16,6 +15,7 @@ import "./components/subpage-header";
 import "./components/link-subpage";
 import "./components/devices-editor";
 import { CARD_NAME } from '@/const';
+import { cardConfigStruct } from '@/config/validation';
 
 export const EDITOR_ELEMENT_NAME = CARD_NAME + "-editor";
 
@@ -176,30 +176,32 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
 
   private _computeLabelCallback = (schema: any): string => localize(`editor.${schema?.name}`);
 
-  static get styles() {
-    return css`
-      ha-form {
-        width: 100%;
-      }
+  static get styles(): CSSResultGroup {
+    return [
+      css`
+        ha-form {
+          width: 100%;
+        }
 
-      ha-icon-button {
-        align-self: center;
-      }
+        ha-icon-button {
+          align-self: center;
+        }
 
-      .card-config {
-        display: flex;
-        flex-direction: column;
-        gap: 1.5rem;
-        margin-bottom: 10px;
-      }
+        .card-config {
+          display: flex;
+          flex-direction: column;
+          gap: 1.5rem;
+          margin-bottom: 10px;
+        }
 
-      ha-icon {
-        padding-bottom: 2px;
-        position: relative;
-        top: -4px;
-        right: 1px;
-      }
-    `;
+        ha-icon {
+          padding-bottom: 2px;
+          position: relative;
+          top: -4px;
+          right: 1px;
+        }
+      `
+    ];
   }
 }
 

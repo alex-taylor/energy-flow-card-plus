@@ -3,16 +3,12 @@ import { HomeAssistant } from "custom-card-helpers";
 import { css, CSSResultGroup, html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
-import type { SortableEvent } from "sortablejs";
 import { fireEvent } from "custom-card-helpers";
-import { sortableStyles } from "@/utils/sortable_styles";
-import { loadSortable, SortableInstance } from "@/utils/sortable-ondemand";
 import localize from "@/localize/localize";
-import { CARD_NAME } from "../../const";
-import { DeviceConfig, EnergyFlowCardExtConfig } from "../../config";
+import { CARD_NAME, DEVICE_CLASS_ENERGY } from "@/const";
+import { ColourOptions, DeviceConfig, EnergyFlowCardExtConfig, EntitiesOptions, EntityOptions, GlobalOptions } from "@/config";
 import { deviceSchema } from "../schema/device";
-import { ColourMode, DeviceType, UnitDisplayMode } from "../../enums";
-import { ColourOptions, EntitiesOptions, EntityOptions } from "../schema";
+import { ColourMode, DeviceType, UnitDisplayMode } from "@/enums";
 
 export const DEVICE_EDITOR_ELEMENT_NAME = CARD_NAME + "-device-row-editor";
 
@@ -39,8 +35,6 @@ export class DeviceRowEditor extends LitElement {
 
   private _entityKeys = new WeakMap<DeviceConfig, string>();
 
-  private _sortable?: SortableInstance;
-
   public connectedCallback(): void {
     super.connectedCallback();
     void this.loadHaForm();
@@ -48,7 +42,6 @@ export class DeviceRowEditor extends LitElement {
 
   public disconnectedCallback() {
     super.disconnectedCallback();
-    this._destroySortable();
   }
 
   private _editRowElement(index: number): void {
@@ -90,7 +83,7 @@ export class DeviceRowEditor extends LitElement {
 
     if (this._indexBeingEdited !== -1) {
       return html`
-        <div class="individual-header">
+        <div class="device-header">
           <h4>${localize("editor.device")} ${this._indexBeingEdited + 1} / ${this.devices.length}</h4>
           <ha-icon-button
             .label=${this.hass!.localize("ui.components.entity.entity-picker.clear")}
@@ -110,6 +103,7 @@ export class DeviceRowEditor extends LitElement {
     }
 
     return html`
+      <ha-sortable handle-selector=".handle" @item-moved=${this._rowMoved}>
       <div class="entities">
         ${repeat(
       this.devices,
@@ -121,7 +115,8 @@ export class DeviceRowEditor extends LitElement {
               </div>
               <ha-entity-picker
                 allow-custom-entity
-                hideClearIcon
+                hide-clear-icon
+                include-device-classes='["${DEVICE_CLASS_ENERGY}", "dummy"]' 
                 .hass=${this.hass}
                 .value=${deviceConf.entities?.entity_ids}
                 .index=${index}
@@ -145,7 +140,8 @@ export class DeviceRowEditor extends LitElement {
           `
     )}
       </div>
-      <ha-entity-picker class="add-entity" .hass=${this.hass} @value-changed=${this._addDevice}></ha-entity-picker>
+      </ha-sortable>
+      <ha-entity-picker hide-clear-icon class="add-entity" include-device-classes='["${DEVICE_CLASS_ENERGY}", "dummy"]' .hass=${this.hass} @value-changed=${this._addDevice}></ha-entity-picker>
     `;
   }
 
@@ -171,37 +167,7 @@ export class DeviceRowEditor extends LitElement {
     fireEvent(this, "config-changed", { config });
   }
 
-  protected firstUpdated(): void {
-    this._createSortable();
-  }
-
   private _computeLabelCallback = (schema: any) => localize(`editor.${schema?.name}`);
-
-  private async _createSortable() {
-    const Sortable = await loadSortable();
-    this._sortable = new Sortable(this.shadowRoot!.querySelector(".entities")!, {
-      animation: 150,
-      fallbackClass: "sortable-fallback",
-      handle: ".handle",
-      onChoose: (evt: SortableEvent) => {
-        (evt.item as any).placeholder = document.createComment("sort-placeholder");
-        evt.item.after((evt.item as any).placeholder);
-      },
-      onEnd: (evt: SortableEvent) => {
-        // put back in original location
-        if ((evt.item as any).placeholder) {
-          (evt.item as any).placeholder.replaceWith(evt.item);
-          delete (evt.item as any).placeholder;
-        }
-        this._rowMoved(evt);
-      },
-    });
-  }
-
-  private _destroySortable() {
-    this._sortable?.destroy();
-    this._sortable = undefined;
-  }
 
   private async _addDevice(ev: CustomEvent): Promise<void> {
     const value = ev.detail.value;
@@ -220,7 +186,9 @@ export class DeviceRowEditor extends LitElement {
         [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
         [ColourOptions.Value]: ColourMode.Do_Not_Colour
       },
-      type: DeviceType.Consumption
+      [GlobalOptions.Options]: {
+        [EntitiesOptions.Device_Type]: DeviceType.Consumption_Electric
+      }
     };
 
     const updatedDevices: DeviceConfig[] = this.devices!.concat(newDevice);
@@ -228,13 +196,13 @@ export class DeviceRowEditor extends LitElement {
     fireEvent(this, "devices-changed", { entities: updatedDevices });
   }
 
-  private _rowMoved(ev: SortableEvent): void {
-    if (ev.oldIndex === ev.newIndex) {
+  private _rowMoved(ev: CustomEvent): void {
+    if (ev.detail.oldIndex === ev.detail.newIndex) {
       return;
     }
 
     const updatedDevices = this.devices!.concat();
-    updatedDevices.splice(ev.newIndex!, 0, updatedDevices.splice(ev.oldIndex!, 1)[0]);
+    updatedDevices.splice(ev.detail.newIndex!, 0, updatedDevices.splice(ev.detail.oldIndex!, 1)[0]);
     fireEvent(this, "devices-changed", { entities: updatedDevices });
   }
 
@@ -266,13 +234,16 @@ export class DeviceRowEditor extends LitElement {
 
   static get styles(): CSSResultGroup {
     return [
-      sortableStyles,
       css`
+        ha-form {
+          width: 100%;
+        }
+
         ha-entity-picker {
           margin-top: 8px;
         }
 
-        .individual-header {
+        .device-header {
           display: flex;
           justify-content: space-between;
           align-items: center;
@@ -288,6 +259,7 @@ export class DeviceRowEditor extends LitElement {
           margin-inline-end: 71px;
           direction: var(--direction);
         }
+
         .entity {
           display: flex;
           align-items: center;
@@ -300,12 +272,14 @@ export class DeviceRowEditor extends LitElement {
           padding-inline-start: initial;
           direction: var(--direction);
         }
+
         .entity .handle > * {
           pointer-events: none;
         }
 
         .entity ha-entity-picker {
           flex-grow: 1;
+          min-width: 0;
         }
 
         .special-row {
@@ -332,7 +306,7 @@ export class DeviceRowEditor extends LitElement {
           font-size: 12px;
           color: var(--secondary-text-color);
         }
-      `,
+      `
     ];
   }
 }

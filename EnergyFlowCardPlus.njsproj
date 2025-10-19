@@ -71,7 +71,6 @@
     <None Include="src\ui-editor\schema\home.ts" />
     <None Include="src\ui-editor\schema\device.ts" />
     <None Include="src\ui-editor\schema\solar.ts" />
-    <None Include="src\ui-editor\schema\schemas.ts" />
     <None Include="src\ui-editor\schema\index.ts" />
   </ItemGroup>
   <ItemGroup>
@@ -90,6 +89,9 @@
     <Folder Include="src\utils" />
   </ItemGroup>
   <ItemGroup>
+    <TypeScriptCompile Include="src\config\validation.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\states\battery.ts" />
     <TypeScriptCompile Include="src\states\state.ts">
       <SubType>Code</SubType>
@@ -123,15 +125,6 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\ui-editor\schema\gas.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="src\utils\sortable-ondemand.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="src\utils\sortable.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
-    <TypeScriptCompile Include="src\utils\sortable_styles.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>

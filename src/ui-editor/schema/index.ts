@@ -1,143 +1,439 @@
-import { any, assign, boolean, integer, number, object, optional, string } from 'superstruct';
+import { AppearanceOptions, ColourOptions, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions, OverridesOptions, SecondaryInfoOptions, AppearanceConfig, AppearanceOptionsConfig, DualValueColourConfig, DualValueNodeConfig, EnergyFlowCardExtConfig, EnergyUnitsConfig, EntityConfig, FlowsConfig, NodeConfig, SecondaryInfoConfig, SingleValueColourConfig, SingleValueNodeConfig } from '@/config';
+import { ColourMode, DisplayMode, DotsMode, InactiveLinesMode, UnitDisplayMode } from '@/enums';
+import { DEVICE_CLASS_ENERGY } from '../../const';
 
-export enum EditorPages {
-  Appearance = "appearance",
-  Grid = "grid",
-  Gas = "gas",
-  Solar = "solar",
-  Battery = "battery",
-  Low_Carbon = "low_carbon",
-  Home = "home",
-  Devices = "devices"
-};
-
-export enum GlobalOptions {
-  Title = "title",
-  Display_Mode = "display_mode",
-  Options = "options"
-};
-
-export enum AppearanceOptions {
-  Dashboard_Link = "dashboard_link",
-  Dashboard_Link_Label = "dashboard_link_label",
-  Inactive_Lines = "inactive_lines",
-  Show_Zero_States = "show_zero_states",
-  Clickable_Entities = "clickable_entities",
-  Use_Hourly_Stats = "use_hourly_stats",
-  Unit_Whitespace = "unit_whitespace",
-  Energy_Units = "energy_units",
-  Flows = "flows"
-};
-
-export enum EnergyUnitsOptions {
-  Wh_Decimals = "wh_decimals",
-  Kwh_Decimals = "kwh_decimals",
-  Mwh_Decimals = "mwh_decimals",
-  Wh_Kwh_Threshold = "wh_kwh_threshold",
-  Kwh_Mwh_Threshold = "kwh_mwh_threshold"
-};
-
-export enum FlowsOptions {
-  Animation = "animation",
-  Min_Rate = "min_rate",
-  Max_Rate = "max_rate",
-  Min_Energy = "min_energy",
-  Max_Energy = "max_energy"
-};
-
-export enum EntitiesOptions {
-  Single_Entity = "entity",
-  Entities = "entities",
-  Import_Entities = "import_entities",
-  Export_Entities = "export_entities",
-  Colours = "colours",
-  Overrides = "overrides",
-  Secondary_Info = "secondary_info",
-  Include_In_Home = "include_in_home",
-  Low_Carbon_Mode = "low_carbon_mode",
-  Custom_Colour = "custom_colour",
-  Import_Colour = "import_colour",
-  Export_Colour = "export_colour"
-};
-
-export enum EntityOptions {
-  Entity_Ids = "entity_ids",
-  Units = "units",
-  Units_Mode = "units_mode",
-  Zero_Threshold = "zero_threshold",
-  Decimals = "decimals"
-};
-
-export enum ColourOptions {
-  Circle = "colour_of_circle",
-  Icon = "colour_of_icon",
-  Values = "colour_of_values",
-  Value = "colour_of_value",
-};
-
-export enum PowerOutageOptions {
-  Power_Outage = "power_outage",
-  Label_Alert = "label_alert",
-  Icon_Alert = "icon_alert",
-  State_Alert = "state_alert"
-};
-
-export enum OverridesOptions {
-  Name = "name",
-  Icon = "icon"
-};
-
-export enum SecondaryInfoOptions {
-  Icon = "icon",
-  Template = "template"
+export function generalConfigSchema(config: EnergyFlowCardExtConfig | undefined) {
+  return [
+    {
+      name: GlobalOptions.Title,
+      selector: { text: {} },
+    },
+    {
+      name: GlobalOptions.Display_Mode,
+      required: true,
+      selector: {
+        select: {
+          mode: 'dropdown',
+          options: [
+            DisplayMode.getItem(DisplayMode.Today),
+            DisplayMode.getItem(DisplayMode.History),
+            DisplayMode.getItem(DisplayMode.Hybrid)
+          ]
+        }
+      }
+    }
+  ];
 }
 
-const baseLovelaceCardConfigStruct = object({
-  type: string(),
-  view_layout: any(),
-});
+export function appearanceSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: AppearanceConfig | undefined) {
+  return [
+    {
+      name: [GlobalOptions.Options],
+      type: 'expandable',
+      schema: appearanceOptionsSchema(config, schemaConfig?.[GlobalOptions.Options])
+    },
+    {
+      name: AppearanceOptions.Flows,
+      type: 'expandable',
+      schema: flowsOptionsSchema(config, schemaConfig?.[AppearanceOptions.Flows])
+    },
+    {
+      name: AppearanceOptions.Energy_Units,
+      type: 'expandable',
+      schema: energyUnitsOptionsSchema(config, schemaConfig?.[AppearanceOptions.Energy_Units])
+    }
+  ];
+}
 
-export const cardConfigStruct = assign(
-  baseLovelaceCardConfigStruct,
-  object({
-    [GlobalOptions.Title]: optional(string()),
-    [GlobalOptions.Display_Mode]: optional(string()),
+function appearanceOptionsSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: AppearanceOptionsConfig | undefined): any[] {
+  return [
+    {
+      type: 'grid',
+      column_min_width: '200px',
+      schema: [
+        {
+          name: AppearanceOptions.Dashboard_Link,
+          selector: { navigation: {} }
+        },
+        {
+          name: AppearanceOptions.Dashboard_Link_Label,
+          selector: { text: {} }
+        },
+        {
+          name: AppearanceOptions.Show_Zero_States,
+          selector: { boolean: {} }
+        },
+        {
+          name: AppearanceOptions.Clickable_Entities,
+          selector: { boolean: {} }
+        },
+        {
+          name: AppearanceOptions.Use_Hourly_Stats,
+          selector: { boolean: {} }
+        },
+        {
+          name: AppearanceOptions.Unit_Whitespace,
+          selector: { boolean: {} }
+        }
+      ]
+    },
+    {
+      type: 'grid',
+      schema: [
+        {
+          name: AppearanceOptions.Inactive_Lines,
+          required: true,
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: [
+                InactiveLinesMode.getItem(InactiveLinesMode.Normal),
+                InactiveLinesMode.getItem(InactiveLinesMode.Dimmed),
+                InactiveLinesMode.getItem(InactiveLinesMode.Greyed),
+                InactiveLinesMode.getItem(InactiveLinesMode.Hidden)
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ];
+}
 
-    [EditorPages.Appearance]: object({
-      [GlobalOptions.Options]: object({
-        [AppearanceOptions.Dashboard_Link]: optional(string()),
-        [AppearanceOptions.Dashboard_Link_Label]: optional(string()),
-        [AppearanceOptions.Inactive_Lines]: optional(string()),
-        [AppearanceOptions.Show_Zero_States]: optional(boolean()),
-        [AppearanceOptions.Clickable_Entities]: optional(boolean()),
-        [AppearanceOptions.Use_Hourly_Stats]: optional(boolean()),
-        [AppearanceOptions.Unit_Whitespace]: optional(boolean()),
-      }),
-      [AppearanceOptions.Energy_Units]: object({
-        [EnergyUnitsOptions.Wh_Decimals]: optional(integer()),
-        [EnergyUnitsOptions.Kwh_Decimals]: optional(integer()),
-        [EnergyUnitsOptions.Mwh_Decimals]: optional(integer()),
-        [EnergyUnitsOptions.Wh_Kwh_Threshold]: optional(number()),
-        [EnergyUnitsOptions.Kwh_Mwh_Threshold]: optional(number())
-      }),
-      [AppearanceOptions.Flows]: object({
-        [FlowsOptions.Animation]: optional(string()),
-        [FlowsOptions.Min_Rate]: optional(number()),
-        [FlowsOptions.Max_Rate]: optional(number()),
-        [FlowsOptions.Min_Energy]: optional(number()),
-        [FlowsOptions.Max_Energy]: optional(number())
-      })
-    }),
+function energyUnitsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: EnergyUnitsConfig | undefined): any[] {
+  return [
+    {
+      type: 'grid',
+      column_min_width: '200px',
+      schema: [
+        {
+          name: EnergyUnitsOptions.Wh_Kwh_Threshold,
+          required: true,
+          selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } }
+        },
+        {
+          name: EnergyUnitsOptions.Kwh_Mwh_Threshold,
+          required: true,
+          selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } }
+        }
+      ]
+    },
+    {
+      type: 'grid',
+      column_min_width: '67px',
+      schema: [
+        {
+          name: EnergyUnitsOptions.Wh_Decimals,
+          required: true,
+          selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } }
+        },
+        {
+          name: EnergyUnitsOptions.Kwh_Decimals,
+          required: true,
+          selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } }
+        },
+        {
+          name: EnergyUnitsOptions.Mwh_Decimals,
+          required: true,
+          selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } }
+        }
+      ]
+    }
+  ];
+}
 
-    // TODO: expand these out
-    [EditorPages.Grid]: optional(any()),
-    [EditorPages.Gas]: optional(any()),
-    [EditorPages.Low_Carbon]: optional(any()),
-    [EditorPages.Solar]: optional(any()),
-    [EditorPages.Battery]: optional(any()),
-    [EditorPages.Home]: optional(any()),
+function flowsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: FlowsConfig | undefined): any[] {
+  return [
+    {
+      name: FlowsOptions.Animation,
+      required: true,
+      selector: {
+        select: {
+          mode: 'dropdown',
+          options: [
+            DotsMode.getItem(DotsMode.Dynamic),
+            DotsMode.getItem(DotsMode.HASS),
+            DotsMode.getItem(DotsMode.Off)
+          ]
+        }
+      }
+    },
+    dynamicFlowsOptionsSchema(config, schemaConfig)
+  ];
+}
 
-    // TODO
-    [EditorPages.Devices]: optional(any())
-  })
-);
+function dynamicFlowsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: FlowsConfig | undefined): {} {
+  if (schemaConfig?.[FlowsOptions.Animation] !== DotsMode.Dynamic) {
+    return {};
+  }
+
+  return {
+    type: 'grid',
+    column_min_width: '100px',
+    schema: [
+      {
+        name: FlowsOptions.Min_Rate,
+        required: true,
+        selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } }
+      },
+      {
+        name: FlowsOptions.Max_Rate,
+        required: true,
+        selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } }
+      },
+      {
+        name: FlowsOptions.Min_Energy,
+        required: true,
+        selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } }
+      },
+      {
+        name: FlowsOptions.Max_Energy,
+        required: true,
+        selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } }
+      }
+    ]
+  };
+}
+
+export function nodeConfigSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: NodeConfig | undefined, entitySchema: any[] | undefined): any[] {
+  let result: Array<any> = [];
+
+  if (entitySchema) {
+    result = result.concat(entitySchema);
+  }
+
+  result.push(
+    {
+      name: EntitiesOptions.Overrides,
+      type: 'expandable',
+      schema: [
+        {
+          type: 'grid',
+          column_min_width: '200px',
+          schema: [
+            { name: OverridesOptions.Name, selector: { text: {} } },
+            { name: OverridesOptions.Icon, selector: { icon: {} } }
+          ]
+        }
+      ]
+    },
+    secondaryInfoSchema(config, schemaConfig?.[EntitiesOptions.Secondary_Info])
+  );
+
+  return result;
+};
+
+function entitySelectionSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: EntityConfig | undefined, name: string, device_class: string | undefined = undefined): any[] {
+  return [
+    {
+      name: name,
+      type: 'expandable',
+      schema: [
+        {
+          name: EntityOptions.Entity_Ids,
+          selector: { entity: { multiple: true, device_class: device_class } }
+        },
+        {
+          type: 'grid',
+          column_min_width: '200px',
+          schema: [
+            {
+              name: EntityOptions.Units_Mode,
+              required: true,
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    UnitDisplayMode.getItem(UnitDisplayMode.After),
+                    UnitDisplayMode.getItem(UnitDisplayMode.Before),
+                    UnitDisplayMode.getItem(UnitDisplayMode.Hidden)
+                  ]
+                }
+              }
+            },
+            { name: EntityOptions.Units, selector: { text: {} } },
+            { name: EntityOptions.Zero_Threshold, selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } } },
+            { name: EntityOptions.Decimals, selector: { number: { mode: 'box', min: 0, max: 3, step: 1 } } }
+          ]
+        }
+      ]
+    }
+  ];
+};
+
+export function singleValueNodeSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SingleValueNodeConfig | undefined): any[] {
+  return entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Entities], EntitiesOptions.Entities, DEVICE_CLASS_ENERGY)
+    .concat([
+      {
+        name: EntitiesOptions.Colours,
+        type: 'expandable',
+        schema: [
+          {
+            type: 'grid',
+            column_min_width: '200px',
+            schema: [
+              {
+                name: ColourOptions.Icon,
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      ColourMode.getItem(ColourMode.Do_Not_Colour),
+                      ColourMode.getItem(ColourMode.Auto),
+                      ColourMode.getItem(ColourMode.Custom)
+                    ]
+                  }
+                }
+              },
+              {
+                name: ColourOptions.Circle,
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      ColourMode.getItem(ColourMode.Auto),
+                      ColourMode.getItem(ColourMode.Custom)
+                    ]
+                  }
+                }
+              },
+              {
+                name: ColourOptions.Value,
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      ColourMode.getItem(ColourMode.Do_Not_Colour),
+                      ColourMode.getItem(ColourMode.Auto),
+                      ColourMode.getItem(ColourMode.Custom)
+                    ]
+                  }
+                }
+              },
+              singleValueColourPickerSchema(config, schemaConfig?.[EntitiesOptions.Colours])
+            ]
+          }
+        ]
+      }
+    ]);
+}
+
+function singleValueColourPickerSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SingleValueColourConfig | undefined): {} {
+  if (schemaConfig?.[ColourOptions.Circle] === ColourMode.Custom || schemaConfig?.[ColourOptions.Icon] === ColourMode.Custom || schemaConfig?.[ColourOptions.Value] === ColourMode.Custom) {
+    return {
+      name: EntitiesOptions.Custom_Colour,
+      selector: { color_rgb: {} }
+    };
+  }
+
+  return {};
+}
+
+export function dualValueNodeSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: DualValueNodeConfig | undefined): any[] {
+  return entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Import_Entities], EntitiesOptions.Import_Entities, DEVICE_CLASS_ENERGY)
+    .concat(entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Export_Entities], EntitiesOptions.Export_Entities, DEVICE_CLASS_ENERGY))
+    .concat([
+      {
+        name: EntitiesOptions.Colours,
+        type: 'expandable',
+        schema: [
+          {
+            type: 'grid',
+            column_min_width: '200px',
+            schema: [
+              {
+                name: [ColourOptions.Icon],
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      ColourMode.getItem(ColourMode.Do_Not_Colour),
+                      ColourMode.getItem(ColourMode.Auto),
+                      ColourMode.getItem(ColourMode.Import),
+                      ColourMode.getItem(ColourMode.Export),
+                      ColourMode.getItem(ColourMode.Custom)
+                    ]
+                  }
+                }
+              },
+              {
+                name: [ColourOptions.Circle],
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      ColourMode.getItem(ColourMode.Auto),
+                      ColourMode.getItem(ColourMode.Import),
+                      ColourMode.getItem(ColourMode.Export),
+                      ColourMode.getItem(ColourMode.Export_Sources),
+                      ColourMode.getItem(ColourMode.Custom)
+                    ]
+                  }
+                }
+              },
+              {
+                name: [ColourOptions.Values],
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      ColourMode.getItem(ColourMode.Do_Not_Colour),
+                      ColourMode.getItem(ColourMode.Auto),
+                      ColourMode.getItem(ColourMode.Custom)
+                    ]
+                  }
+                }
+              },
+              dualValueColourPickerSchema(config, schemaConfig?.[EntitiesOptions.Colours])
+            ]
+          }
+        ]
+      }
+    ]);
+}
+
+function dualValueColourPickerSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: DualValueColourConfig | undefined): {} {
+  if (schemaConfig?.[ColourOptions.Circle] === ColourMode.Custom || schemaConfig?.[ColourOptions.Icon] === ColourMode.Custom || schemaConfig?.[ColourOptions.Values] === ColourMode.Custom) {
+    return {
+      type: 'grid',
+      column_min_width: '100px',
+      schema: [
+        {
+          name: EntitiesOptions.Import_Colour,
+          selector: { color_rgb: {} }
+        },
+        {
+          name: EntitiesOptions.Export_Colour,
+          selector: { color_rgb: {} }
+        }
+      ]
+    };
+  }
+
+  return {};
+}
+
+function secondaryInfoSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SecondaryInfoConfig | undefined): {} {
+  return {
+    name: EntitiesOptions.Secondary_Info,
+    type: 'expandable',
+    schema: entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Entities], EntitiesOptions.Entities)
+      .concat([
+        {
+          name: [SecondaryInfoOptions.Template],
+          selector: { template: {} }
+        },
+        {
+          name: [SecondaryInfoOptions.Icon],
+          selector: { icon: {} }
+        }
+      ])
+  };
+}
+

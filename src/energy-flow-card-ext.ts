@@ -1,33 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import { formatNumber, HomeAssistant, LovelaceCardEditor } from "custom-card-helpers";
+import { formatNumber, HomeAssistant } from "custom-card-helpers";
 import { Decimal } from "decimal.js";
 import { customElement, property, state } from "lit/decorators.js";
-import { getDefaultConfig } from "./config/config";
-import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics, StatisticValue } from "./energy";
-import { SubscribeMixin } from "./energy/subscribe-mixin";
-import { HomeAssistantReal } from "./hass";
-import localize from "./localize/localize";
-import { styles } from "./style";
-import type { EnergyFlowCardExtConfig, EntityConfig } from "./config";
+import { getDefaultConfig } from "@/config/config";
+import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics, StatisticValue } from "@/energy";
+import { SubscribeMixin } from "@/energy/subscribe-mixin";
+import { HomeAssistantReal } from "@/hass";
+import localize from "@/localize/localize";
+import { styles } from "@/style";
 import { BatteryState } from "./states/battery";
 import { GridState } from "./states/grid";
 import { SolarState } from "./states/solar";
 import { SecondaryInfoEntity } from "./states/secondary-info";
-import { coerceNumber, isNumberValue, mapRange } from "./utils";
+import { coerceNumber, isNumberValue, mapRange } from "@/utils";
 import { registerCustomCard } from "./utils/register-custom-card";
-import { Flows, calculateStatisticsFlows, getLiveDeltas } from "./flows";
-import { entityExists, getEntityStateWattHours, toWattHours } from "./states";
+import { Flows, calculateStatisticsFlows, getLiveDeltas } from "@/flows";
+import { entityExists, getEntityStateWattHours, toWattHours } from "@/states";
 import { UnsubscribeFunc } from "home-assistant-js-websocket";
 import { differenceInDays, startOfDay } from 'date-fns';
-import { ColourMode, DisplayMode, DotsMode, EntityType, LowCarbonType, InactiveLinesMode } from "./enums";
-import { HomeState } from "./states/home";
+import { ColourMode, DisplayMode, DotsMode, EntityType, LowCarbonType, InactiveLinesMode } from "@/enums";
+import { HomeState } from "@/states/home";
 import { LowCarbonState } from "./states/low-carbon";
-import { State } from "./states/state";
-import { EDITOR_ELEMENT_NAME } from "./ui-editor/ui-editor";
-import { CARD_NAME } from "./const";
-import { AppearanceOptions } from "./ui-editor/schema";
+import { State } from "@/states/state";
+import { EDITOR_ELEMENT_NAME } from "@/ui-editor/ui-editor";
+import { CARD_NAME } from "@/const";
+import { EnergyFlowCardExtConfig, EntityConfig, AppearanceOptions } from "@/config";
 
 registerCustomCard({
   type: CARD_NAME,
