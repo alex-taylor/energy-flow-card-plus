@@ -17,6 +17,7 @@ import { CARD_NAME } from '@/const';
 import { cardConfigStruct } from '@/config/validation';
 import { computeHelperCallback, computeLabelCallback } from '.';
 import { mdiChevronRight } from '@mdi/js';
+import { getDefaultLowCarbonConfig, pruneConfig } from '../config/config';
 
 export const EDITOR_ELEMENT_NAME = CARD_NAME + "-editor";
 
@@ -24,11 +25,12 @@ const CONFIG_PAGES: {
   page: EditorPages;
   icon: string;
   schema?;
+  createConfig?;
 }[] = [
     {
       page: EditorPages.Appearance,
       icon: "mdi:cog",
-      schema: appearanceSchema
+      schema: appearanceSchema,
     },
     {
       page: EditorPages.Grid,
@@ -53,7 +55,8 @@ const CONFIG_PAGES: {
     {
       page: EditorPages.Low_Carbon,
       icon: "mdi:leaf",
-      schema: lowCarbonSchema
+      schema: lowCarbonSchema,
+      createConfig: getDefaultLowCarbonConfig
     },
     {
       page: EditorPages.Home,
@@ -88,7 +91,13 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
       const currentPage: string = this._currentConfigPage;
       const schema = CONFIG_PAGES.find(page => page.page === currentPage)?.schema;
       const icon: string | undefined = CONFIG_PAGES.find((page) => page.page === currentPage)?.icon;
+
+      if (!config[currentPage]) {
+        config[currentPage] = CONFIG_PAGES.find(page => page.page === currentPage)?.createConfig(this.hass);
+      }
+
       const configForPage: DeviceConfig = config[currentPage];
+      // TODO: sanitize the config, adding in missing mandatory values
 
       return html`
         <energy-flow-card-ext-page-header @go-back=${this._goBack} icon="${icon}" label=${localize(`editor.${currentPage}`)}></energy-flow-card-ext-page-header>
@@ -163,6 +172,8 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
     }
 
     let config = ev.detail.value || "";
+    pruneConfig(config);
+    // TODO: should probably sanitize too
 
     if (this._currentConfigPage) {
       config = {
@@ -173,7 +184,6 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
 
     fireEvent(this, 'config-changed', { config });
   }
-
 
   static get styles(): CSSResultGroup {
     return [

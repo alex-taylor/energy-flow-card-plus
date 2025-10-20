@@ -18,11 +18,13 @@ export namespace DisplayMode {
 
 export enum ColourMode {
   Do_Not_Colour = "none",
-  Auto = "auto",
+  Default = "default",
+  Circle = "circle",
+  Largest_Value = "largest_value",
   Import = "import",
-  Import_Sources = "import_sources",
   Export = "export",
   Export_Sources = "export_sources",
+  Consumption_Sources = "consumption_sources",
   Solar = "solar",
   High_Carbon = "high_carbon",
   Low_Carbon = "low_carbon",

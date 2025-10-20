@@ -4,12 +4,12 @@ import { HomeAssistant, fireEvent } from "custom-card-helpers";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit-element";
 import { CARD_NAME } from "@/const";
-import { ColourOptions, DeviceConfig, EnergyFlowCardExtConfig, EntitiesOptions, EntityOptions, GlobalOptions, OverridesOptions } from "@/config";
+import { DeviceConfig, EnergyFlowCardExtConfig, EntitiesOptions, OverridesOptions } from "@/config";
 import { deviceSchema } from "../schema/device";
 import { computeLabelCallback } from "..";
 import { repeat } from "lit/directives/repeat.js";
-import { ColourMode, DeviceType, UnitDisplayMode } from "@/enums";
 import localize from "@/localize/localize";
+import { getDefaultDeviceConfig } from '../../config/config';
 
 const DEVICES_EDITOR_ELEMENT_NAME = CARD_NAME + "-devices-editor";
 
@@ -118,22 +118,7 @@ export class DevicesEditor extends LitElement {
   }
 
   private async _addDevice(): Promise<void> {
-    const newDevice: DeviceConfig = {
-      [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
-      },
-      [EntitiesOptions.Colours]: {
-        [ColourOptions.Circle]: ColourMode.Auto,
-        [ColourOptions.Icon]: ColourMode.Do_Not_Colour,
-        [ColourOptions.Value]: ColourMode.Do_Not_Colour
-      },
-      [GlobalOptions.Options]: {
-        [EntitiesOptions.Device_Type]: DeviceType.Consumption_Electric
-      },
-      [OverridesOptions.Name]: localize("common.new_device"),
-      [OverridesOptions.Icon]: "mdi:devices"
-    };
-
+    const newDevice: DeviceConfig = getDefaultDeviceConfig();
     const updatedDevices: DeviceConfig[] = this._devices!.concat(newDevice);
     this._editDevice(updatedDevices.length - 1);
     this._updateConfig(updatedDevices);

@@ -38,6 +38,8 @@ Individual icon also coloured when the 'colour value' flag is set
 FEATURES
 --------
 
+Add an icon to the pages to indicate which ones are fully-configured (ie, active with an entity)
+
 If data is still loading when we render, go ahead and render the circles/lines anyway, just put 'loading' for the values
 
 Bigger circles!
