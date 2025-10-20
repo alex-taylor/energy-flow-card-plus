@@ -25,7 +25,8 @@
     "lit-html": "^2.7.0",
     "memoize-one": "^6.0.0",
     "superstruct": "^1.0.3",
-    "tslib": "^2.4.0"
+    "tslib": "^2.4.0",
+    "uuid": "^13.0.0"
   },
   "devDependencies": {
     "@babel/core": "^7.17.9",

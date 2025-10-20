@@ -23,7 +23,7 @@
     <Content Include="src\localize\languages\en-GB.json">
       <SubType>Code</SubType>
     </Content>
-    <Content Include="src\ui-editor\components\subpage-header.ts">
+    <Content Include="src\ui-editor\components\page-header.ts">
       <SubType>Code</SubType>
     </Content>
     <Content Include="TODO.txt">
@@ -115,13 +115,10 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\flows\index.ts" />
-    <TypeScriptCompile Include="src\ui-editor\components\device-row-editor.ts">
-      <SubType>Code</SubType>
-    </TypeScriptCompile>
     <TypeScriptCompile Include="src\ui-editor\components\devices-editor.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\ui-editor\components\link-subpage.ts">
+    <TypeScriptCompile Include="src\ui-editor\index.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\ui-editor\schema\gas.ts">

@@ -49,7 +49,6 @@ function appearanceOptionsSchema(config: EnergyFlowCardExtConfig | undefined, sc
   return [
     {
       type: 'grid',
-      column_min_width: '200px',
       schema: [
         {
           name: AppearanceOptions.Dashboard_Link,
@@ -104,7 +103,6 @@ function energyUnitsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, s
   return [
     {
       type: 'grid',
-      column_min_width: '200px',
       schema: [
         {
           name: EnergyUnitsOptions.Wh_Kwh_Threshold,
@@ -120,7 +118,6 @@ function energyUnitsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, s
     },
     {
       type: 'grid',
-      column_min_width: '67px',
       schema: [
         {
           name: EnergyUnitsOptions.Wh_Decimals,
@@ -169,7 +166,6 @@ function dynamicFlowsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, 
 
   return {
     type: 'grid',
-    column_min_width: '100px',
     schema: [
       {
         name: FlowsOptions.Min_Rate,
@@ -209,7 +205,6 @@ export function nodeConfigSchema(config: EnergyFlowCardExtConfig | undefined, sc
       schema: [
         {
           type: 'grid',
-          column_min_width: '200px',
           schema: [
             { name: OverridesOptions.Name, selector: { text: {} } },
             { name: OverridesOptions.Icon, selector: { icon: {} } }
@@ -235,7 +230,6 @@ function entitySelectionSchema(config: EnergyFlowCardExtConfig | undefined, sche
         },
         {
           type: 'grid',
-          column_min_width: '200px',
           schema: [
             {
               name: EntityOptions.Units_Mode,
@@ -270,7 +264,6 @@ export function singleValueNodeSchema(config: EnergyFlowCardExtConfig | undefine
         schema: [
           {
             type: 'grid',
-            column_min_width: '200px',
             schema: [
               {
                 name: ColourOptions.Icon,
@@ -342,7 +335,6 @@ export function dualValueNodeSchema(config: EnergyFlowCardExtConfig | undefined,
         schema: [
           {
             type: 'grid',
-            column_min_width: '200px',
             schema: [
               {
                 name: [ColourOptions.Icon],
@@ -402,7 +394,6 @@ function dualValueColourPickerSchema(config: EnergyFlowCardExtConfig | undefined
   if (schemaConfig?.[ColourOptions.Circle] === ColourMode.Custom || schemaConfig?.[ColourOptions.Icon] === ColourMode.Custom || schemaConfig?.[ColourOptions.Values] === ColourMode.Custom) {
     return {
       type: 'grid',
-      column_min_width: '100px',
       schema: [
         {
           name: EntitiesOptions.Import_Colour,
@@ -419,7 +410,7 @@ function dualValueColourPickerSchema(config: EnergyFlowCardExtConfig | undefined
   return {};
 }
 
-function secondaryInfoSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SecondaryInfoConfig | undefined): {} {
+export function secondaryInfoSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SecondaryInfoConfig | undefined): {} {
   return {
     name: EntitiesOptions.Secondary_Info,
     type: 'expandable',

@@ -1,7 +1,8 @@
 {
   "common": {
     "invalid_configuration": "Invalid Configuration",
-    "unknown": "Unknown"
+    "unknown": "Unknown",
+    "new_device": "New Device"
   },
   "editor": {
     "title": "Title",
@@ -15,6 +16,11 @@
     "options": "Options",
     "include_in_home": "Include when calculating energy usage for Home",
     "low_carbon_mode": "Display as",
+    "add_device": "Add Device",
+    "remove_device": "Remove Device",
+    "go_back": "Go Back",
+    "previous": "Previous",
+    "next": "Next",
 
     "display_mode": "Display mode",
     "display_mode#helptext": "History and Hybrid modes require an energy-date-selection card to be present on the page",

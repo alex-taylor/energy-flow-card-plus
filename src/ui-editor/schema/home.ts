@@ -11,7 +11,6 @@ export function homeSchema(config: EnergyFlowCardExtConfig | undefined): any[] {
       schema: [
         {
           type: 'grid',
-          column_min_width: '200px',
           schema: [
             {
               name: ColourOptions.Icon,

@@ -178,7 +178,12 @@ export interface HomeConfig extends NodeConfig {
   [EntitiesOptions.Colours]: SingleValueColourConfig;
 };
 
-export interface DeviceConfig extends SingleValueNodeConfig {
+export interface DeviceConfig {
+  [OverridesOptions.Name]?: string;
+  [OverridesOptions.Icon]?: string;
+  [EntitiesOptions.Entities]?: EntityConfig;
+  [EntitiesOptions.Colours]?: SingleValueColourConfig;
+  [EntitiesOptions.Secondary_Info]?: SecondaryInfoConfig;
   [GlobalOptions.Options]?: DeviceOptionsConfig;
 };
 

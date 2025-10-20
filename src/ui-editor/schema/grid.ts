@@ -8,7 +8,6 @@ const powerOutageGridSchema: any[] = [
   },
   {
     type: 'grid',
-    column_min_width: '200px',
     schema: [
       { name: [PowerOutageOptions.Label_Alert], selector: { text: {} } },
       { name: [PowerOutageOptions.Icon_Alert], selector: { icon: {} } },

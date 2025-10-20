@@ -1,15 +1,15 @@
 BUGS
 ----
 
-The 'entity' picker is sizing itself to the full width of its entity's name, should be constrained
-  - similar problem with the 'device row' picker
+The 'multi entity' picker is sizing itself to the full width of its entity's name, should be constrained
+  - HASS bug
 
 Seeing null in the entity_ids array
   - perhaps init the arrays upfront to [] ?
 
 Grid Export completely stuffed!
 
-Still got bugs with the mignight rollover
+Still got bugs with the midnight rollover
 
 Reinstate the -ve coords for the lines, they are required so that the dots don't just vanish!
   - and presumably they should extend at both ends?

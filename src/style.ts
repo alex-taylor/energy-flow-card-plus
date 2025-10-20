@@ -22,7 +22,7 @@ export const styles = css`
     --secondary-text-individualone-color: var(--primary-text-color);
     --secondary-text-individualtwo-color: var(--primary-text-color);
     --text-battery-state-of-charge-color: var(--primary-text-color);
-    --cirlce-grid-color: var(--energy-grid-consumption-color, #488fc2);
+    --circle-grid-color: var(--energy-grid-consumption-color, #488fc2);
     --circle-battery-color: var(--energy-battery-in-color, #f06292);
     --secondary-text-solar-color: var(--primary-text-color);
     --secondary-text-grid-color: var(--primary-text-color);
