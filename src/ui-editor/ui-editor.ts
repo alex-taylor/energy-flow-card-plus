@@ -17,7 +17,7 @@ import { CARD_NAME } from '@/const';
 import { cardConfigStruct } from '@/config/validation';
 import { computeHelperCallback, computeLabelCallback } from '.';
 import { mdiChevronRight } from '@mdi/js';
-import { getDefaultLowCarbonConfig, pruneConfig } from '../config/config';
+import { getDefaultLowCarbonConfig, cleanupConfig, getDefaultAppearanceConfig, getDefaultGridConfig, getDefaultGasConfig, getDefaultSolarConfig, getDefaultBatteryConfig, getDefaultHomeConfig } from '../config/config';
 
 export const EDITOR_ELEMENT_NAME = CARD_NAME + "-editor";
 
@@ -31,26 +31,31 @@ const CONFIG_PAGES: {
       page: EditorPages.Appearance,
       icon: "mdi:cog",
       schema: appearanceSchema,
+      createConfig: getDefaultAppearanceConfig
     },
     {
       page: EditorPages.Grid,
       icon: "mdi:transmission-tower",
-      schema: gridSchema
+      schema: gridSchema,
+      createConfig: getDefaultGridConfig
     },
     {
       page: EditorPages.Gas,
       icon: "mdi:fire",
-      schema: gasSchema
+      schema: gasSchema,
+      createConfig: getDefaultGasConfig
     },
     {
       page: EditorPages.Solar,
       icon: "mdi:solar-power",
-      schema: solarSchema
+      schema: solarSchema,
+      createConfig: getDefaultSolarConfig
     },
     {
       page: EditorPages.Battery,
       icon: "mdi:battery-high",
-      schema: batterySchema
+      schema: batterySchema,
+      createConfig: getDefaultBatteryConfig
     },
     {
       page: EditorPages.Low_Carbon,
@@ -61,11 +66,13 @@ const CONFIG_PAGES: {
     {
       page: EditorPages.Home,
       icon: "mdi:home",
-      schema: homeSchema
+      schema: homeSchema,
+      createConfig: getDefaultHomeConfig
     },
     {
       page: EditorPages.Devices,
-      icon: "mdi:devices"
+      icon: "mdi:devices",
+      createConfig: () => { }
     }
   ];
 
@@ -97,7 +104,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
       }
 
       const configForPage: DeviceConfig = config[currentPage];
-      // TODO: sanitize the config, adding in missing mandatory values
+      // TODO: sanitize the config, adding in missing mandatory values?
 
       return html`
         <energy-flow-card-ext-page-header @go-back=${this._goBack} icon="${icon}" label=${localize(`editor.${currentPage}`)}></energy-flow-card-ext-page-header>
@@ -172,8 +179,6 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
     }
 
     let config = ev.detail.value || "";
-    pruneConfig(config);
-    // TODO: should probably sanitize too
 
     if (this._currentConfigPage) {
       config = {
@@ -182,6 +187,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
       };
     }
 
+    cleanupConfig(this.hass, config);
     fireEvent(this, 'config-changed', { config });
   }
 

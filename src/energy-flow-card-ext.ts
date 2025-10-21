@@ -2,7 +2,7 @@ import { html, LitElement, PropertyValues, svg, TemplateResult } from "lit";
 import { formatNumber, HomeAssistant } from "custom-card-helpers";
 import { Decimal } from "decimal.js";
 import { customElement, property, state } from "lit/decorators.js";
-import { getDefaultConfig } from "@/config/config";
+import { getDefaultConfig, cleanupConfig } from "@/config/config";
 import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics, StatisticValue } from "@/energy";
 import { SubscribeMixin } from "@/energy/subscribe-mixin";
 import { HomeAssistantReal } from "@/hass";
@@ -139,6 +139,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       throw new Error("At least one entity for battery, grid or solar must be defined");
     }
 
+    cleanupConfig(this.hass, config);
     this._config = config;
     this.populateEntitiesArr();
     this.resetSubscriptions();
