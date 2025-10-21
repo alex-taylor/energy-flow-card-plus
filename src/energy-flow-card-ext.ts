@@ -119,7 +119,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
             }
 
             const entities: string[] = data.co2SignalEntity ? this._entitiesArr.concat(data.co2SignalEntity) : this._entitiesArr;
-            const period = this._config.appearance?.options?.use_hourly_stats || differenceInDays(periodEnd, periodStart) <= 2 ? 'hour' : 'day';
+            const period = this._config.appearance?.flows?.use_hourly_stats || differenceInDays(periodEnd, periodStart) <= 2 ? 'hour' : 'day';
             this._statistics = await getStatistics(this.hass, periodStart, periodEnd, entities, period);
             calculateStatisticsFlows(this.hass, this._statistics, this._solar, this._battery, this._grid);
           }

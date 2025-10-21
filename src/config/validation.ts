@@ -19,7 +19,6 @@ export const cardConfigStruct = assign(
         [AppearanceOptions.Inactive_Lines]: optional(string()),
         [AppearanceOptions.Show_Zero_States]: optional(boolean()),
         [AppearanceOptions.Clickable_Entities]: optional(boolean()),
-        [AppearanceOptions.Use_Hourly_Stats]: optional(boolean()),
         [AppearanceOptions.Unit_Whitespace]: optional(boolean()),
       }),
       [AppearanceOptions.Energy_Units]: object({
@@ -30,6 +29,7 @@ export const cardConfigStruct = assign(
         [EnergyUnitsOptions.Kwh_Mwh_Threshold]: optional(number())
       }),
       [AppearanceOptions.Flows]: object({
+        [AppearanceOptions.Use_Hourly_Stats]: optional(boolean()),
         [FlowsOptions.Animation]: optional(string()),
         [FlowsOptions.Min_Rate]: optional(number()),
         [FlowsOptions.Max_Rate]: optional(number()),

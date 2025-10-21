@@ -132,7 +132,6 @@ export interface AppearanceOptionsConfig {
   [AppearanceOptions.Inactive_Lines]?: InactiveLinesMode;
   [AppearanceOptions.Show_Zero_States]?: boolean;
   [AppearanceOptions.Clickable_Entities]?: boolean;
-  [AppearanceOptions.Use_Hourly_Stats]?: boolean;
   [AppearanceOptions.Unit_Whitespace]?: boolean;
 };
 
@@ -145,6 +144,7 @@ export interface EnergyUnitsConfig {
 };
 
 export interface FlowsConfig {
+  [AppearanceOptions.Use_Hourly_Stats]?: boolean;
   [FlowsOptions.Animation]?: DotsMode;
   [FlowsOptions.Min_Rate]?: number;
   [FlowsOptions.Max_Rate]?: number;

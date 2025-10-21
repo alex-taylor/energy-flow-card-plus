@@ -67,10 +67,6 @@ function appearanceOptionsSchema(config: EnergyFlowCardExtConfig | undefined, sc
           selector: { boolean: {} }
         },
         {
-          name: AppearanceOptions.Use_Hourly_Stats,
-          selector: { boolean: {} }
-        },
-        {
           name: AppearanceOptions.Unit_Whitespace,
           selector: { boolean: {} }
         }
@@ -142,18 +138,27 @@ function energyUnitsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, s
 function flowsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: FlowsConfig | undefined): any[] {
   return [
     {
-      name: FlowsOptions.Animation,
-      required: true,
-      selector: {
-        select: {
-          mode: 'dropdown',
-          options: [
-            DotsMode.getItem(DotsMode.Dynamic),
-            DotsMode.getItem(DotsMode.HASS),
-            DotsMode.getItem(DotsMode.Off)
-          ]
+      type: 'grid',
+      schema: [
+        {
+          name: AppearanceOptions.Use_Hourly_Stats,
+          selector: { boolean: {} }
+        },
+        {
+          name: FlowsOptions.Animation,
+          required: true,
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: [
+                DotsMode.getItem(DotsMode.Dynamic),
+                DotsMode.getItem(DotsMode.HASS),
+                DotsMode.getItem(DotsMode.Off)
+              ]
+            }
+          }
         }
-      }
+      ]
     },
     dynamicFlowsOptionsSchema(config, schemaConfig)
   ];
