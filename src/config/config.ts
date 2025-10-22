@@ -43,8 +43,7 @@ export interface EntityRegistryDisplayEntry {
 export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   return {
     type: 'custom:' + CARD_NAME,
-    // TODO: could detect the present of a date-picker?  not much point going to 'history' mode without one
-    [GlobalOptions.Display_Mode]: DisplayMode.History,
+    [GlobalOptions.Display_Mode]: getEnergyDataCollection(hass) ? DisplayMode.History : DisplayMode.Today,
     [EditorPages.Appearance]: getDefaultAppearanceConfig(),
     [EditorPages.Battery]: getDefaultBatteryConfig(hass, true),
     [EditorPages.Gas]: getDefaultGasConfig(hass, true),
@@ -55,20 +54,22 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   };
 }
 
-export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConfig): void {
+export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConfig): EnergyFlowCardExtConfig {
   pruneConfig(config);
-//  updateConfig(config, EditorPages.Battery, getDefaultBatteryConfig(hass, false));
-//  updateConfig(config, EditorPages.Gas, getDefaultGasConfig(hass, false));
-//  updateConfig(config, EditorPages.Grid, getDefaultGridConfig(hass, false));
-  updateConfig(config, EditorPages.Low_Carbon, getDefaultLowCarbonConfig(hass, false));
-//  updateConfig(config, EditorPages.Solar, getDefaultSolarConfig(hass, false));
+  config = updateConfig(config, EditorPages.Battery, getDefaultBatteryConfig(hass, false));
+  config = updateConfig(config, EditorPages.Gas, getDefaultGasConfig(hass, false));
+  config = updateConfig(config, EditorPages.Grid, getDefaultGridConfig(hass, false));
+  config = updateConfig(config, EditorPages.Low_Carbon, getDefaultLowCarbonConfig(hass, false));
+  config = updateConfig(config, EditorPages.Solar, getDefaultSolarConfig(hass, false));
+
+  return config;
 }
 
 function pruneConfig(config: any): void {
-  Object.keys(config).forEach(key => {
+  for (let key in config) {
     if (config[key] === null || config[key] === undefined) {
       delete config[key];
-    } else if (Array.isArray(config[key])) {
+    } else if (config[key] instanceof Array) {
       const array: any[] = config[key];
 
       array.forEach((entry, index) => {
@@ -87,43 +88,54 @@ function pruneConfig(config: any): void {
         delete config[key];
       }
     }
-  });
+  }
 }
 
-function updateConfig(config: any, key: string | number, defaultConfig: any): any {
+function updateConfig(config: EnergyFlowCardExtConfig, key: EditorPages, defaultConfig: any): EnergyFlowCardExtConfig {
   if (!config[key]) {
-    return;
+    return config;
   }
 
   if (equal(config[key], defaultConfig)) {
+    config = { ...config };
     delete config[key];
-    return;
+    return config;
   }
 
   setDefaultsRecursively(config[key], defaultConfig);
+  config = { ...config };
   config[key] = defaultConfig;
+  return config;
 }
 
 function setDefaultsRecursively(config: any, defaultConfig: any): void {
-  Object.keys(defaultConfig).forEach(key => {
+  for (let key in defaultConfig) {
     const currentNode: any = config[key];
 
     if (currentNode) {
-      if (Array.isArray(currentNode)) {
-        defaultConfig[key] = currentNode;
+      if (currentNode instanceof Array) {
+        defaultConfig[key] = [...currentNode];
       } else {
         const defaultNode: any = defaultConfig[key];
 
         if (typeof defaultNode === "object") {
-          Object.keys(currentNode).forEach(childKey => {
-            defaultNode[childKey] = currentNode[childKey];
-          });
-
-          setDefaultsRecursively(currentNode, defaultNode);
+          for (let childKey in currentNode) {
+            if (typeof currentNode[childKey] === "object") {
+              setDefaultsRecursively(currentNode, defaultNode);
+            } else {
+              defaultNode[childKey] = currentNode[childKey];
+            }
+          }
         }
       }
     }
-  });
+  }
+
+  for (let key in config) {
+    if (!defaultConfig[key]) {
+      defaultConfig[key] = config[key];
+    }
+  }
 }
 
 export function getDefaultAppearanceConfig(): AppearanceConfig {
@@ -131,7 +143,7 @@ export function getDefaultAppearanceConfig(): AppearanceConfig {
     [GlobalOptions.Options]: {
       [AppearanceOptions.Inactive_Lines]: InactiveLinesMode.Normal,
       [AppearanceOptions.Show_Zero_States]: true,
-      [AppearanceOptions.Unit_Whitespace]: true,
+      [AppearanceOptions.Unit_Whitespace]: true
     },
     [AppearanceOptions.Energy_Units]: {
       [EnergyUnitsOptions.Wh_Decimals]: defaultValues.watthourDecimals,
@@ -151,11 +163,7 @@ export function getDefaultAppearanceConfig(): AppearanceConfig {
 }
 
 export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean): GridConfig | undefined {
-  if (requireEntity) {
-    return undefined;
-  }
-
-  return {
+  const config: GridConfig = {
     [EntitiesOptions.Import_Entities]: {
       units_mode: UnitDisplayMode.After
     },
@@ -173,14 +181,33 @@ export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean
       }
     }
   };
+
+  if (!requireEntity) {
+    return config;
+  }
+
+  const energyDataCollection: EnergyCollection | null = getEnergyDataCollection(hass);
+  const sources: EnergySource[] | undefined = energyDataCollection?.prefs?.energy_sources;
+  const energySourcesImport: string[] = sources?.filter(source => source.type === "grid" && source.flow_from).flatMap(source => source.flow_from!.map(from => from!.stat_energy_from!)) || [];
+  const energySourcesExport: string[] = sources?.filter(source => source.type === "grid" && source.flow_to).flatMap(source => source.flow_to!.map(to => to!.stat_energy_to!)) || [];
+
+  if (energySourcesImport.length === 0 && energySourcesExport.length === 0) {
+    return undefined;
+  }
+
+  if (energySourcesImport.length !== 0) {
+    config[EntitiesOptions.Import_Entities]![EntityOptions.Entity_Ids] = energySourcesImport;
+  }
+
+  if (energySourcesExport.length !== 0) {
+    config[EntitiesOptions.Export_Entities]![EntityOptions.Entity_Ids] = energySourcesExport;
+  }
+
+  return config;
 }
 
 export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: boolean): BatteryConfig | undefined {
-  if (requireEntity) {
-    return undefined;
-  }
-
-  return {
+  const config: BatteryConfig = {
     [EntitiesOptions.Import_Entities]: {
       [EntityOptions.Units_Mode]: UnitDisplayMode.After
     },
@@ -198,6 +225,29 @@ export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: bool
       }
     }
   };
+
+  if (!requireEntity) {
+    return config;
+  }
+
+  const energyDataCollection: EnergyCollection | null = getEnergyDataCollection(hass);
+  const sources: EnergySource[] | undefined = energyDataCollection?.prefs?.energy_sources;
+  const energySourcesImport: string[] = sources?.filter(source => source.type === "battery").filter(source => source.stat_energy_from).map(source => source.stat_energy_from!) || [];
+  const energySourcesExport: string[] = sources?.filter(source => source.type === "battery").filter(source => source.stat_energy_to).map(source => source.stat_energy_to!) || [];
+
+  if (energySourcesImport.length === 0 && energySourcesExport.length === 0) {
+    return undefined;
+  }
+
+  if (energySourcesImport.length !== 0) {
+    config[EntitiesOptions.Import_Entities]![EntityOptions.Entity_Ids] = energySourcesImport;
+  }
+
+  if (energySourcesExport.length !== 0) {
+    config[EntitiesOptions.Export_Entities]![EntityOptions.Entity_Ids] = energySourcesExport;
+  }
+
+  return config;
 }
 
 export function getDefaultSolarConfig(hass: HomeAssistant, requireEntity: boolean): SolarConfig | undefined {

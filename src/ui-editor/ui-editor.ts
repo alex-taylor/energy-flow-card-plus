@@ -187,8 +187,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
       };
     }
 
-    cleanupConfig(this.hass, config);
-    fireEvent(this, 'config-changed', { config });
+    fireEvent(this, 'config-changed', { config: cleanupConfig(this.hass, config) });
   }
 
   static get styles(): CSSResultGroup {

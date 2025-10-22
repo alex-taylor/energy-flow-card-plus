@@ -38,7 +38,6 @@ const DOT_SIZE_STANDARD: number = 1;
 const DOT_SIZE_INDIVIDUAL: number = 2.4;
 
 @customElement(CARD_NAME)
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   static styles = styles;
 
@@ -47,7 +46,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   }
 
   public static async getConfigElement(): Promise<HTMLElement> {
-    await import("./ui-editor/ui-editor");
+    await import("@/ui-editor/ui-editor");
     return document.createElement(EDITOR_ELEMENT_NAME);
   }
 
@@ -139,8 +138,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       throw new Error("At least one entity for battery, grid or solar must be defined");
     }
 
-    cleanupConfig(this.hass, config);
-    this._config = config;
+    this._config = cleanupConfig(this.hass, config);
     this.populateEntitiesArr();
     this.resetSubscriptions();
   }
