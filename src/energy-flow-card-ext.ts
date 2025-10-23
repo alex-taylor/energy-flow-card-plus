@@ -5,7 +5,6 @@ import { customElement, property, state } from "lit/decorators.js";
 import { getDefaultConfig, cleanupConfig } from "@/config/config";
 import { EnergyCollection, EnergyData, getEnergyDataCollection, getStatistics, Statistics, StatisticValue } from "@/energy";
 import { SubscribeMixin } from "@/energy/subscribe-mixin";
-import { HomeAssistantReal } from "@/hass";
 import localize from "@/localize/localize";
 import { styles } from "@/style";
 import { BatteryState } from "./states/battery";
@@ -51,7 +50,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   }
 
   // https://lit.dev/docs/components/properties/
-  @property({ attribute: false }) public hass!: HomeAssistantReal;
+  @property({ attribute: false }) public hass!: HomeAssistant;
 
   @state() private _config!: EnergyFlowCardExtConfig;
   @state() private _entitiesArr: string[] = [];

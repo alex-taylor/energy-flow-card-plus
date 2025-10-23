@@ -103,13 +103,8 @@ export interface EnergyCollection extends Collection<EnergyData> {
   _active: number;
 }
 
-export const getEnergyDataCollection = (hass: HomeAssistant, key = '_energy'): EnergyCollection | null => {
-  if ((hass.connection as any)[key]) {
-    return (hass.connection as any)[key];
-  }
-
-  // HA has not initialized the collection yet and we don't want to interfere with that
-  return null;
+export const getEnergyDataCollection = (hass: HomeAssistant, key: string = '_energy'): EnergyCollection | undefined => {
+  return hass.connection[key] ?? undefined;
 };
 
 export async function getStatistics(hass: HomeAssistant, periodStart: Date, periodEnd: Date, entities: string[], period: '5minute' | 'hour' | 'day' | 'week' | 'month'): Promise<Statistics> {

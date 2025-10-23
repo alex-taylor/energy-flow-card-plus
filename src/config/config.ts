@@ -1,44 +1,13 @@
-import { ColourMode, DisplayMode, DotsMode, LowCarbonType, InactiveLinesMode, UnitDisplayMode, DeviceType } from "@/enums";
+import { ColourMode, DisplayMode, DotsMode, LowCarbonType, InactiveLinesMode, UnitDisplayMode, DeviceType, DefaultValues } from "@/enums";
 import { HomeAssistant } from 'custom-card-helpers';
 import { AppearanceConfig, BatteryConfig, DeviceConfig, EnergyFlowCardExtConfig, GasConfig, GridConfig, HomeConfig, LowCarbonConfig, OverridesOptions, SolarConfig } from ".";
 import { CARD_NAME } from "@/const";
 import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions } from "@/config";
 import localize from "@/localize/localize";
-import { EnergyCollection, EnergySource, getEnergyDataCollection } from "../energy";
+import { EnergyCollection, EnergySource, getEnergyDataCollection } from "@/energy";
 import { HassEntity } from "home-assistant-js-websocket";
 import equal from 'fast-deep-equal';
-
-const defaultValues = {
-  // EnergyUnits
-  watthourDecimals: 0,
-  kilowatthourDecimals: 1,
-  megawatthourDecimals: 1,
-  whkWhThreshold: 1000,
-  kwhMwhThreshold: 1000,
-
-  // Flows
-  minRate: 1,
-  maxRate: 6,
-  minEnergy: 10,
-  maxEnergy: 2000
-};
-
-type EntityCategory = "config" | "diagnostic";
-
-export interface EntityRegistryDisplayEntry {
-  entity_id: string;
-  name?: string;
-  icon?: string;
-  device_id?: string;
-  area_id?: string;
-  labels: string[];
-  hidden?: boolean;
-  entity_category?: EntityCategory;
-  translation_key?: string;
-  platform?: string;
-  display_precision?: number;
-  has_entity_name?: boolean;
-};
+import { EntityRegistryEntry } from "../hass";
 
 export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   return {
@@ -48,7 +17,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
     [EditorPages.Battery]: getDefaultBatteryConfig(hass, true),
     [EditorPages.Gas]: getDefaultGasConfig(hass, true),
     [EditorPages.Grid]: getDefaultGridConfig(hass, true),
-    [EditorPages.Home]: getDefaultHomeConfig(hass),
+    [EditorPages.Home]: getDefaultHomeConfig(),
     [EditorPages.Low_Carbon]: getDefaultLowCarbonConfig(hass, true),
     [EditorPages.Solar]: getDefaultSolarConfig(hass, true)
   };
@@ -61,19 +30,18 @@ export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConf
   config = updateConfig(config, EditorPages.Grid, getDefaultGridConfig(hass, false));
   config = updateConfig(config, EditorPages.Low_Carbon, getDefaultLowCarbonConfig(hass, false));
   config = updateConfig(config, EditorPages.Solar, getDefaultSolarConfig(hass, false));
-
   return config;
 }
 
 function pruneConfig(config: any): void {
-  for (let key in config) {
-    if (config[key] === null || config[key] === undefined) {
+  for (const key in config) {
+    if (!config[key]) {
       delete config[key];
     } else if (config[key] instanceof Array) {
       const array: any[] = config[key];
 
       array.forEach((entry, index) => {
-        if (entry === null || entry === undefined) {
+        if (!entry) {
           array.splice(index, 1);
         }
       });
@@ -109,7 +77,7 @@ function updateConfig(config: EnergyFlowCardExtConfig, key: EditorPages, default
 }
 
 function setDefaultsRecursively(config: any, defaultConfig: any): void {
-  for (let key in defaultConfig) {
+  for (const key in defaultConfig) {
     const currentNode: any = config[key];
 
     if (currentNode) {
@@ -119,7 +87,7 @@ function setDefaultsRecursively(config: any, defaultConfig: any): void {
         const defaultNode: any = defaultConfig[key];
 
         if (typeof defaultNode === "object") {
-          for (let childKey in currentNode) {
+          for (const childKey in currentNode) {
             if (typeof currentNode[childKey] === "object") {
               setDefaultsRecursively(currentNode, defaultNode);
             } else {
@@ -131,7 +99,7 @@ function setDefaultsRecursively(config: any, defaultConfig: any): void {
     }
   }
 
-  for (let key in config) {
+  for (const key in config) {
     if (!defaultConfig[key]) {
       defaultConfig[key] = config[key];
     }
@@ -146,18 +114,18 @@ export function getDefaultAppearanceConfig(): AppearanceConfig {
       [AppearanceOptions.Unit_Whitespace]: true
     },
     [AppearanceOptions.Energy_Units]: {
-      [EnergyUnitsOptions.Wh_Decimals]: defaultValues.watthourDecimals,
-      [EnergyUnitsOptions.Kwh_Decimals]: defaultValues.kilowatthourDecimals,
-      [EnergyUnitsOptions.Mwh_Decimals]: defaultValues.megawatthourDecimals,
-      [EnergyUnitsOptions.Wh_Kwh_Threshold]: defaultValues.whkWhThreshold,
-      [EnergyUnitsOptions.Kwh_Mwh_Threshold]: defaultValues.kwhMwhThreshold
+      [EnergyUnitsOptions.Wh_Decimals]: DefaultValues.WattHourDecimals,
+      [EnergyUnitsOptions.Kwh_Decimals]: DefaultValues.KilowattHourDecimals,
+      [EnergyUnitsOptions.Mwh_Decimals]: DefaultValues.MegawattHourDecimals,
+      [EnergyUnitsOptions.Wh_Kwh_Threshold]: DefaultValues.WhkWhThreshold,
+      [EnergyUnitsOptions.Kwh_Mwh_Threshold]: DefaultValues.KwhMwhThreshold
     },
     [AppearanceOptions.Flows]: {
       [FlowsOptions.Animation]: DotsMode.HASS,
-      [FlowsOptions.Min_Rate]: defaultValues.minRate,
-      [FlowsOptions.Max_Rate]: defaultValues.maxRate,
-      [FlowsOptions.Min_Energy]: defaultValues.minEnergy,
-      [FlowsOptions.Max_Energy]: defaultValues.maxEnergy
+      [FlowsOptions.Min_Rate]: DefaultValues.MinRate,
+      [FlowsOptions.Max_Rate]: DefaultValues.MaxRate,
+      [FlowsOptions.Min_Energy]: DefaultValues.MinEnergy,
+      [FlowsOptions.Max_Energy]: DefaultValues.MaxEnergy
     }
   };
 }
@@ -165,10 +133,10 @@ export function getDefaultAppearanceConfig(): AppearanceConfig {
 export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean): GridConfig | undefined {
   const config: GridConfig = {
     [EntitiesOptions.Import_Entities]: {
-      units_mode: UnitDisplayMode.After
+      [EntityOptions.Units_Mode]: UnitDisplayMode.After
     },
     [EntitiesOptions.Export_Entities]: {
-      units_mode: UnitDisplayMode.After
+      [EntityOptions.Units_Mode]: UnitDisplayMode.After
     },
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Largest_Value,
@@ -177,7 +145,7 @@ export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        units_mode: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After
       }
     }
   };
@@ -186,7 +154,12 @@ export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean
     return config;
   }
 
-  const energyDataCollection: EnergyCollection | null = getEnergyDataCollection(hass);
+  const energyDataCollection: EnergyCollection | undefined = getEnergyDataCollection(hass);
+
+  if (!energyDataCollection) {
+    return undefined;
+  }
+
   const sources: EnergySource[] | undefined = energyDataCollection?.prefs?.energy_sources;
   const energySourcesImport: string[] = sources?.filter(source => source.type === "grid" && source.flow_from).flatMap(source => source.flow_from!.map(from => from!.stat_energy_from!)) || [];
   const energySourcesExport: string[] = sources?.filter(source => source.type === "grid" && source.flow_to).flatMap(source => source.flow_to!.map(to => to!.stat_energy_to!)) || [];
@@ -221,7 +194,7 @@ export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: bool
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        units_mode: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After
       }
     }
   };
@@ -230,7 +203,12 @@ export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: bool
     return config;
   }
 
-  const energyDataCollection: EnergyCollection | null = getEnergyDataCollection(hass);
+  const energyDataCollection: EnergyCollection | undefined = getEnergyDataCollection(hass);
+
+  if (!energyDataCollection) {
+    return undefined;
+  }
+
   const sources: EnergySource[] | undefined = energyDataCollection?.prefs?.energy_sources;
   const energySourcesImport: string[] = sources?.filter(source => source.type === "battery").filter(source => source.stat_energy_from).map(source => source.stat_energy_from!) || [];
   const energySourcesExport: string[] = sources?.filter(source => source.type === "battery").filter(source => source.stat_energy_to).map(source => source.stat_energy_to!) || [];
@@ -271,7 +249,12 @@ export function getDefaultSolarConfig(hass: HomeAssistant, requireEntity: boolea
     return config;
   }
 
-  const energyDataCollection: EnergyCollection | null = getEnergyDataCollection(hass);
+  const energyDataCollection: EnergyCollection | undefined = getEnergyDataCollection(hass);
+
+  if (!energyDataCollection) {
+    return undefined;
+  }
+
   const sources: EnergySource[] | undefined = energyDataCollection?.prefs?.energy_sources;
   const energySources: string[] = sources?.filter(source => source.type === "solar").map(source => source.stat_energy_from!) || [];
 
@@ -304,7 +287,12 @@ export function getDefaultGasConfig(hass: HomeAssistant, requireEntity: boolean)
     return config;
   }
 
-  const energyDataCollection: EnergyCollection | null = getEnergyDataCollection(hass);
+  const energyDataCollection: EnergyCollection | undefined = getEnergyDataCollection(hass);
+
+  if (!energyDataCollection) {
+    return undefined;
+  }
+
   const sources: EnergySource[] | undefined = energyDataCollection?.prefs?.energy_sources;
   const energySources: string[] = sources?.filter(source => source.type === "gas").map(source => source.stat_energy_from!) || [];
 
@@ -316,7 +304,7 @@ export function getDefaultGasConfig(hass: HomeAssistant, requireEntity: boolean)
   return undefined;
 }
 
-export function getDefaultHomeConfig(hass: HomeAssistant): HomeConfig {
+export function getDefaultHomeConfig(): HomeConfig {
   return {
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Consumption_Sources,
@@ -391,7 +379,7 @@ function getCo2SignalEntity(hass: HomeAssistant): string | undefined {
   let co2SignalEntity: string | undefined;
 
   for (const entity of Object.values(hass["entities"])) {
-    const entry: EntityRegistryDisplayEntry = entity as EntityRegistryDisplayEntry;
+    const entry: EntityRegistryEntry = entity as EntityRegistryEntry;
 
     if (entry.platform !== "co2signal") {
       continue;

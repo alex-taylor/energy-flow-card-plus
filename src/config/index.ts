@@ -10,6 +10,7 @@ declare global {
 //================================================================================================================================================================================//
 // These act both as keys in the YAML config, and as the names of the fields in the below Config interfaces                                                                       //
 //================================================================================================================================================================================//
+
 export enum EditorPages {
   Appearance = "appearance",
   Grid = "grid",
@@ -175,7 +176,7 @@ export interface BatteryConfig extends DualValueNodeConfig {
 };
 
 export interface HomeConfig extends NodeConfig {
-  [EntitiesOptions.Colours]: SingleValueColourConfig;
+  [EntitiesOptions.Colours]?: SingleValueColourConfig;
 };
 
 export interface DeviceConfig {

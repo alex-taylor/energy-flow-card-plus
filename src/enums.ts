@@ -1,5 +1,20 @@
 import localize from '@/localize/localize';
 
+export enum DefaultValues {
+  // EnergyUnits
+  WattHourDecimals = 0,
+  KilowattHourDecimals = 1,
+  MegawattHourDecimals = 1,
+  WhkWhThreshold = 1000,
+  KwhMwhThreshold = 1000,
+
+  // Flows
+  MinRate = 1,
+  MaxRate = 6,
+  MinEnergy = 10,
+  MaxEnergy = 2000
+};
+
 export enum DisplayMode {
   Today = "today",
   History = "history",
