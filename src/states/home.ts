@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { HomeConfig } from "../config";
-import { ColourMode, EntityType } from "../enums";
+import { HomeConfig } from "@/config";
+import { ColourMode, EntityType } from "@/enums";
 import { State } from "./state";
 
 export class HomeState extends State {

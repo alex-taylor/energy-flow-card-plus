@@ -74,6 +74,7 @@
     <None Include="src\ui-editor\schema\index.ts" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="src\ui-helpers\" />
     <Folder Include="src\states\" />
     <Folder Include="src\flows\" />
     <Folder Include="src\config\" />
@@ -93,6 +94,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\states\battery.ts" />
+    <TypeScriptCompile Include="src\states\gas.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
     <TypeScriptCompile Include="src\states\state.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
@@ -122,6 +126,9 @@
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\ui-editor\schema\gas.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\ui-helpers\index.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
   </ItemGroup>

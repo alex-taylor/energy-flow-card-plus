@@ -141,7 +141,7 @@ function flowsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, schemaC
       type: 'grid',
       schema: [
         {
-          name: AppearanceOptions.Use_Hourly_Stats,
+          name: FlowsOptions.Use_Hourly_Stats,
           selector: { boolean: {} }
         },
         {

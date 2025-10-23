@@ -34,7 +34,6 @@ export enum AppearanceOptions {
   Inactive_Lines = "inactive_lines",
   Show_Zero_States = "show_zero_states",
   Clickable_Entities = "clickable_entities",
-  Use_Hourly_Stats = "use_hourly_stats",
   Unit_Whitespace = "unit_whitespace",
   Energy_Units = "energy_units",
   Flows = "flows"
@@ -49,6 +48,7 @@ export enum EnergyUnitsOptions {
 };
 
 export enum FlowsOptions {
+  Use_Hourly_Stats = "use_hourly_stats",
   Animation = "animation",
   Min_Rate = "min_rate",
   Max_Rate = "max_rate",
@@ -145,7 +145,7 @@ export interface EnergyUnitsConfig {
 };
 
 export interface FlowsConfig {
-  [AppearanceOptions.Use_Hourly_Stats]?: boolean;
+  [FlowsOptions.Use_Hourly_Stats]?: boolean;
   [FlowsOptions.Animation]?: DotsMode;
   [FlowsOptions.Min_Rate]?: number;
   [FlowsOptions.Max_Rate]?: number;
@@ -238,7 +238,7 @@ export interface EntityConfig {
   [EntityOptions.Decimals]?: number;
 }
 
-interface PowerOutageConfig {
+export interface PowerOutageConfig {
   [EntitiesOptions.Single_Entity]: string;
   [PowerOutageOptions.State_Alert]?: string;
   [PowerOutageOptions.Label_Alert]?: string;

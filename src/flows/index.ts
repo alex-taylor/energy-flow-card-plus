@@ -1,5 +1,5 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { Statistics, StatisticValue } from "../energy";
+import { Statistics, StatisticValue } from "@/hass";
 import type { BatteryState } from "../states/battery";
 import type { GridState } from "../states/grid";
 import type { SolarState } from "../states/solar";
@@ -66,10 +66,7 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
 
   if (grid.isPresent) {
     addFlowStats(hass, statistics, combinedStats, grid.config?.import_entities);
-
-    if (grid.hasReturn) {
-      addFlowStats(hass, statistics, combinedStats, grid.config?.export_entities);
-    }
+    addFlowStats(hass, statistics, combinedStats, grid.config?.export_entities);
   }
 
   if (battery.isPresent) {
@@ -127,12 +124,7 @@ export const calculateStatisticsFlows = (hass: HomeAssistant, statistics: Statis
       grid.state.toHome = clampStateValue(gridToHome, threshold);
       grid.state.toBattery = clampStateValue(gridToBattery, threshold);
       grid.state.fromGrid = clampStateValue(fromGrid, threshold);
-
-      if (grid.hasReturn) {
-        grid.state.toGrid = clampStateValue(toGrid, grid.config?.export_entities?.zero_threshold);
-      } else {
-        grid.state.toGrid = 0;
-      }
+      grid.state.toGrid = clampStateValue(toGrid, grid.config?.export_entities?.zero_threshold);
     }
   }
 

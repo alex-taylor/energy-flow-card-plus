@@ -15,12 +15,9 @@ export interface HassSubscribeElement {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T = any> = new (...args: any[]) => T;
 
-export const SubscribeMixin = <T extends Constructor<ReactiveElement>>(
-  superClass: T
-) => {
+export const SubscribeMixin = <T extends Constructor<ReactiveElement>>(superClass: T) => {
   class SubscribeClass extends superClass {
     @property({ attribute: false }) public hass?: HomeAssistant;
-
     private __unsubs?: Array<UnsubscribeFunc | Promise<UnsubscribeFunc>>;
 
     public connectedCallback() {
@@ -35,6 +32,7 @@ export const SubscribeMixin = <T extends Constructor<ReactiveElement>>(
 
     protected updated(changedProps: PropertyValues) {
       super.updated(changedProps);
+
       if (changedProps.has("hass")) {
         this.__checkSubscribed();
       }
@@ -45,9 +43,7 @@ export const SubscribeMixin = <T extends Constructor<ReactiveElement>>(
       this.__checkSubscribed();
     }
 
-    protected hassSubscribe(): Array<
-      UnsubscribeFunc | Promise<UnsubscribeFunc>
-    > {
+    protected hassSubscribe(): Array<UnsubscribeFunc | Promise<UnsubscribeFunc>> {
       return [];
     }
 
@@ -55,26 +51,26 @@ export const SubscribeMixin = <T extends Constructor<ReactiveElement>>(
       if (this.__unsubs) {
         while (this.__unsubs.length) {
           const unsub = this.__unsubs.pop()!;
+
           if (unsub instanceof Promise) {
             unsub.then((unsubFunc) => unsubFunc());
           } else {
             unsub();
           }
         }
+
         this.__unsubs = undefined;
       }
     }
 
     private __checkSubscribed(): void {
-      if (
-        this.__unsubs !== undefined ||
-        !(this as unknown as Element).isConnected ||
-        this.hass === undefined
-      ) {
+      if (this.__unsubs !== undefined || !(this as unknown as Element).isConnected || this.hass === undefined) {
         return;
       }
+
       this.__unsubs = this.hassSubscribe();
     }
   }
+
   return SubscribeClass;
 };

@@ -4,9 +4,7 @@ BUGS
 The 'multi entity' picker is sizing itself to the full width of its entity's name, should be constrained
   - HASS bug
 
-Grid Export completely stuffed!
-
-Still got bugs with the midnight rollover
+Still got bugs with the midnight rollover?
 
 Reinstate the -ve coords for the lines, they are required so that the dots don't just vanish!
   - and presumably they should extend at both ends?
@@ -20,14 +18,11 @@ The 'loading...' flag doesn't seem to be getting cleared reliably
 
 Secondary value being mis-coloured, needs to take into account the relevant setting
 
-Secondary value not using the entity's units
+Secondary value not displayed using the entity's units
   - this is because they are not being passed in
 
-Home Entity, Individual are not yet including live deltas
+Devices, Gas, Secondaries are not yet including live deltas
 
-Individual icon also coloured when the 'colour value' flag is set
-  - 'colour icon' flags not working at all
-  - oddly, doesn't affect low-carbon
 
 
 
@@ -57,11 +52,6 @@ Perhaps support images?
 
 GENERAL
 -------
-
-Move the sensor type-detection to the init code, it only needs to be done once per session
-  - change _entitiesArr to a Map where the keys are the IDs and the values are the types
-  - might as well do the type as an enum, and track all three values
-
 
 README and CHANGELOG updates
 

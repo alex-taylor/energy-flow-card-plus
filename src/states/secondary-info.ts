@@ -1,6 +1,6 @@
-import { SecondaryInfoConfig } from "../config";
+import { EntitiesOptions, EntityOptions, SecondaryInfoConfig, SecondaryInfoOptions } from "@/config";
 
-export class SecondaryInfoEntity {
+export class SecondaryInfoState {
   config?: SecondaryInfoConfig;
   isPresent: boolean;
   state: string | number | null;
@@ -8,7 +8,7 @@ export class SecondaryInfoEntity {
 
   public constructor(config: SecondaryInfoConfig | undefined) {
     this.config = config;
-    this.isPresent = config?.entities?.entity_ids?.length !== 0 && config?.template !== undefined;
+    this.isPresent = config?.[EntitiesOptions.Entities]?.[EntityOptions.Entity_Ids]?.length !== 0 || config?.[SecondaryInfoOptions.Template] !== undefined;
     this.state = 0;
 
     // TODO: initialise icon

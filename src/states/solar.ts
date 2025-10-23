@@ -1,7 +1,7 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { SolarConfig } from "../config";
-import { EntityType } from "../enums";
-import { SingleValueState, State } from "./state";
+import { SolarConfig } from "@/config";
+import { EntityType } from "@/enums";
+import { SingleValueState } from "./state";
 
 export class SolarState extends SingleValueState {
   config?: SolarConfig;

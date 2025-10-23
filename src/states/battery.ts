@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { BatteryConfig } from "../config";
-import { EntityType } from "../enums";
+import { BatteryConfig } from "@/config";
+import { EntityType } from "@/enums";
 import { DualValueState } from "./state";
 
 export class BatteryState extends DualValueState {

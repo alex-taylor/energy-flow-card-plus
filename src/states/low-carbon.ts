@@ -1,6 +1,6 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { LowCarbonConfig } from "../config";
-import { EntityType } from "../enums";
+import { LowCarbonConfig } from "@/config";
+import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
 
 export class LowCarbonState extends SingleValueState {

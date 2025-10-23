@@ -4,10 +4,10 @@ import { AppearanceConfig, BatteryConfig, DeviceConfig, EnergyFlowCardExtConfig,
 import { CARD_NAME } from "@/const";
 import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions } from "@/config";
 import localize from "@/localize/localize";
-import { EnergyCollection, EnergySource, getEnergyDataCollection } from "@/energy";
+import { getEnergyDataCollection } from "@/energy";
 import { HassEntity } from "home-assistant-js-websocket";
 import equal from 'fast-deep-equal';
-import { EntityRegistryEntry } from "../hass";
+import { EnergyCollection, EnergySource, EntityRegistryEntry } from "@/hass";
 
 export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   return {
@@ -35,7 +35,7 @@ export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConf
 
 function pruneConfig(config: any): void {
   for (const key in config) {
-    if (!config[key]) {
+    if (config[key] === undefined || config[key] === null) {
       delete config[key];
     } else if (config[key] instanceof Array) {
       const array: any[] = config[key];

@@ -13,13 +13,13 @@ export enum DefaultValues {
   MaxRate = 6,
   MinEnergy = 10,
   MaxEnergy = 2000
-};
+}
 
 export enum DisplayMode {
   Today = "today",
   History = "history",
   Hybrid = "hybrid"
-};
+}
 
 export namespace DisplayMode {
   export function getName(value: DisplayMode): string {
@@ -46,7 +46,7 @@ export enum ColourMode {
   Battery = "battery",
   Gas = "gas",
   Custom = "custom"
-};
+}
 
 export namespace ColourMode {
   export function getName(value: ColourMode): string {
@@ -68,12 +68,12 @@ export enum EntityType {
   Solar_Secondary = "solarSecondary",
   LowCarbon = "low-carbon",
   LowCarbon_Secondary = "nonFossilSecondary"
-};
+}
 
 export enum LowCarbonType {
   Energy = "energy",
   Percentage = "percentage"
-};
+}
 
 export namespace LowCarbonType {
   export function getName(value: LowCarbonType): string {
@@ -90,7 +90,7 @@ export enum DeviceType {
   Production_Electric = "production_electric",
   Consumption_Gas = "consumption_gas",
   Production_Gas = "production_gas"
-};
+}
 
 export namespace DeviceType {
   export function getName(value: DeviceType): string {
@@ -100,14 +100,14 @@ export namespace DeviceType {
   export function getItem(value: DeviceType): { label: string, value: string } {
     return { label: getName(value), value: value };
   }
-};
+}
 
 export enum InactiveLinesMode {
   Normal = "normal",
   Hidden = "hidden",
   Dimmed = "dimmed",
   Greyed = "greyed"
-};
+}
 
 export namespace InactiveLinesMode {
   export function getName(value: InactiveLinesMode): string {
@@ -117,13 +117,13 @@ export namespace InactiveLinesMode {
   export function getItem(value: InactiveLinesMode): { label: string, value: string } {
     return { label: getName(value), value: value };
   }
-};
+}
 
 export enum DotsMode {
   Off = "off",
   HASS = "hass",
   Dynamic = "dynamic"
-};
+}
 
 export namespace DotsMode {
   export function getName(value: DotsMode): string {
@@ -133,7 +133,7 @@ export namespace DotsMode {
   export function getItem(value: DotsMode): { label: string, value: string } {
     return { label: getName(value), value: value };
   }
-};
+}
 
 function getEditorLabel(type: string, value: any): string {
   return localize(type + "." + value);
@@ -153,4 +153,10 @@ export namespace UnitDisplayMode {
   export function getItem(value: UnitDisplayMode): { label: string, value: string } {
     return { label: getName(value), value: value };
   }
+}
+
+export enum EntityMode {
+  Totalising = "totalising",
+  Resetting = "resetting",
+  Misconfigured_Resetting = "misconfigured resetting"
 }

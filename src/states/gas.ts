@@ -1,13 +1,13 @@
 import { HomeAssistant } from "custom-card-helpers";
-import { DeviceConfig } from "@/config";
+import { GasConfig } from "@/config";
 import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
 
-export class DeviceState extends SingleValueState {
-  config?: DeviceConfig;
+export class GasState extends SingleValueState {
+  config?: GasConfig;
   state: number;
 
-  public constructor(hass: HomeAssistant, config: DeviceConfig | undefined, type: EntityType, defaultName: string, defaultIcon: string) {
+  public constructor(hass: HomeAssistant, config: GasConfig | undefined, type: EntityType, defaultName: string, defaultIcon: string) {
     super(
       config,
       type,

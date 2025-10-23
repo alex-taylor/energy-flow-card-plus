@@ -1,8 +1,8 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { HassEntity } from "home-assistant-js-websocket";
-import { coerceNumber, isNumberValue, unavailableOrMisconfiguredError } from "../utils";
-import { Statistics, StatisticValue } from "../energy";
-import { EntityConfig } from "../config";
+import { coerceNumber, isNumberValue, unavailableOrMisconfiguredError } from "@/utils";
+import { Statistics, StatisticValue } from "@/hass";
+import { EntityConfig } from "@/config";
 
 export const entityExists = (hass: HomeAssistant, entityId: string): boolean => entityId in hass.states;
 

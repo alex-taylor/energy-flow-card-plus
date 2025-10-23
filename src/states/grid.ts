@@ -1,7 +1,7 @@
 import { HomeAssistant } from "custom-card-helpers";
 import { html, TemplateResult } from "lit";
-import { GridConfig } from "../config";
-import { EntityType } from "../enums";
+import { EntitiesOptions, GridConfig, PowerOutageConfig, PowerOutageOptions } from "@/config";
+import { EntityType } from "@/enums";
 import { DualValueState } from "./state";
 
 export class GridState extends DualValueState {
@@ -38,11 +38,13 @@ export class GridState extends DualValueState {
       toHome: 0
     };
 
+    const powerOutageConfig: PowerOutageConfig | undefined = config?.[PowerOutageOptions.Power_Outage];
+
     this.powerOutage = {
-      isPresent: config?.power_outage?.entity !== undefined,
-      isOutage: (config?.power_outage?.entity && hass.states[config.power_outage.entity]?.state) === (config?.power_outage?.state_alert ?? "on"),
-      icon: config?.power_outage?.icon_alert || "mdi:transmission-tower-off",
-      name: config?.power_outage?.label_alert ?? html`Power<br />Outage`
+      isPresent: powerOutageConfig?.[EntitiesOptions.Single_Entity] !== undefined,
+      isOutage: powerOutageConfig?.[EntitiesOptions.Single_Entity] !== undefined && hass.states[powerOutageConfig?.[EntitiesOptions.Single_Entity]]?.state === (powerOutageConfig?.[PowerOutageOptions.State_Alert] ?? "on"),
+      icon: powerOutageConfig?.[PowerOutageOptions.Icon_Alert] || "mdi:transmission-tower-off",
+      name: powerOutageConfig?.[PowerOutageOptions.Label_Alert] ?? html`Power<br />Outage`
     };
   }
 };
