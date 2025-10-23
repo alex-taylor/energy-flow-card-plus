@@ -35,8 +35,6 @@ Individual icon also coloured when the 'colour value' flag is set
 FEATURES
 --------
 
-Add an icon to the pages to indicate which ones are fully-configured (ie, active with an entity)
-
 If data is still loading when we render, go ahead and render the circles/lines anyway, just put 'loading' for the values
 
 Bigger circles!
@@ -44,10 +42,6 @@ Bigger circles!
 
 Display the flow rates as hover-overs on the lines
   Or over the circles?
-
-See if it's possible to pick up the built-in energy config for the sensors?
-  - this works with a new card with its default config, but as soon as you set and then remove an entity you lose it
-  - if an entity is set, it overrides the built-in one, if present
 
 Might need to support a vertical layout
   - either dynamic, based on available width and the number of Nodes to draw, or user-controlled

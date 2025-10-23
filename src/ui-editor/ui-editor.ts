@@ -2,7 +2,7 @@ import { LitElement, css, html, nothing, TemplateResult, CSSResultGroup } from '
 import { customElement, property, state } from 'lit/decorators.js';
 import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helpers';
 import { assert } from 'superstruct';
-import { DeviceConfig, EditorPages, EnergyFlowCardExtConfig } from '@/config';
+import { DeviceConfig, EditorPages, EnergyFlowCardExtConfig, EntitiesOptions, EntityOptions } from '@/config';
 import { appearanceSchema, generalConfigSchema } from './schema';
 import localize from '@/localize/localize';
 import { gridSchema } from './schema/grid';
@@ -16,63 +16,75 @@ import "./components/devices-editor";
 import { CARD_NAME } from '@/const';
 import { cardConfigStruct } from '@/config/validation';
 import { computeHelperCallback, computeLabelCallback } from '.';
-import { mdiChevronRight } from '@mdi/js';
-import { getDefaultLowCarbonConfig, cleanupConfig, getDefaultAppearanceConfig, getDefaultGridConfig, getDefaultGasConfig, getDefaultSolarConfig, getDefaultBatteryConfig, getDefaultHomeConfig } from '../config/config';
+import { mdiChevronRight, mdiCheckCircle } from '@mdi/js';
+import { getDefaultLowCarbonConfig, cleanupConfig, getDefaultAppearanceConfig, getDefaultGridConfig, getDefaultGasConfig, getDefaultSolarConfig, getDefaultBatteryConfig, getDefaultHomeConfig } from '@/config/config';
 
 export const EDITOR_ELEMENT_NAME = CARD_NAME + "-editor";
+
+const showIconForSingleValueNode = (config: any) => config?.[EntitiesOptions.Entities]?.[EntityOptions.Entity_Ids]?.length;
+const showIconForDualValueNode = (config: any) => config?.[EntitiesOptions.Import_Entities]?.[EntityOptions.Entity_Ids]?.length || config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids]?.length;
 
 const CONFIG_PAGES: {
   page: EditorPages;
   icon: string;
   schema?;
   createConfig?;
+  showIcon?;
 }[] = [
     {
       page: EditorPages.Appearance,
       icon: "mdi:cog",
       schema: appearanceSchema,
-      createConfig: getDefaultAppearanceConfig
+      createConfig: getDefaultAppearanceConfig,
+      showIcon: () => false
     },
     {
       page: EditorPages.Grid,
       icon: "mdi:transmission-tower",
       schema: gridSchema,
-      createConfig: getDefaultGridConfig
+      createConfig: getDefaultGridConfig,
+      showIcon: (config: EnergyFlowCardExtConfig) => showIconForDualValueNode(config?.[EditorPages.Grid])
     },
     {
       page: EditorPages.Gas,
       icon: "mdi:fire",
       schema: gasSchema,
-      createConfig: getDefaultGasConfig
+      createConfig: getDefaultGasConfig,
+      showIcon: (config: EnergyFlowCardExtConfig) => showIconForSingleValueNode(config?.[EditorPages.Gas])
     },
     {
       page: EditorPages.Solar,
       icon: "mdi:solar-power",
       schema: solarSchema,
-      createConfig: getDefaultSolarConfig
+      createConfig: getDefaultSolarConfig,
+      showIcon: (config: EnergyFlowCardExtConfig) => showIconForSingleValueNode(config?.[EditorPages.Solar])
     },
     {
       page: EditorPages.Battery,
       icon: "mdi:battery-high",
       schema: batterySchema,
-      createConfig: getDefaultBatteryConfig
+      createConfig: getDefaultBatteryConfig,
+      showIcon: (config: EnergyFlowCardExtConfig) => showIconForDualValueNode(config?.[EditorPages.Battery])
     },
     {
       page: EditorPages.Low_Carbon,
       icon: "mdi:leaf",
       schema: lowCarbonSchema,
-      createConfig: getDefaultLowCarbonConfig
+      createConfig: getDefaultLowCarbonConfig,
+      showIcon: (config: EnergyFlowCardExtConfig) => showIconForSingleValueNode(config?.[EditorPages.Low_Carbon])
     },
     {
       page: EditorPages.Home,
       icon: "mdi:home",
       schema: homeSchema,
-      createConfig: getDefaultHomeConfig
+      createConfig: getDefaultHomeConfig,
+      showIcon: () => false
     },
     {
       page: EditorPages.Devices,
       icon: "mdi:devices",
-      createConfig: () => { }
+      createConfig: () => { },
+      showIcon: (config: EnergyFlowCardExtConfig) => config?.[EditorPages.Devices]?.map(device => device[EntitiesOptions.Entities]?.[EntityOptions.Entity_Ids]?.length).find(length => length)
     }
   ];
 
@@ -104,7 +116,6 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
       }
 
       const configForPage: DeviceConfig = config[currentPage];
-      // TODO: sanitize the config, adding in missing mandatory values?
 
       return html`
         <energy-flow-card-ext-page-header @go-back=${this._goBack} icon="${icon}" label=${localize(`editor.${currentPage}`)}></energy-flow-card-ext-page-header>
@@ -154,10 +165,10 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
   }
 
   private _renderPageLinks = (): TemplateResult[] => {
-    return CONFIG_PAGES.map(page => this._renderPageLink(page.page, page.icon));
+    return CONFIG_PAGES.map(page => this._renderPageLink(page.page, page.icon, page.showIcon(this._config)));
   };
 
-  private _renderPageLink = (page: EditorPages, icon: string): TemplateResult => {
+  private _renderPageLink = (page: EditorPages, icon: string, showIcon: boolean): TemplateResult => {
     if (!page) {
       return html``;
     }
@@ -167,6 +178,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
         <ha-icon class="page-icon" .icon=${icon}></ha-icon>
         <div class="page-label">
           ${localize(`editor.${page}`)}
+          ${showIcon ? html`<ha-svg-icon class="page-checkmark" .path=${mdiCheckCircle}></ha-svg-icon>` : ``}
         </div>
         <ha-svg-icon .path=${mdiChevronRight}></ha-svg-icon>
       </ha-control-button>
@@ -218,6 +230,11 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
           width: 100%;
           font-size: 1.2rem;
           text-align: left;
+        }
+
+        .page-checkmark {
+          padding-left: 1rem;
+          color: green;
         }
       `
     ];
