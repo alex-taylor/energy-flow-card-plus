@@ -8,8 +8,8 @@ import { DeviceConfig, EnergyFlowCardExtConfig, EntitiesOptions, OverridesOption
 import { deviceSchema } from "../schema/device";
 import { computeLabelCallback } from "..";
 import { repeat } from "lit/directives/repeat.js";
-import localize from "@/localize/localize";
-import { getDefaultDeviceConfig } from '../../config/config';
+import { localize } from "@/localize/localize";
+import { getDefaultDeviceConfig } from '@/config/config';
 
 const DEVICES_EDITOR_ELEMENT_NAME = CARD_NAME + "-devices-editor";
 

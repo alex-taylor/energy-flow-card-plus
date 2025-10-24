@@ -1,4 +1,4 @@
-import localize from '@/localize/localize';
+import { localize } from '@/localize/localize';
 
 export enum DefaultValues {
   // EnergyUnits
@@ -62,6 +62,8 @@ export enum EntityType {
   Home = "home",
   HomeSecondary = "homeSecondary",
   Battery = "battery",
+  Device = "device",
+  Gas = "gas",
   Grid = "grid",
   Grid_Secondary = "gridSecondary",
   Solar = "solar",

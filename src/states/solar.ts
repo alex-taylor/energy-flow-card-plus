@@ -1,4 +1,4 @@
-import { HomeAssistant } from "custom-card-helpers";
+import { localize } from "@/localize/localize";
 import { SolarConfig } from "@/config";
 import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
@@ -13,11 +13,11 @@ export class SolarState extends SingleValueState {
     toBattery: number;
   };
 
-  public constructor(hass: HomeAssistant, config: SolarConfig | undefined) {
+  public constructor(config: SolarConfig | undefined) {
     super(
       config,
       EntityType.Solar,
-      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.solar"),
+      localize("editor.solar"),
       "mdi:solar-power"
     );
 

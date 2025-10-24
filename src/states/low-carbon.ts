@@ -1,4 +1,4 @@
-import { HomeAssistant } from "custom-card-helpers";
+import { localize } from "@/localize/localize";
 import { LowCarbonConfig } from "@/config";
 import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
@@ -7,11 +7,11 @@ export class LowCarbonState extends SingleValueState {
   config?: LowCarbonConfig;
   state: number;
 
-  public constructor(hass: HomeAssistant, config: LowCarbonConfig | undefined) {
+  public constructor(config: LowCarbonConfig | undefined) {
     super(
       config,
       EntityType.LowCarbon,
-      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.low_carbon"),
+      localize("editor.low_carbon"),
       "mdi:leaf"
     );
 

@@ -1,7 +1,7 @@
-import { HomeAssistant } from "custom-card-helpers";
 import { BatteryConfig } from "@/config";
 import { EntityType } from "@/enums";
 import { DualValueState } from "./state";
+import { localize } from "@/localize/localize";
 
 export class BatteryState extends DualValueState {
   config?: BatteryConfig;
@@ -13,11 +13,11 @@ export class BatteryState extends DualValueState {
     toHome: number;
   };
 
-  public constructor(hass: HomeAssistant, config: BatteryConfig | undefined) {
+  public constructor(config: BatteryConfig | undefined) {
     super(
       config,
       EntityType.Battery,
-      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.battery"),
+      localize("editor.battery"),
       "mdi:battery-high"
     );
 

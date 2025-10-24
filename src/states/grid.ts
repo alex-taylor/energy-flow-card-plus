@@ -1,4 +1,4 @@
-import { HomeAssistant } from "custom-card-helpers";
+import { localize } from "@/localize/localize";
 import { html, TemplateResult } from "lit";
 import { EntitiesOptions, GridConfig, PowerOutageConfig, PowerOutageOptions } from "@/config";
 import { EntityType } from "@/enums";
@@ -21,11 +21,11 @@ export class GridState extends DualValueState {
     name: string | TemplateResult<1>;
   };
 
-  public constructor(hass: HomeAssistant, config: GridConfig | undefined) {
+  public constructor(config: GridConfig | undefined) {
     super(
       config,
       EntityType.Grid,
-      hass.localize("ui.panel.lovelace.cards.energy.energy_distribution.grid"),
+      localize("editor.grid"),
       "mdi:transmission-tower"
     );
 
@@ -42,7 +42,8 @@ export class GridState extends DualValueState {
 
     this.powerOutage = {
       isPresent: powerOutageConfig?.[EntitiesOptions.Single_Entity] !== undefined,
-      isOutage: powerOutageConfig?.[EntitiesOptions.Single_Entity] !== undefined && hass.states[powerOutageConfig?.[EntitiesOptions.Single_Entity]]?.state === (powerOutageConfig?.[PowerOutageOptions.State_Alert] ?? "on"),
+      // TODO
+      isOutage: false,//powerOutageConfig?.[EntitiesOptions.Single_Entity] !== undefined && hass.states[powerOutageConfig?.[EntitiesOptions.Single_Entity]]?.state === (powerOutageConfig?.[PowerOutageOptions.State_Alert] ?? "on"),
       icon: powerOutageConfig?.[PowerOutageOptions.Icon_Alert] || "mdi:transmission-tower-off",
       name: powerOutageConfig?.[PowerOutageOptions.Label_Alert] ?? html`Power<br />Outage`
     };

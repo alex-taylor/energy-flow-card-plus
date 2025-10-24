@@ -23,6 +23,8 @@ Secondary value not displayed using the entity's units
 
 Devices, Gas, Secondaries are not yet including live deltas
 
+Power-outage is calculating its state up-front, rather than live as-needed (see GridState)
+
 
 
 

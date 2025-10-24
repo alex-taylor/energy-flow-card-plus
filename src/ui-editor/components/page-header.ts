@@ -3,7 +3,7 @@ import { fireEvent } from "custom-card-helpers";
 import { css, CSSResultGroup, html, LitElement, TemplateResult } from "lit";
 import { customElement, property } from "lit-element";
 import { CARD_NAME } from "@/const";
-import localize from "@/localize/localize";
+import { localize } from "@/localize/localize";
 
 const PAGE_HEADER_ELEMENT_NAME = CARD_NAME + "-page-header";
 

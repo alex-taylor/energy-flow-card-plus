@@ -76,7 +76,6 @@
   <ItemGroup>
     <Folder Include="src\ui-helpers\" />
     <Folder Include="src\states\" />
-    <Folder Include="src\flows\" />
     <Folder Include="src\config\" />
     <Folder Include="src\ui-editor\components\" />
     <Folder Include="__tests__" />
@@ -118,7 +117,6 @@
     <TypeScriptCompile Include="src\enums.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
-    <TypeScriptCompile Include="src\flows\index.ts" />
     <TypeScriptCompile Include="src\ui-editor\components\devices-editor.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>

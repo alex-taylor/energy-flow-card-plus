@@ -4,7 +4,7 @@ import { fireEvent, HomeAssistant, LovelaceCardEditor } from 'custom-card-helper
 import { assert } from 'superstruct';
 import { DeviceConfig, EditorPages, EnergyFlowCardExtConfig, EntitiesOptions, EntityOptions } from '@/config';
 import { appearanceSchema, generalConfigSchema } from './schema';
-import localize from '@/localize/localize';
+import { localize } from '@/localize/localize';
 import { gridSchema } from './schema/grid';
 import { solarSchema } from './schema/solar';
 import { batterySchema } from './schema/battery';

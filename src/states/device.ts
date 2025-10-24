@@ -1,18 +1,18 @@
-import { HomeAssistant } from "custom-card-helpers";
-import { DeviceConfig } from "@/config";
+import { DeviceConfig, OverridesOptions } from "@/config";
 import { EntityType } from "@/enums";
+import { localize } from "../localize/localize";
 import { SingleValueState } from "./state";
 
 export class DeviceState extends SingleValueState {
   config?: DeviceConfig;
   state: number;
 
-  public constructor(hass: HomeAssistant, config: DeviceConfig | undefined, type: EntityType, defaultName: string, defaultIcon: string) {
+  public constructor(config: DeviceConfig | undefined) {
     super(
       config,
-      type,
-      defaultName,
-      defaultIcon
+      EntityType.Device,
+      config?.[OverridesOptions.Name] || localize("common.new_device"),
+      config?.[OverridesOptions.Icon] || "mdi:devices"
     );
 
     this.config = config;

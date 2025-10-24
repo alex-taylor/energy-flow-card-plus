@@ -1,18 +1,18 @@
-import { HomeAssistant } from "custom-card-helpers";
 import { GasConfig } from "@/config";
 import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
+import { localize } from "@/localize/localize";
 
 export class GasState extends SingleValueState {
   config?: GasConfig;
   state: number;
 
-  public constructor(hass: HomeAssistant, config: GasConfig | undefined, type: EntityType, defaultName: string, defaultIcon: string) {
+  public constructor(config: GasConfig | undefined) {
     super(
       config,
-      type,
-      defaultName,
-      defaultIcon
+      EntityType.Gas,
+      localize("editor.gas"),
+      "mdi:fire"
     );
 
     this.config = config;
