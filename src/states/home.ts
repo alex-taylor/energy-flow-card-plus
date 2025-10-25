@@ -4,7 +4,12 @@ import { ColourMode, EntityType } from "@/enums";
 import { State } from "./state";
 
 export class HomeState extends State {
-  state: number;
+  state: {
+    fromSolar: number;
+    fromGrid: number;
+    fromBattery: number;
+  };
+
   colorIcon?: ColourMode;
 
   public constructor(config: HomeConfig | undefined) {
@@ -16,7 +21,12 @@ export class HomeState extends State {
       "mdi:home"
     );
 
-    this.state = 0;
+    this.state = {
+      fromSolar: 0,
+      fromGrid: 0,
+      fromBattery: 0
+    };
+
     this.colorIcon = config?.[EntitiesOptions.Colours]?.[ColourOptions.Icon];
   }
 }

@@ -54,6 +54,7 @@
     "mwh_decimals": "MWh decimals",
 
     "entity_ids": "",
+    "entity_ids#errortext": "testing",
     "units_mode": "Show units",
     "units": "Override units",
     "zero_threshold": "Threshold",
@@ -76,7 +77,8 @@
 
     "battery": "Battery",
 
-    "low_carbon": "Low-Carbon Energy",
+    "low_carbon": "Low-carbon",
+    "low_carbon_energy": "Low-Carbon Energy",
     "low_carbon_show_as": "Show As",
 
     "home": "Home",

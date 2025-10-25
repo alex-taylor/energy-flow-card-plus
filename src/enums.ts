@@ -62,6 +62,7 @@ export enum EntityType {
   Home = "home",
   HomeSecondary = "homeSecondary",
   Battery = "battery",
+  Battery_Secondary = "batterySecondary",
   Device = "device",
   Gas = "gas",
   Grid = "grid",

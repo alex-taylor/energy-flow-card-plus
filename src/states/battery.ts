@@ -7,10 +7,10 @@ export class BatteryState extends DualValueState {
   config?: BatteryConfig;
 
   state: {
-    toBattery: number;
-    fromBattery: number;
-    toGrid: number;
-    toHome: number;
+    import: number;
+    export: number;
+    fromSolar: number;
+    fromGrid: number;
   };
 
   public constructor(config: BatteryConfig | undefined) {
@@ -24,10 +24,10 @@ export class BatteryState extends DualValueState {
     this.config = config;
 
     this.state = {
-      toBattery: 0,
-      fromBattery: 0,
-      toGrid: 0,
-      toHome: 0
+      import: 0,
+      export: 0,
+      fromSolar: 0,
+      fromGrid: 0
     };
   }
 };

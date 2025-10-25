@@ -6,7 +6,7 @@ import { customElement, property, state } from "lit-element";
 import { CARD_NAME } from "@/const";
 import { DeviceConfig, EnergyFlowCardExtConfig, EntitiesOptions, OverridesOptions } from "@/config";
 import { deviceSchema } from "../schema/device";
-import { computeLabelCallback } from "..";
+import { computeHelperCallback, computeLabelCallback } from "..";
 import { repeat } from "lit/directives/repeat.js";
 import { localize } from "@/localize/localize";
 import { getDefaultDeviceConfig } from '@/config/config';
@@ -73,6 +73,7 @@ export class DevicesEditor extends LitElement {
           .data=${this._devices[this._indexBeingEdited]}
           .schema=${deviceSchema(this.config, this._devices[this._indexBeingEdited])}
           .computeLabel=${computeLabelCallback}
+          .computeHelper=${computeHelperCallback}
           @value-changed=${this._valueChanged}
         ></ha-form>
       `;

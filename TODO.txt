@@ -1,6 +1,40 @@
 BUGS
 ----
 
+Entity-validation:
+  - in the UI, flag up when:
+    - a non-existent entity is specified
+    - a non-energy primary entity is specified
+    - a non-stats-compatible entity is specified
+    - populate the 'error' object with the details
+
+  - icon:
+    - green: all entities are valid
+    - yellow: at least one primary entity is valid and at least one other (primary/secondary) entity is invalid
+    - red: all primary entities are invalid
+    - nothing: no primary entities are defined at all
+
+  - in the States object
+    - filter out the invalid entities when building the arrays
+    - also need to filter them out when doing the 'isPresent' flags
+
+
+
+Units:
+  - move the whitespace flag to UnitsMode
+
+Decimals:
+  - add flag to 'always show dps' (per-entity)
+
+Low-carbon:
+  - need to force the units
+  - drop the entity, it's not actually what's being displayed!
+  - probably just need to pass the 'deviceClass' in, with some suitable value for the %
+
+
+
+
+
 The 'multi entity' picker is sizing itself to the full width of its entity's name, should be constrained
   - HASS bug
 
@@ -17,11 +51,6 @@ The 'loading...' flag doesn't seem to be getting cleared reliably
   - should, however, display the circles but with 'Unknown' for their values
 
 Secondary value being mis-coloured, needs to take into account the relevant setting
-
-Secondary value not displayed using the entity's units
-  - this is because they are not being passed in
-
-Devices, Gas, Secondaries are not yet including live deltas
 
 Power-outage is calculating its state up-front, rather than live as-needed (see GridState)
 

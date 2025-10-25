@@ -7,10 +7,7 @@ export class SolarState extends SingleValueState {
   config?: SolarConfig;
 
   state: {
-    total: number;
-    toHome: number;
-    toGrid: number;
-    toBattery: number;
+    import: number;
   };
 
   public constructor(config: SolarConfig | undefined) {
@@ -24,10 +21,7 @@ export class SolarState extends SingleValueState {
     this.config = config;
 
     this.state = {
-      total: 0,
-      toHome: 0,
-      toGrid: 0,
-      toBattery: 0
+      import: 0
     };
   }
 }

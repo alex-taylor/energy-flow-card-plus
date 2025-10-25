@@ -5,7 +5,6 @@ import { SingleValueState } from "./state";
 
 export class LowCarbonState extends SingleValueState {
   config?: LowCarbonConfig;
-  state: number;
 
   public constructor(config: LowCarbonConfig | undefined) {
     super(
@@ -16,6 +15,5 @@ export class LowCarbonState extends SingleValueState {
     );
 
     this.config = config;
-    this.state = 0;
   }
 }

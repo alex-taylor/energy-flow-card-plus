@@ -134,6 +134,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
               .schema=${schema(config, configForPage)}
               .computeLabel=${computeLabelCallback}
               .computeHelper=${computeHelperCallback}
+              .error=${{import_entities: "testing"}}
               @value-changed=${this._valueChanged}
             ></ha-form>
           `

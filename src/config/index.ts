@@ -17,7 +17,7 @@ export enum EditorPages {
   Gas = "gas",
   Solar = "solar",
   Battery = "battery",
-  Low_Carbon = "low_carbon",
+  Low_Carbon = "low_carbon_energy",
   Home = "home",
   Devices = "devices"
 };

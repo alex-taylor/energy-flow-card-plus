@@ -8,10 +8,11 @@ export class GridState extends DualValueState {
   config?: GridConfig;
 
   state: {
-    fromGrid: number;
-    toGrid: number;
-    toBattery: number;
-    toHome: number;
+    import: number;
+    export: number;
+    highCarbon: number;
+    fromBattery: number;
+    fromSolar: number;
   };
 
   powerOutage: {
@@ -32,10 +33,11 @@ export class GridState extends DualValueState {
     this.config = config;
 
     this.state = {
-      fromGrid: 0,
-      toGrid: 0,
-      toBattery: 0,
-      toHome: 0
+      import: 0,
+      export: 0,
+      highCarbon: 0,
+      fromBattery: 0,
+      fromSolar: 0
     };
 
     const powerOutageConfig: PowerOutageConfig | undefined = config?.[PowerOutageOptions.Power_Outage];
@@ -45,6 +47,7 @@ export class GridState extends DualValueState {
       // TODO
       isOutage: false,//powerOutageConfig?.[EntitiesOptions.Single_Entity] !== undefined && hass.states[powerOutageConfig?.[EntitiesOptions.Single_Entity]]?.state === (powerOutageConfig?.[PowerOutageOptions.State_Alert] ?? "on"),
       icon: powerOutageConfig?.[PowerOutageOptions.Icon_Alert] || "mdi:transmission-tower-off",
+      // TODO localize this
       name: powerOutageConfig?.[PowerOutageOptions.Label_Alert] ?? html`Power<br />Outage`
     };
   }
