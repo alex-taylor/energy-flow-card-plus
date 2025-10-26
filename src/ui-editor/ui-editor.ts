@@ -17,7 +17,7 @@ import { CARD_NAME } from '@/const';
 import { cardConfigStruct } from '@/config/validation';
 import { computeHelperCallback, computeLabelCallback } from '.';
 import { mdiChevronRight, mdiCheckCircle } from '@mdi/js';
-import { getDefaultLowCarbonConfig, cleanupConfig, getDefaultAppearanceConfig, getDefaultGridConfig, getDefaultGasConfig, getDefaultSolarConfig, getDefaultBatteryConfig, getDefaultHomeConfig } from '@/config/config';
+import { getDefaultLowCarbonConfig, cleanupConfig, getDefaultAppearanceConfig, getDefaultGridConfig, getDefaultGasConfig, getDefaultSolarConfig, getDefaultBatteryConfig, getDefaultHomeConfig, getCo2SignalEntity } from '@/config/config';
 
 export const EDITOR_ELEMENT_NAME = CARD_NAME + "-editor";
 
@@ -71,7 +71,7 @@ const CONFIG_PAGES: {
       icon: "mdi:leaf",
       schema: lowCarbonSchema,
       createConfig: getDefaultLowCarbonConfig,
-      showIcon: (config: EnergyFlowCardExtConfig) => showIconForSingleValueNode(config?.[EditorPages.Low_Carbon])
+      showIcon: (config: EnergyFlowCardExtConfig, hass: HomeAssistant) => getCo2SignalEntity(hass) !== undefined
     },
     {
       page: EditorPages.Home,
@@ -166,7 +166,7 @@ export class EnergyFlowCardExtEditor extends LitElement implements LovelaceCardE
   }
 
   private _renderPageLinks = (): TemplateResult[] => {
-    return CONFIG_PAGES.map(page => this._renderPageLink(page.page, page.icon, page.showIcon(this._config)));
+    return CONFIG_PAGES.map(page => this._renderPageLink(page.page, page.icon, page.showIcon(this._config, this.hass)));
   };
 
   private _renderPageLink = (page: EditorPages, icon: string, showIcon: boolean): TemplateResult => {

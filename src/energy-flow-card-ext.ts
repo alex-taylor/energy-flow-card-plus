@@ -12,7 +12,7 @@ import { SolarState } from "@/states/solar";
 import { SecondaryInfoState } from "@/states/secondary-info";
 import { coerceNumber, isNumberValue, mapRange } from "@/utils";
 import { registerCustomCard } from "@/utils/register-custom-card";
-import { States, Flows } from "@/states";
+import { States, Flows, SecondaryState } from "@/states";
 import { EntityStates } from "@/states";
 import { HassEntity, UnsubscribeFunc } from "home-assistant-js-websocket";
 import { ColourMode, DisplayMode, DotsMode, EntityType, LowCarbonType, InactiveLinesMode, UnitDisplayMode } from "@/enums";
@@ -83,6 +83,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
   //================================================================================================================================================================================//
 
   public hassSubscribe(): Promise<UnsubscribeFunc>[] {
+    console.log("hassSubscribe()");
     this._entityStates = new EntityStates(this.hass, this._config);
     return [];
   }
@@ -104,13 +105,14 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     }
 
     this._config = cleanupConfig(this.hass, config);
+    console.log("setConfig()");
     this.resetSubscriptions();
   }
 
   //================================================================================================================================================================================//
 
   protected render(): TemplateResult {
-    if (!this._config || !this.hass) {
+    if (!this._config || !this.hass || !this._entityStates) {
       return html``;
     }
 
@@ -118,7 +120,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
       return html`<ha-card style="padding: 2rem">${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}</ha-card>`;
     }
 
-    if (!this._entityStates.energyData && this._config?.[GlobalOptions.Display_Mode] !== DisplayMode.Today) {
+    if (!this._entityStates.isDatePickerPresent && this._config?.[GlobalOptions.Display_Mode] !== DisplayMode.Today) {
       return html`<ha-card style="padding: 2rem">
         ${this.hass.localize("ui.panel.lovelace.cards.energy.loading")}<br />Make sure you have the Energy Integration setup and a Date Selector in this View or set
         <pre>display_mode: live</pre>
@@ -390,17 +392,15 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
           <div class="row">
 
             <!-- top left -->
-            ${states.lowCarbon == 0
-            ? html`<div class="spacer"></div>`
+            ${lowCarbon.isPresent
             // TODO need to find a way of passing the units through, otherwise energy will be treated as percentage
-            : html`${this._renderIndividualCircleAtTop(EntityType.LowCarbon, lowCarbon, this._config?.[EditorPages.Low_Carbon]?.[GlobalOptions.Options]?.[EntitiesOptions.Low_Carbon_Mode] === LowCarbonType.Percentage ? states.lowCarbonPercentage : states.lowCarbon, states.lowCarbonSecondary, - newDur.lowCarbon)}`}
+            ? html`${this._renderIndividualCircleAtTop(EntityType.LowCarbon, lowCarbon, this._config?.[EditorPages.Low_Carbon]?.[GlobalOptions.Options]?.[EntitiesOptions.Low_Carbon_Mode] === LowCarbonType.Percentage ? states.lowCarbonPercentage : states.lowCarbon, states.lowCarbonSecondary, - newDur.lowCarbon)}`
+            : html`<div class="spacer"></div>`}
 
             <!-- top middle -->
             ${solar.isPresent
             ? html`${this._renderSolarCircle(states.solarImport, states.solarSecondary)}`
-            : false //individual1.isPresent
-              ? html`<div class="spacer"></div>`
-              : ""}
+            : ""}
 
             <!-- top right -->
             <div class="spacer"></div>
@@ -626,7 +626,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   //================================================================================================================================================================================//
 
-  private _renderSecondarySpan(secondary: SecondaryInfoState, type: EntityType, state: string | number | null): TemplateResult {
+  private _renderSecondarySpan(secondary: SecondaryInfoState, type: EntityType, state: SecondaryState): TemplateResult {
     if (!secondary.isPresent) {
       return html``;
     }
@@ -656,7 +656,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
     homeConsumptionError: boolean,
     homeValueIsZero: boolean,
     homeUsageToDisplay: string,
-    homeSecondary: string | number | null
+    homeSecondary: SecondaryState
   ): TemplateResult => {
     const home: HomeState = this._entityStates.home;
 
@@ -826,7 +826,7 @@ export default class EnergyFlowCardPlus extends SubscribeMixin(LitElement) {
 
   //================================================================================================================================================================================//
 
-  private _renderIndividualCircleAtTop = (type: EntityType, entity: State, state: number, secondaryState: number | string | null, animDuration: number): TemplateResult => {
+  private _renderIndividualCircleAtTop = (type: EntityType, entity: State, state: number, secondaryState: SecondaryState, animDuration: number): TemplateResult => {
     return html`
       <div class="circle-container ${type}">
         <span class="label">${entity.name}</span>

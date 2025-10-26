@@ -1,9 +1,9 @@
 import { EditorPages, EntitiesOptions, GlobalOptions, EnergyFlowCardExtConfig } from '@/config';
 import { LowCarbonType } from '@/enums';
-import { nodeConfigSchema, singleValueNodeSchema } from '.';
+import { nodeConfigSchema } from '.';
 
 export function lowCarbonSchema(config: EnergyFlowCardExtConfig | undefined): any[] {
-  return nodeConfigSchema(config, config?.[EditorPages.Low_Carbon], singleValueNodeSchema(config, config?.[EditorPages.Low_Carbon]))
+  return nodeConfigSchema(config, config?.[EditorPages.Low_Carbon], undefined)
     .concat(
     {
       name: [GlobalOptions.Options],

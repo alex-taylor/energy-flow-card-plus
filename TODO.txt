@@ -19,26 +19,27 @@ Entity-validation:
     - also need to filter them out when doing the 'isPresent' flags
 
 
-
 Units:
   - move the whitespace flag to UnitsMode
+  - problem: this would prevent it from being set for both Home and Low-carbon
 
 Decimals:
   - add flag to 'always show dps' (per-entity)
+  - make the energy decimals optional, and implement the HASS algorithm for when they are not set: 2dp if <10; 1dp if <100; 0dp otherwise
+  - rename to 'display precision'
 
 Low-carbon:
   - need to force the units
-  - drop the entity, it's not actually what's being displayed!
   - probably just need to pass the 'deviceClass' in, with some suitable value for the %
+  - lock decimals to 1dp for percentage
 
 
 
-
+Intermittent problem where the stats are received multiple times
+  - may be related to a browser page reload after switching between tabs?
 
 The 'multi entity' picker is sizing itself to the full width of its entity's name, should be constrained
   - HASS bug
-
-Still got bugs with the midnight rollover?
 
 Reinstate the -ve coords for the lines, they are required so that the dots don't just vanish!
   - and presumably they should extend at both ends?

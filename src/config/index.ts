@@ -161,7 +161,8 @@ export interface GasConfig extends SingleValueNodeConfig {
   [EntitiesOptions.Include_In_Home]?: boolean;
 };
 
-export interface LowCarbonConfig extends SingleValueNodeConfig {
+export interface LowCarbonConfig extends NodeConfig {
+  [EntitiesOptions.Colours]?: SingleValueColourConfig;
   [GlobalOptions.Options]?: LowCarbonOptionsConfig;
 };
 

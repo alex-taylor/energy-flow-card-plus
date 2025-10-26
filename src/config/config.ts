@@ -18,7 +18,7 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
     [EditorPages.Gas]: getDefaultGasConfig(hass, true),
     [EditorPages.Grid]: getDefaultGridConfig(hass, true),
     [EditorPages.Home]: getDefaultHomeConfig(),
-    [EditorPages.Low_Carbon]: getDefaultLowCarbonConfig(hass, true),
+    [EditorPages.Low_Carbon]: getDefaultLowCarbonConfig(),
     [EditorPages.Solar]: getDefaultSolarConfig(hass, true)
   };
 }
@@ -28,7 +28,7 @@ export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConf
   config = updateConfig(config, EditorPages.Battery, getDefaultBatteryConfig(hass, false));
   config = updateConfig(config, EditorPages.Gas, getDefaultGasConfig(hass, false));
   config = updateConfig(config, EditorPages.Grid, getDefaultGridConfig(hass, false));
-  config = updateConfig(config, EditorPages.Low_Carbon, getDefaultLowCarbonConfig(hass, false));
+  config = updateConfig(config, EditorPages.Low_Carbon, getDefaultLowCarbonConfig());
   config = updateConfig(config, EditorPages.Solar, getDefaultSolarConfig(hass, false));
   return config;
 }
@@ -314,11 +314,8 @@ export function getDefaultHomeConfig(): HomeConfig {
   };
 }
 
-export function getDefaultLowCarbonConfig(hass: HomeAssistant, requireEntity: boolean): LowCarbonConfig | undefined {
-  const config: LowCarbonConfig = {
-    [EntitiesOptions.Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
+export function getDefaultLowCarbonConfig(): LowCarbonConfig {
+  return {
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Default,
       [ColourOptions.Value]: ColourMode.Do_Not_Colour,
@@ -333,23 +330,6 @@ export function getDefaultLowCarbonConfig(hass: HomeAssistant, requireEntity: bo
       }
     }
   };
-
-  if (!requireEntity) {
-    return config;
-  }
-
-  const co2SignalEntity: string | undefined = getCo2SignalEntity(hass);
-
-  if (co2SignalEntity) {
-    config[EntitiesOptions.Entities] = {
-      [EntityOptions.Entity_Ids]: [co2SignalEntity],
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    };
-
-    return config;
-  }
-
-  return undefined;
 }
 
 export function getDefaultDeviceConfig(): DeviceConfig {
@@ -375,7 +355,7 @@ export function getDefaultDeviceConfig(): DeviceConfig {
   };
 }
 
-function getCo2SignalEntity(hass: HomeAssistant): string | undefined {
+export function getCo2SignalEntity(hass: HomeAssistant): string | undefined {
   let co2SignalEntity: string | undefined;
 
   for (const entity of Object.values(hass["entities"])) {
