@@ -5,6 +5,7 @@
     "new_device": "New Device"
   },
   "editor": {
+    "undefined": "",
     "title": "Title",
     "name": "Name",
     "name#helptext": "Overrides the built-in name",
@@ -49,9 +50,9 @@
     "energy_units": "Energy Units",
     "wh_kwh_threshold": "Wh/kWh threshold",
     "kwh_mwh_threshold": "kWh/MWh threshold",
-    "wh_decimals": "Wh decimals",
-    "kwh_decimals": "kWh decimals",
-    "mwh_decimals": "MWh decimals",
+    "wh_display_precision": "Wh display precision",
+    "kwh_display_precision": "kWh display precision",
+    "mwh_display_precision": "MWh display precision",
 
     "entity_ids": "",
     "entity_ids#errortext": "testing",
@@ -59,7 +60,7 @@
     "units": "Override units",
     "zero_threshold": "Threshold",
     "zero_threshold#helptext": "Values less than this will be shown as zero",
-    "decimals": "Decimal places",
+    "display_precision": "Display precision",
 
     "grid": "Grid",
     "import_entities": "Import Entities",
@@ -145,6 +146,8 @@
   "UnitDisplayType": {
     "after": "After value",
     "before": "Before value",
+    "after_space": "After value (with space)",
+    "before_space": "Before value (with space)",
     "hidden": "Hidden"
   }
 }

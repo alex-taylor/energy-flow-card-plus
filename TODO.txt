@@ -5,7 +5,7 @@ Entity-validation:
   - in the UI, flag up when:
     - a non-existent entity is specified
     - a non-energy primary entity is specified
-    - a non-stats-compatible entity is specified
+    - a non-stats-compatible secondary entity is specified
     - populate the 'error' object with the details
 
   - icon:
@@ -14,23 +14,13 @@ Entity-validation:
     - red: all primary entities are invalid
     - nothing: no primary entities are defined at all
 
-  - in the States object
-    - filter out the invalid entities when building the arrays
-    - also need to filter them out when doing the 'isPresent' flags
-
-
-Units:
-  - move the whitespace flag to UnitsMode
-  - problem: this would prevent it from being set for both Home and Low-carbon
 
 Decimals:
   - add flag to 'always show dps' (per-entity)
-  - make the energy decimals optional, and implement the HASS algorithm for when they are not set: 2dp if <10; 1dp if <100; 0dp otherwise
-  - rename to 'display precision'
+    - or perhaps just auto-detect currencies?
 
 Low-carbon:
-  - need to force the units
-  - probably just need to pass the 'deviceClass' in, with some suitable value for the %
+  - needs its own rendering code
   - lock decimals to 1dp for percentage
 
 
@@ -51,7 +41,7 @@ The 'loading...' flag doesn't seem to be getting cleared reliably
   - possibly now fixed
   - should, however, display the circles but with 'Unknown' for their values
 
-Secondary value being mis-coloured, needs to take into account the relevant setting
+Low-carbon and Secondary values being mis-coloured, needs to take into account the relevant setting
 
 Power-outage is calculating its state up-front, rather than live as-needed (see GridState)
 
@@ -88,3 +78,4 @@ GENERAL
 README and CHANGELOG updates
 
 Test localisation by disabling EN and EN-GB and checking that all strings revert to their keys
+  - also check that there aren't any redundant keys!

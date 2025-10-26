@@ -1,4 +1,4 @@
-import { AppearanceOptions, ColourOptions, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions, OverridesOptions, SecondaryInfoOptions, AppearanceConfig, AppearanceOptionsConfig, DualValueColourConfig, DualValueNodeConfig, EnergyFlowCardExtConfig, EnergyUnitsConfig, EntityConfig, FlowsConfig, NodeConfig, SecondaryInfoConfig, SingleValueColourConfig, SingleValueNodeConfig } from '@/config';
+import { AppearanceOptions, ColourOptions, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions, OverridesOptions, SecondaryInfoOptions, AppearanceConfig, AppearanceOptionsConfig, DualValueColourConfig, DualValueNodeConfig, EnergyFlowCardExtConfig, EnergyUnitsConfig, SecondaryEntityConfig, FlowsConfig, NodeConfig, SecondaryInfoConfig, SingleValueColourConfig, SingleValueNodeConfig } from '@/config';
 import { ColourMode, DisplayMode, DotsMode, InactiveLinesMode, UnitDisplayMode } from '@/enums';
 import { DEVICE_CLASS_ENERGY } from '../../const';
 
@@ -101,6 +101,27 @@ function energyUnitsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, s
       type: 'grid',
       schema: [
         {
+          name: EnergyUnitsOptions.Units_Mode,
+          required: true,
+          selector: {
+            select: {
+              mode: 'dropdown',
+              options: [
+                UnitDisplayMode.getItem(UnitDisplayMode.After_Space),
+                UnitDisplayMode.getItem(UnitDisplayMode.Before_Space),
+                UnitDisplayMode.getItem(UnitDisplayMode.After),
+                UnitDisplayMode.getItem(UnitDisplayMode.Before),
+                UnitDisplayMode.getItem(UnitDisplayMode.Hidden)
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      type: 'grid',
+      schema: [
+        {
           name: EnergyUnitsOptions.Wh_Kwh_Threshold,
           required: true,
           selector: { number: { mode: 'box', min: 0, max: 1000000, step: 1 } }
@@ -116,18 +137,15 @@ function energyUnitsOptionsSchema(config: EnergyFlowCardExtConfig | undefined, s
       type: 'grid',
       schema: [
         {
-          name: EnergyUnitsOptions.Wh_Decimals,
-          required: true,
+          name: EnergyUnitsOptions.Wh_Display_Precision,
           selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } }
         },
         {
-          name: EnergyUnitsOptions.Kwh_Decimals,
-          required: true,
+          name: EnergyUnitsOptions.Kwh_Display_Precision,
           selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } }
         },
         {
-          name: EnergyUnitsOptions.Mwh_Decimals,
-          required: true,
+          name: EnergyUnitsOptions.Mwh_Display_Precision,
           selector: { number: { mode: 'box', min: 0, max: 5, step: 1 } }
         }
       ]
@@ -223,102 +241,74 @@ export function nodeConfigSchema(config: EnergyFlowCardExtConfig | undefined, sc
   return result;
 };
 
-function entitySelectionSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: EntityConfig | undefined, name: string, device_class: string | undefined = undefined): any[] {
+export function singleValueNodeSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SingleValueNodeConfig | undefined): any[] {
   return [
     {
-      name: name,
+      name: EntitiesOptions.Entities,
       type: 'expandable',
       schema: [
         {
           name: EntityOptions.Entity_Ids,
-          selector: { entity: { multiple: true, device_class: device_class } }
-        },
+          selector: { entity: { multiple: true, reorder: true, device_class: DEVICE_CLASS_ENERGY } }
+        }
+      ]
+    },
+    {
+      name: EntitiesOptions.Colours,
+      type: 'expandable',
+      schema: [
         {
           type: 'grid',
           schema: [
             {
-              name: EntityOptions.Units_Mode,
+              name: ColourOptions.Circle,
               required: true,
               selector: {
                 select: {
                   mode: 'dropdown',
                   options: [
-                    UnitDisplayMode.getItem(UnitDisplayMode.After),
-                    UnitDisplayMode.getItem(UnitDisplayMode.Before),
-                    UnitDisplayMode.getItem(UnitDisplayMode.Hidden)
+                    ColourMode.getItem(ColourMode.Default),
+                    ColourMode.getItem(ColourMode.Custom)
                   ]
                 }
               }
             },
-            { name: EntityOptions.Units, selector: { text: {} } },
-            { name: EntityOptions.Zero_Threshold, selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } } },
-            { name: EntityOptions.Decimals, selector: { number: { mode: 'box', min: 0, max: 3, step: 1 } } }
+            {
+              name: ColourOptions.Value,
+              required: true,
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    ColourMode.getItem(ColourMode.Do_Not_Colour),
+                    ColourMode.getItem(ColourMode.Default),
+                    ColourMode.getItem(ColourMode.Circle),
+                    ColourMode.getItem(ColourMode.Custom)
+                  ]
+                }
+              }
+            },
+            {
+              name: ColourOptions.Icon,
+              required: true,
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    ColourMode.getItem(ColourMode.Do_Not_Colour),
+                    ColourMode.getItem(ColourMode.Default),
+                    ColourMode.getItem(ColourMode.Circle),
+                    ColourMode.getItem(ColourMode.Custom)
+                  ]
+                }
+              }
+            },
+            singleValueColourPickerSchema(config, schemaConfig?.[EntitiesOptions.Colours])
           ]
         }
       ]
     }
   ];
-};
-
-export function singleValueNodeSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SingleValueNodeConfig | undefined): any[] {
-  return entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Entities], EntitiesOptions.Entities, DEVICE_CLASS_ENERGY)
-    .concat([
-      {
-        name: EntitiesOptions.Colours,
-        type: 'expandable',
-        schema: [
-          {
-            type: 'grid',
-            schema: [
-              {
-                name: ColourOptions.Circle,
-                required: true,
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      ColourMode.getItem(ColourMode.Default),
-                      ColourMode.getItem(ColourMode.Custom)
-                    ]
-                  }
-                }
-              },
-              {
-                name: ColourOptions.Value,
-                required: true,
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      ColourMode.getItem(ColourMode.Do_Not_Colour),
-                      ColourMode.getItem(ColourMode.Default),
-                      ColourMode.getItem(ColourMode.Circle),
-                      ColourMode.getItem(ColourMode.Custom)
-                    ]
-                  }
-                }
-              },
-              {
-                name: ColourOptions.Icon,
-                required: true,
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      ColourMode.getItem(ColourMode.Do_Not_Colour),
-                      ColourMode.getItem(ColourMode.Default),
-                      ColourMode.getItem(ColourMode.Circle),
-                      ColourMode.getItem(ColourMode.Custom)
-                    ]
-                  }
-                }
-              },
-              singleValueColourPickerSchema(config, schemaConfig?.[EntitiesOptions.Colours])
-            ]
-          }
-        ]
-      }
-    ]);
 }
 
 export function singleValueColourPickerSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: SingleValueColourConfig | undefined): {} {
@@ -333,68 +323,86 @@ export function singleValueColourPickerSchema(config: EnergyFlowCardExtConfig | 
 }
 
 export function dualValueNodeSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: DualValueNodeConfig | undefined): any[] {
-  return entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Import_Entities], EntitiesOptions.Import_Entities, DEVICE_CLASS_ENERGY)
-    .concat(entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Export_Entities], EntitiesOptions.Export_Entities, DEVICE_CLASS_ENERGY))
-    .concat([
-      {
-        name: EntitiesOptions.Colours,
-        type: 'expandable',
-        schema: [
-          {
-            type: 'grid',
-            schema: [
-              {
-                name: [ColourOptions.Circle],
-                required: true,
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      ColourMode.getItem(ColourMode.Largest_Value),
-                      ColourMode.getItem(ColourMode.Import),
-                      ColourMode.getItem(ColourMode.Export),
-                      ColourMode.getItem(ColourMode.Export_Sources),
-                      ColourMode.getItem(ColourMode.Custom)
-                    ]
-                  }
+  return [
+    {
+      name: EntitiesOptions.Import_Entities,
+      type: 'expandable',
+      schema: [
+        {
+          name: EntityOptions.Entity_Ids,
+          selector: { entity: { multiple: true, reorder: true, device_class: DEVICE_CLASS_ENERGY } }
+        }
+      ]
+    },
+    {
+      name: EntitiesOptions.Export_Entities,
+      type: 'expandable',
+      schema: [
+        {
+          name: EntityOptions.Entity_Ids,
+          selector: { entity: { multiple: true, reorder: true, device_class: DEVICE_CLASS_ENERGY } }
+        }
+      ]
+    },
+    {
+      name: EntitiesOptions.Colours,
+      type: 'expandable',
+      schema: [
+        {
+          type: 'grid',
+          schema: [
+            {
+              name: [ColourOptions.Circle],
+              required: true,
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    ColourMode.getItem(ColourMode.Largest_Value),
+                    ColourMode.getItem(ColourMode.Import),
+                    ColourMode.getItem(ColourMode.Export),
+                    ColourMode.getItem(ColourMode.Export_Sources),
+                    ColourMode.getItem(ColourMode.Custom)
+                  ]
                 }
-              },
-              {
-                name: [ColourOptions.Values],
-                required: true,
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      ColourMode.getItem(ColourMode.Do_Not_Colour),
-                      ColourMode.getItem(ColourMode.Default),
-                      ColourMode.getItem(ColourMode.Custom)
-                    ]
-                  }
+              }
+            },
+            {
+              name: [ColourOptions.Values],
+              required: true,
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    ColourMode.getItem(ColourMode.Do_Not_Colour),
+                    ColourMode.getItem(ColourMode.Default),
+                    ColourMode.getItem(ColourMode.Custom)
+                  ]
                 }
-              },
-              {
-                name: [ColourOptions.Icon],
-                required: true,
-                selector: {
-                  select: {
-                    mode: 'dropdown',
-                    options: [
-                      ColourMode.getItem(ColourMode.Do_Not_Colour),
-                      ColourMode.getItem(ColourMode.Largest_Value),
-                      ColourMode.getItem(ColourMode.Import),
-                      ColourMode.getItem(ColourMode.Export),
-                      ColourMode.getItem(ColourMode.Custom)
-                    ]
-                  }
+              }
+            },
+            {
+              name: [ColourOptions.Icon],
+              required: true,
+              selector: {
+                select: {
+                  mode: 'dropdown',
+                  options: [
+                    ColourMode.getItem(ColourMode.Do_Not_Colour),
+                    ColourMode.getItem(ColourMode.Largest_Value),
+                    ColourMode.getItem(ColourMode.Import),
+                    ColourMode.getItem(ColourMode.Export),
+                    ColourMode.getItem(ColourMode.Custom)
+                  ]
                 }
-              },
-              dualValueColourPickerSchema(config, schemaConfig?.[EntitiesOptions.Colours])
-            ]
-          }
-        ]
-      }
-    ]);
+              }
+            },
+            dualValueColourPickerSchema(config, schemaConfig?.[EntitiesOptions.Colours])
+          ]
+        }
+      ]
+    }
+  ];
 }
 
 function dualValueColourPickerSchema(config: EnergyFlowCardExtConfig | undefined, schemaConfig: DualValueColourConfig | undefined): {} {
@@ -422,17 +430,50 @@ export function secondaryInfoSchema(config: EnergyFlowCardExtConfig | undefined,
   return {
     name: EntitiesOptions.Secondary_Info,
     type: 'expandable',
-    schema: entitySelectionSchema(config, schemaConfig?.[EntitiesOptions.Entities], EntitiesOptions.Entities)
-      .concat([
-        {
-          name: [SecondaryInfoOptions.Template],
-          selector: { template: {} }
-        },
-        {
-          name: [SecondaryInfoOptions.Icon],
-          selector: { icon: {} }
-        }
-      ])
+    schema: [
+      {
+        name: EntitiesOptions.Entities,
+        type: 'expandable',
+        schema: [
+          {
+            name: EntityOptions.Entity_Ids,
+            selector: { entity: { multiple: true, reorder: true } }
+          },
+          {
+            type: 'grid',
+            column_min_width: '150px',
+            schema: [
+              {
+                name: EntityOptions.Units_Mode,
+                required: true,
+                selector: {
+                  select: {
+                    mode: 'dropdown',
+                    options: [
+                      UnitDisplayMode.getItem(UnitDisplayMode.After_Space),
+                      UnitDisplayMode.getItem(UnitDisplayMode.Before_Space),
+                      UnitDisplayMode.getItem(UnitDisplayMode.After),
+                      UnitDisplayMode.getItem(UnitDisplayMode.Before),
+                      UnitDisplayMode.getItem(UnitDisplayMode.Hidden)
+                    ]
+                  }
+                }
+              },
+              { name: EntityOptions.Units, selector: { text: {} } },
+              { name: EntityOptions.Zero_Threshold, selector: { number: { mode: 'box', min: 0, max: 1000000, step: 0.01 } } },
+              { name: EntityOptions.Display_Precision, selector: { number: { mode: 'box', min: 0, max: 3, step: 1 } } }
+            ]
+          }
+        ]
+      },
+      {
+        name: [SecondaryInfoOptions.Template],
+        selector: { template: {} }
+      },
+      {
+        name: [SecondaryInfoOptions.Icon],
+        selector: { icon: {} }
+      }
+    ]
   };
 }
-

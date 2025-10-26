@@ -1,55 +1,47 @@
 import { DualValueNodeConfig, EntitiesOptions, EntityOptions, NodeConfig, OverridesOptions, SingleValueNodeConfig } from "@/config";
-import { EntityType } from "@/enums";
+import { HomeAssistant } from "custom-card-helpers";
+import { filterPrimaryEntities, State } from ".";
 import { SecondaryInfoState } from "./secondary-info";
 
-export abstract class State {
-  isPresent: boolean;
-  name: string;
-  icon: string;
-  secondary: SecondaryInfoState;
-  mainEntity?: string;
-  type: EntityType;
+export abstract class ValueState extends State {
+  public name: string;
+  public secondary: SecondaryInfoState;
 
-  protected constructor(config: NodeConfig | undefined, type: EntityType, mainEntity: string | undefined, defaultName: string, defaultIcon: string) {
-    this.isPresent = mainEntity !== undefined;
+  protected constructor(hass: HomeAssistant, config: NodeConfig | undefined, importEntities: string[] = [], defaultName: string, defaultIcon: string) {
+    super(hass, config, importEntities, defaultIcon);
     this.name = config?.[EntitiesOptions.Overrides]?.[OverridesOptions.Name] || defaultName;
-    this.icon = config?.[EntitiesOptions.Overrides]?.[OverridesOptions.Icon] || defaultIcon;
-    this.secondary = new SecondaryInfoState(config?.[EntitiesOptions.Secondary_Info]);
-    this.mainEntity = mainEntity;
-    this.type = type;
+    this.secondary = new SecondaryInfoState(hass, config?.[EntitiesOptions.Secondary_Info]);
   }
 }
 
-export abstract class SingleValueState extends State {
-  protected constructor(config: SingleValueNodeConfig | undefined, type: EntityType, defaultName: string, defaultIcon: string) {
+export abstract class SingleValueState extends ValueState {
+  protected constructor(hass: HomeAssistant, config: SingleValueNodeConfig | undefined, defaultName: string, defaultIcon: string) {
     super(
+      hass,
       config,
-      type,
-      !config?.[EntitiesOptions.Entities]?.[EntityOptions.Entity_Ids]?.length
-        ? undefined
-        : config?.[EntitiesOptions.Entities]?.[EntityOptions.Entity_Ids][0],
+      filterPrimaryEntities(hass, config?.[EntitiesOptions.Entities]?.[EntityOptions.Entity_Ids]),
       defaultName,
       defaultIcon);
   }
-};
+}
 
-export abstract class DualValueState extends State {
-  returnEntity?: string;
+export abstract class DualValueState extends ValueState {
+  public returnEntities?: string[]
+  public firstReturnEntity?: string;
 
-  protected constructor(config: DualValueNodeConfig | undefined, type: EntityType, defaultName: string, defaultIcon: string) {
+  protected constructor(hass: HomeAssistant, config: DualValueNodeConfig | undefined, defaultName: string, defaultIcon: string) {
     super(
+      hass,
       config,
-      type,
-      !config?.[EntitiesOptions.Import_Entities]?.[EntityOptions.Entity_Ids]?.length
+      filterPrimaryEntities(hass, !config?.[EntitiesOptions.Import_Entities]?.[EntityOptions.Entity_Ids]?.length
         ? !config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids]?.length
-          ? undefined
-          : config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids][0]
-        : config?.[EntitiesOptions.Import_Entities]?.[EntityOptions.Entity_Ids][0],
+          ? []
+          : config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids]
+        : config?.[EntitiesOptions.Import_Entities]?.[EntityOptions.Entity_Ids]),
       defaultName,
       defaultIcon);
 
-    if (config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids]?.length) {
-      this.returnEntity = config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids][0];
-    }
+    this.returnEntities = filterPrimaryEntities(hass, config?.[EntitiesOptions.Export_Entities]?.[EntityOptions.Entity_Ids]);
+    this.firstReturnEntity = this.returnEntities.length !== 0 ? this.returnEntities[0] : undefined;
   }
 }

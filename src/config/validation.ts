@@ -16,9 +16,10 @@ const appearanceOptionsConfigStruct = object({
 });
 
 const energyUnitsOptionsConfigStruct = object({
-  [EnergyUnitsOptions.Wh_Decimals]: optional(integer()),
-  [EnergyUnitsOptions.Kwh_Decimals]: optional(integer()),
-  [EnergyUnitsOptions.Mwh_Decimals]: optional(integer()),
+  [EnergyUnitsOptions.Units_Mode]: optional(string()),
+  [EnergyUnitsOptions.Wh_Display_Precision]: optional(integer()),
+  [EnergyUnitsOptions.Kwh_Display_Precision]: optional(integer()),
+  [EnergyUnitsOptions.Mwh_Display_Precision]: optional(integer()),
   [EnergyUnitsOptions.Wh_Kwh_Threshold]: optional(number()),
   [EnergyUnitsOptions.Kwh_Mwh_Threshold]: optional(number())
 });
@@ -39,11 +40,15 @@ const appearanceConfigStruct = object({
 });
 
 const entitiesConfigStruct = object({
+  [EntityOptions.Entity_Ids]: optional(array())
+});
+
+const secondaryEntitiesConfigStruct = object({
   [EntityOptions.Entity_Ids]: optional(array()),
   [EntityOptions.Units]: optional(string()),
   [EntityOptions.Units_Mode]: optional(string()),
   [EntityOptions.Zero_Threshold]: optional(number()),
-  [EntityOptions.Decimals]: optional(number())
+  [EntityOptions.Display_Precision]: optional(number())
 });
 
 const valueColoursConfig = {
@@ -70,7 +75,7 @@ const overridesConfigStruct = object({
 });
 
 const secondaryInfoConfigStruct = object({
-  [EntitiesOptions.Entities]: optional(entitiesConfigStruct),
+  [EntitiesOptions.Entities]: optional(secondaryEntitiesConfigStruct),
   [SecondaryInfoOptions.Icon]: optional(string()),
   [SecondaryInfoOptions.Template]: optional(string())
 });
@@ -149,7 +154,7 @@ const deviceOptionsConfigStruct = object({
 const deviceConfigStruct = object({
   [OverridesOptions.Name]: optional(string()),
   [OverridesOptions.Icon]: optional(string()),
-  [EntitiesOptions.Entities]: optional(entitiesConfigStruct),
+  [EntitiesOptions.Entities]: optional(secondaryEntitiesConfigStruct),
   [EntitiesOptions.Colours]: optional(singleValueColoursConfigStruct),
   [EntitiesOptions.Secondary_Info]: optional(secondaryInfoConfigStruct),
   [GlobalOptions.Options]: optional(deviceOptionsConfigStruct)

@@ -1,7 +1,7 @@
 import { localize } from "@/localize/localize";
 import { SolarConfig } from "@/config";
-import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
+import { HomeAssistant } from "custom-card-helpers";
 
 export class SolarState extends SingleValueState {
   config?: SolarConfig;
@@ -10,10 +10,10 @@ export class SolarState extends SingleValueState {
     import: number;
   };
 
-  public constructor(config: SolarConfig | undefined) {
+  public constructor(hass: HomeAssistant, config: SolarConfig | undefined) {
     super(
+      hass,
       config,
-      EntityType.Solar,
       localize("editor.solar"),
       "mdi:solar-power"
     );

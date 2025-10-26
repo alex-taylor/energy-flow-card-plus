@@ -47,9 +47,6 @@
     <None Include="src\energy\subscribe-mixin.ts" />
     <None Include="src\localize\localize.ts" />
     <None Include="src\ui-editor\ui-editor.ts" />
-    <None Include="src\utils\get-element-width.ts" />
-    <None Include="src\utils\index.ts" />
-    <None Include="src\utils\register-custom-card.ts" />
     <Content Include="src\localize\languages\cs.json" />
     <Content Include="src\localize\languages\de.json" />
     <Content Include="src\localize\languages\dk.json" />
@@ -86,10 +83,12 @@
     <Folder Include="src\localize\languages" />
     <Folder Include="src\ui-editor" />
     <Folder Include="src\ui-editor\schema" />
-    <Folder Include="src\utils" />
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="src\config\validation.ts">
+      <SubType>Code</SubType>
+    </TypeScriptCompile>
+    <TypeScriptCompile Include="src\states\entity-states.ts">
       <SubType>Code</SubType>
     </TypeScriptCompile>
     <TypeScriptCompile Include="src\states\battery.ts" />

@@ -40,9 +40,10 @@ export enum AppearanceOptions {
 };
 
 export enum EnergyUnitsOptions {
-  Wh_Decimals = "wh_decimals",
-  Kwh_Decimals = "kwh_decimals",
-  Mwh_Decimals = "mwh_decimals",
+  Units_Mode = "units_mode",
+  Wh_Display_Precision = "wh_display_precision",
+  Kwh_Display_Precision = "kwh_display_precision",
+  Mwh_Display_Precision = "mwh_display_precision",
   Wh_Kwh_Threshold = "wh_kwh_threshold",
   Kwh_Mwh_Threshold = "kwh_mwh_threshold"
 };
@@ -77,7 +78,7 @@ export enum EntityOptions {
   Units = "units",
   Units_Mode = "units_mode",
   Zero_Threshold = "zero_threshold",
-  Decimals = "decimals"
+  Display_Precision = "display_precision"
 };
 
 export enum ColourOptions {
@@ -137,9 +138,10 @@ export interface AppearanceOptionsConfig {
 };
 
 export interface EnergyUnitsConfig {
-  [EnergyUnitsOptions.Wh_Decimals]?: number;
-  [EnergyUnitsOptions.Kwh_Decimals]?: number;
-  [EnergyUnitsOptions.Mwh_Decimals]?: number;
+  [EnergyUnitsOptions.Units_Mode]?: UnitDisplayMode;
+  [EnergyUnitsOptions.Wh_Display_Precision]?: number;
+  [EnergyUnitsOptions.Kwh_Display_Precision]?: number;
+  [EnergyUnitsOptions.Mwh_Display_Precision]?: number;
   [EnergyUnitsOptions.Wh_Kwh_Threshold]?: number;
   [EnergyUnitsOptions.Kwh_Mwh_Threshold]?: number;
 };
@@ -205,7 +207,7 @@ export interface OverridesConfig {
 };
 
 export interface SingleValueNodeConfig extends NodeConfig {
-  [EntitiesOptions.Entities]?: EntityConfig;
+  [EntityOptions.Entity_Ids]?: EntityConfig;
   [EntitiesOptions.Colours]?: SingleValueColourConfig;
 };
 
@@ -233,10 +235,14 @@ export interface DualValueColourConfig extends ValueColourConfig {
 
 export interface EntityConfig {
   [EntityOptions.Entity_Ids]?: string[];
+}
+
+export interface SecondaryEntityConfig {
+  [EntityOptions.Entity_Ids]?: string[];
   [EntityOptions.Units]?: string;
   [EntityOptions.Units_Mode]?: UnitDisplayMode;
   [EntityOptions.Zero_Threshold]?: number;
-  [EntityOptions.Decimals]?: number;
+  [EntityOptions.Display_Precision]?: number;
 }
 
 export interface PowerOutageConfig {
@@ -247,7 +253,7 @@ export interface PowerOutageConfig {
 };
 
 export interface SecondaryInfoConfig {
-  [EntitiesOptions.Entities]?: EntityConfig;
+  [EntitiesOptions.Entities]?: SecondaryEntityConfig;
   [SecondaryInfoOptions.Icon]?: string;
   [SecondaryInfoOptions.Template]?: string;
 };

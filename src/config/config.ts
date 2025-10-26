@@ -3,11 +3,13 @@ import { HomeAssistant } from 'custom-card-helpers';
 import { AppearanceConfig, BatteryConfig, DeviceConfig, EnergyFlowCardExtConfig, GasConfig, GridConfig, HomeConfig, LowCarbonConfig, OverridesOptions, SolarConfig } from ".";
 import { CARD_NAME } from "@/const";
 import { AppearanceOptions, ColourOptions, EditorPages, EnergyUnitsOptions, EntitiesOptions, EntityOptions, FlowsOptions, GlobalOptions } from "@/config";
-import { localize }  from "@/localize/localize";
+import { localize } from "@/localize/localize";
 import { getEnergyDataCollection } from "@/energy";
 import { HassEntity } from "home-assistant-js-websocket";
 import equal from 'fast-deep-equal';
 import { EnergyCollection, EnergySource, EntityRegistryEntry } from "@/hass";
+
+//================================================================================================================================================================================//
 
 export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   return {
@@ -23,6 +25,8 @@ export function getDefaultConfig(hass: HomeAssistant): EnergyFlowCardExtConfig {
   };
 }
 
+//================================================================================================================================================================================//
+
 export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConfig): EnergyFlowCardExtConfig {
   pruneConfig(config);
   config = updateConfig(config, EditorPages.Battery, getDefaultBatteryConfig(hass, false));
@@ -32,6 +36,8 @@ export function cleanupConfig(hass: HomeAssistant, config: EnergyFlowCardExtConf
   config = updateConfig(config, EditorPages.Solar, getDefaultSolarConfig(hass, false));
   return config;
 }
+
+//================================================================================================================================================================================//
 
 function pruneConfig(config: any): void {
   for (const key in config) {
@@ -59,6 +65,8 @@ function pruneConfig(config: any): void {
   }
 }
 
+//================================================================================================================================================================================//
+
 function updateConfig(config: EnergyFlowCardExtConfig, key: EditorPages, defaultConfig: any): EnergyFlowCardExtConfig {
   if (!config[key]) {
     return config;
@@ -75,6 +83,8 @@ function updateConfig(config: EnergyFlowCardExtConfig, key: EditorPages, default
   config[key] = defaultConfig;
   return config;
 }
+
+//================================================================================================================================================================================//
 
 function setDefaultsRecursively(config: any, defaultConfig: any): void {
   for (const key in defaultConfig) {
@@ -106,6 +116,8 @@ function setDefaultsRecursively(config: any, defaultConfig: any): void {
   }
 }
 
+//================================================================================================================================================================================//
+
 export function getDefaultAppearanceConfig(): AppearanceConfig {
   return {
     [GlobalOptions.Options]: {
@@ -114,9 +126,7 @@ export function getDefaultAppearanceConfig(): AppearanceConfig {
       [AppearanceOptions.Unit_Whitespace]: true
     },
     [AppearanceOptions.Energy_Units]: {
-      [EnergyUnitsOptions.Wh_Decimals]: DefaultValues.WattHourDecimals,
-      [EnergyUnitsOptions.Kwh_Decimals]: DefaultValues.KilowattHourDecimals,
-      [EnergyUnitsOptions.Mwh_Decimals]: DefaultValues.MegawattHourDecimals,
+      [EnergyUnitsOptions.Units_Mode]: UnitDisplayMode.After_Space,
       [EnergyUnitsOptions.Wh_Kwh_Threshold]: DefaultValues.WhkWhThreshold,
       [EnergyUnitsOptions.Kwh_Mwh_Threshold]: DefaultValues.KwhMwhThreshold
     },
@@ -130,14 +140,10 @@ export function getDefaultAppearanceConfig(): AppearanceConfig {
   };
 }
 
+//================================================================================================================================================================================//
+
 export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean): GridConfig | undefined {
   const config: GridConfig = {
-    [EntitiesOptions.Import_Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
-    [EntitiesOptions.Export_Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Largest_Value,
       [ColourOptions.Values]: ColourMode.Default,
@@ -145,7 +151,7 @@ export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After_Space
       }
     }
   };
@@ -169,24 +175,24 @@ export function getDefaultGridConfig(hass: HomeAssistant, requireEntity: boolean
   }
 
   if (energySourcesImport.length !== 0) {
-    config[EntitiesOptions.Import_Entities]![EntityOptions.Entity_Ids] = energySourcesImport;
+    config[EntitiesOptions.Import_Entities] = {
+      [EntityOptions.Entity_Ids]: energySourcesImport
+    };
   }
 
   if (energySourcesExport.length !== 0) {
-    config[EntitiesOptions.Export_Entities]![EntityOptions.Entity_Ids] = energySourcesExport;
+    config[EntitiesOptions.Export_Entities] = {
+      [EntityOptions.Entity_Ids]: energySourcesExport
+    };
   }
 
   return config;
 }
 
+//================================================================================================================================================================================//
+
 export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: boolean): BatteryConfig | undefined {
   const config: BatteryConfig = {
-    [EntitiesOptions.Import_Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
-    [EntitiesOptions.Export_Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Largest_Value,
       [ColourOptions.Values]: ColourMode.Default,
@@ -194,7 +200,7 @@ export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: bool
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After_Space
       }
     }
   };
@@ -218,21 +224,24 @@ export function getDefaultBatteryConfig(hass: HomeAssistant, requireEntity: bool
   }
 
   if (energySourcesImport.length !== 0) {
-    config[EntitiesOptions.Import_Entities]![EntityOptions.Entity_Ids] = energySourcesImport;
+    config[EntitiesOptions.Import_Entities] = {
+      [EntityOptions.Entity_Ids]: energySourcesImport
+    };
   }
 
   if (energySourcesExport.length !== 0) {
-    config[EntitiesOptions.Export_Entities]![EntityOptions.Entity_Ids] = energySourcesExport;
+    config[EntitiesOptions.Export_Entities] = {
+      [EntityOptions.Entity_Ids]: energySourcesExport
+    };
   }
 
   return config;
 }
 
+//================================================================================================================================================================================//
+
 export function getDefaultSolarConfig(hass: HomeAssistant, requireEntity: boolean): SolarConfig | undefined {
   const config: SolarConfig = {
-    [EntitiesOptions.Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Default,
       [ColourOptions.Value]: ColourMode.Do_Not_Colour,
@@ -240,7 +249,7 @@ export function getDefaultSolarConfig(hass: HomeAssistant, requireEntity: boolea
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After_Space
       }
     }
   };
@@ -259,18 +268,20 @@ export function getDefaultSolarConfig(hass: HomeAssistant, requireEntity: boolea
   const energySources: string[] = sources?.filter(source => source.type === "solar").map(source => source.stat_energy_from!) || [];
 
   if (energySources.length !== 0) {
-    config[EntitiesOptions.Entities]![EntityOptions.Entity_Ids] = energySources;
+    config[EntitiesOptions.Entities] = {
+      [EntityOptions.Entity_Ids]: energySources
+    };
+
     return config;
   }
 
   return undefined;
 }
 
+//================================================================================================================================================================================//
+
 export function getDefaultGasConfig(hass: HomeAssistant, requireEntity: boolean): GasConfig | undefined {
   const config: GasConfig = {
-    [EntitiesOptions.Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Default,
       [ColourOptions.Value]: ColourMode.Do_Not_Colour,
@@ -278,7 +289,7 @@ export function getDefaultGasConfig(hass: HomeAssistant, requireEntity: boolean)
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After_Space
       }
     }
   };
@@ -297,12 +308,17 @@ export function getDefaultGasConfig(hass: HomeAssistant, requireEntity: boolean)
   const energySources: string[] = sources?.filter(source => source.type === "gas").map(source => source.stat_energy_from!) || [];
 
   if (energySources.length !== 0) {
-    config[EntitiesOptions.Entities]![EntityOptions.Entity_Ids] = energySources;
+    config[EntitiesOptions.Entities] = {
+      [EntityOptions.Entity_Ids]: energySources
+    };
+
     return config;
   }
 
   return undefined;
 }
+
+//================================================================================================================================================================================//
 
 export function getDefaultHomeConfig(): HomeConfig {
   return {
@@ -313,6 +329,8 @@ export function getDefaultHomeConfig(): HomeConfig {
     }
   };
 }
+
+//================================================================================================================================================================================//
 
 export function getDefaultLowCarbonConfig(): LowCarbonConfig {
   return {
@@ -326,17 +344,16 @@ export function getDefaultLowCarbonConfig(): LowCarbonConfig {
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After_Space
       }
     }
   };
 }
 
+//================================================================================================================================================================================//
+
 export function getDefaultDeviceConfig(): DeviceConfig {
   return {
-    [EntitiesOptions.Entities]: {
-      [EntityOptions.Units_Mode]: UnitDisplayMode.After
-    },
     [EntitiesOptions.Colours]: {
       [ColourOptions.Circle]: ColourMode.Default,
       [ColourOptions.Value]: ColourMode.Do_Not_Colour,
@@ -347,7 +364,7 @@ export function getDefaultDeviceConfig(): DeviceConfig {
     },
     [EntitiesOptions.Secondary_Info]: {
       [EntitiesOptions.Entities]: {
-        [EntityOptions.Units_Mode]: UnitDisplayMode.After
+        [EntityOptions.Units_Mode]: UnitDisplayMode.After_Space
       }
     },
     [OverridesOptions.Name]: localize("common.new_device"),
@@ -355,7 +372,9 @@ export function getDefaultDeviceConfig(): DeviceConfig {
   };
 }
 
-export function getCo2SignalEntity(hass: HomeAssistant): string | undefined {
+//================================================================================================================================================================================//
+
+export function getCo2SignalEntity(hass: HomeAssistant): string {
   let co2SignalEntity: string | undefined;
 
   for (const entity of Object.values(hass["entities"])) {
@@ -373,5 +392,5 @@ export function getCo2SignalEntity(hass: HomeAssistant): string | undefined {
     }
   }
 
-  return co2SignalEntity;
+  return co2SignalEntity ?? "";
 }

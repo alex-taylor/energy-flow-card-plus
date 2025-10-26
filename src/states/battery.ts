@@ -1,7 +1,7 @@
 import { BatteryConfig } from "@/config";
-import { EntityType } from "@/enums";
 import { DualValueState } from "./state";
 import { localize } from "@/localize/localize";
+import { HomeAssistant } from "custom-card-helpers";
 
 export class BatteryState extends DualValueState {
   config?: BatteryConfig;
@@ -13,10 +13,10 @@ export class BatteryState extends DualValueState {
     fromGrid: number;
   };
 
-  public constructor(config: BatteryConfig | undefined) {
+  public constructor(hass: HomeAssistant, config: BatteryConfig | undefined) {
     super(
+      hass,
       config,
-      EntityType.Battery,
       localize("editor.battery"),
       "mdi:battery-high"
     );

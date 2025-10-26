@@ -48,16 +48,6 @@ export enum ColourMode {
   Custom = "custom"
 }
 
-export namespace ColourMode {
-  export function getName(value: ColourMode): string {
-    return getEditorLabel("ColourMode", value);
-  }
-
-  export function getItem(value: ColourMode): { label: string, value: string } {
-    return { label: getName(value), value: value };
-  }
-}
-
 export enum EntityType {
   Home = "home",
   HomeSecondary = "homeSecondary",
@@ -71,6 +61,16 @@ export enum EntityType {
   Solar_Secondary = "solarSecondary",
   LowCarbon = "low-carbon",
   LowCarbon_Secondary = "nonFossilSecondary"
+}
+
+export namespace ColourMode {
+  export function getName(value: ColourMode): string {
+    return getEditorLabel("ColourMode", value);
+  }
+
+  export function getItem(value: ColourMode): { label: string, value: string } {
+    return { label: getName(value), value: value };
+  }
 }
 
 export enum LowCarbonType {
@@ -145,7 +145,9 @@ function getEditorLabel(type: string, value: any): string {
 export enum UnitDisplayMode {
   Hidden = "hidden",
   Before = "before",
-  After = "after"
+  After = "after",
+  Before_Space = "before_space",
+  After_Space = "after_space"
 }
 
 export namespace UnitDisplayMode {

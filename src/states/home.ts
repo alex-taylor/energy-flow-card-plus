@@ -1,9 +1,10 @@
 import { localize } from "@/localize/localize";
 import { ColourOptions, EntitiesOptions, HomeConfig } from "@/config";
-import { ColourMode, EntityType } from "@/enums";
-import { State } from "./state";
+import { ColourMode } from "@/enums";
+import { ValueState } from "./state";
+import { HomeAssistant } from "custom-card-helpers";
 
-export class HomeState extends State {
+export class HomeState extends ValueState {
   state: {
     fromSolar: number;
     fromGrid: number;
@@ -12,10 +13,10 @@ export class HomeState extends State {
 
   colorIcon?: ColourMode;
 
-  public constructor(config: HomeConfig | undefined) {
+  public constructor(hass: HomeAssistant, config: HomeConfig | undefined) {
     super(
+      hass,
       config,
-      EntityType.Home,
       undefined,
       localize("editor.home"),
       "mdi:home"

@@ -1,8 +1,8 @@
 import { localize } from "@/localize/localize";
 import { html, TemplateResult } from "lit";
 import { EntitiesOptions, GridConfig, PowerOutageConfig, PowerOutageOptions } from "@/config";
-import { EntityType } from "@/enums";
 import { DualValueState } from "./state";
+import { HomeAssistant } from "custom-card-helpers";
 
 export class GridState extends DualValueState {
   config?: GridConfig;
@@ -22,10 +22,10 @@ export class GridState extends DualValueState {
     name: string | TemplateResult<1>;
   };
 
-  public constructor(config: GridConfig | undefined) {
+  public constructor(hass: HomeAssistant, config: GridConfig | undefined) {
     super(
+      hass,
       config,
-      EntityType.Grid,
       localize("editor.grid"),
       "mdi:transmission-tower"
     );

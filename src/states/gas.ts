@@ -1,16 +1,16 @@
 import { GasConfig } from "@/config";
-import { EntityType } from "@/enums";
 import { SingleValueState } from "./state";
 import { localize } from "@/localize/localize";
+import { HomeAssistant } from "custom-card-helpers";
 
 export class GasState extends SingleValueState {
   config?: GasConfig;
   state: number;
 
-  public constructor(config: GasConfig | undefined) {
+  public constructor(hass: HomeAssistant, config: GasConfig | undefined) {
     super(
+      hass,
       config,
-      EntityType.Gas,
       localize("editor.gas"),
       "mdi:fire"
     );
